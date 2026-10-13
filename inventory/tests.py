@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from decimal import Decimal
 from unittest.mock import patch
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.core.management import call_command
 from rest_framework.test import APIClient
 
@@ -315,7 +315,116 @@ class InventoryWorkflowTests(TestCase):
             "product": product_org2.id,
             "quantity": "5",
         }, format='json')
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.status_code, 404)
+
+    def test_deduct_by_barcode(self):
+        self.client.force_authenticate(user=self.user1)
+        res = self.client.post('/api/v1/inventory/batches/deduct/', {
+            "barcode": "8901234567890",
+            "quantity": "5",
+        }, format='json')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data['total_deducted'], "5")
+        self.expiring_batch.refresh_from_db()
+        self.assertEqual(self.expiring_batch.quantity, Decimal("20"))
+
+    def test_deduct_by_sku(self):
+        self.client.force_authenticate(user=self.user1)
+        res = self.client.post('/api/v1/inventory/batches/deduct/', {
+            "sku": "MILK-ORG-1L",
+            "quantity": "5",
+        }, format='json')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data['total_deducted'], "5")
+        self.expiring_batch.refresh_from_db()
+        self.assertEqual(self.expiring_batch.quantity, Decimal("20"))
+
+    def test_deduct_by_id(self):
+        self.client.force_authenticate(user=self.user1)
+        res = self.client.post('/api/v1/inventory/batches/deduct/', {
+            "product": self.product.id,
+            "quantity": "5",
+        }, format='json')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data['total_deducted'], "5")
+        self.expiring_batch.refresh_from_db()
+        self.assertEqual(self.expiring_batch.quantity, Decimal("20"))
+
+    def test_deduct_ambiguous_identifiers_rejected(self):
+        self.client.force_authenticate(user=self.user1)
+        # None provided
+        res_none = self.client.post('/api/v1/inventory/batches/deduct/', {
+            "quantity": "5",
+        }, format='json')
+        self.assertEqual(res_none.status_code, 400)
+
+        # Both product and barcode
+        res_prod_bar = self.client.post('/api/v1/inventory/batches/deduct/', {
+            "product": self.product.id,
+            "barcode": "8901234567890",
+            "quantity": "5",
+        }, format='json')
+        self.assertEqual(res_prod_bar.status_code, 400)
+
+        # Both barcode and sku
+        res_bar_sku = self.client.post('/api/v1/inventory/batches/deduct/', {
+            "barcode": "8901234567890",
+            "sku": "MILK-ORG-1L",
+            "quantity": "5",
+        }, format='json')
+        self.assertEqual(res_bar_sku.status_code, 400)
+
+    def test_deduct_cross_org_barcode_returns_404(self):
+        Product.objects.create(
+            organization=self.org2,
+            name="Org2 Milk",
+            barcode="7777777777",
+            sku="ORG2-SKU",
+            category=self.category,
+        )
+        self.client.force_authenticate(user=self.user1)
+
+        res_barcode = self.client.post('/api/v1/inventory/batches/deduct/', {
+            "barcode": "7777777777",
+            "quantity": "5",
+        }, format='json')
+        self.assertEqual(res_barcode.status_code, 404)
+
+        res_sku = self.client.post('/api/v1/inventory/batches/deduct/', {
+            "sku": "ORG2-SKU",
+            "quantity": "5",
+        }, format='json')
+        self.assertEqual(res_sku.status_code, 404)
+
+    def test_deduct_idempotent_replay(self):
+        self.client.force_authenticate(user=self.user1)
+        payload = {
+            "barcode": "8901234567890",
+            "quantity": "5",
+            "external_id": "REC-00123",
+        }
+        res1 = self.client.post('/api/v1/inventory/batches/deduct/', payload, format='json')
+        self.assertEqual(res1.status_code, 200)
+        self.assertEqual(res1.data['total_deducted'], "5")
+        self.assertFalse(res1.data.get('idempotent_replay', False))
+
+        self.expiring_batch.refresh_from_db()
+        self.assertEqual(self.expiring_batch.quantity, Decimal("20"))
+
+        # Replay same request
+        res2 = self.client.post('/api/v1/inventory/batches/deduct/', payload, format='json')
+        self.assertEqual(res2.status_code, 200)
+        self.assertEqual(Decimal(res2.data['total_deducted']), Decimal("5"))
+        self.assertTrue(res2.data.get('idempotent_replay'))
+
+        # Batch quantity was NOT deducted a second time
+        self.expiring_batch.refresh_from_db()
+        self.assertEqual(self.expiring_batch.quantity, Decimal("20"))
+
+        # Only 1 transaction exists with external_id REC-00123
+        txns = StockTransaction.objects.filter(organization=self.org1, external_id="REC-00123")
+        self.assertEqual(txns.count(), 1)
+
 
     def test_dashboard_summary(self):
         # Create unacknowledged critical alert
@@ -376,3 +485,54 @@ class InventoryWorkflowTests(TestCase):
         self.assertEqual(Decimal(data['wasted_value_30d']), Decimal("10.00"))
         self.assertEqual(Decimal(data['donated_value_30d']), Decimal("15.00"))
         self.assertEqual(data['missing_cost_items'], 1)
+
+
+class DeductConcurrencyTests(TransactionTestCase):
+    def test_deduct_concurrent_replay_safety(self):
+        import concurrent.futures
+        from django.db import connection
+
+        org = Organization.objects.create(name="Concurrency Org", org_type="BUSINESS")
+        user = User.objects.create_user(username="conc_user", password="password123", organization=org)
+        cat = Category.objects.create(name="Conc Cat", perishability_risk=Category.Risk.MEDIUM)
+        prod = Product.objects.create(organization=org, name="Conc Product", category=cat)
+        batch = Batch.objects.create(
+            organization=org,
+            product=prod,
+            quantity=Decimal("25"),
+            received_date=date.today() - timedelta(days=2),
+            expiry_date=date.today() + timedelta(days=5),
+            status=Batch.Status.ACTIVE,
+        )
+
+        payload = {
+            "product": prod.id,
+            "quantity": "4",
+            "external_id": "CONC-REPLAY-999",
+        }
+
+        def make_request():
+            c = APIClient()
+            c.force_authenticate(user=user)
+            res = c.post('/api/v1/inventory/batches/deduct/', payload, format='json')
+            connection.close()
+            return res.status_code, res.data.get('idempotent_replay')
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            f1 = executor.submit(make_request)
+            f2 = executor.submit(make_request)
+            r1 = f1.result()
+            r2 = f2.result()
+
+        # Both requests return 200 OK
+        self.assertEqual(r1[0], 200)
+        self.assertEqual(r2[0], 200)
+
+        # Batch was only deducted 4 units (not 8)
+        batch.refresh_from_db()
+        self.assertEqual(batch.quantity, Decimal("21"))
+
+        # Exactly 1 transaction created
+        txns = StockTransaction.objects.filter(organization=org, external_id="CONC-REPLAY-999")
+        self.assertEqual(txns.count(), 1)
+

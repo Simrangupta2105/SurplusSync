@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from decimal import Decimal
 from django.utils import timezone
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Sum, F, DecimalField, Q, Case, When, Value, Count
 from django.db.models.functions import Coalesce
 from rest_framework import viewsets, permissions, status
@@ -10,6 +10,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+
+from .services import (
+    resolve_product,
+    acquire_external_id_lock,
+    deduct_product_fefo,
+    InsufficientStockError,
+)
+
 
 from .authentication import POSApiKeyUser
 from .models import (
@@ -146,24 +154,29 @@ class BatchViewSet(TenantFilteredModelViewSet):
         FEFO Stock Deduction endpoint (First-Expired, First-Out).
         Accepts JWT or Api-Key authentication.
         Deducts from ACTIVE, non-expired batches using row-level locking.
+        Resolves product by exactly one of: product (id), barcode, or sku.
+        Supports idempotency via external_id.
         """
         org = self._get_tenant_org()
         if not org:
             return Response({'error': 'Organization context not found.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        product_id = request.data.get('product')
+        product_val = request.data.get('product')
+        barcode_val = request.data.get('barcode')
+        sku_val = request.data.get('sku')
         quantity_val = request.data.get('quantity')
         reason = request.data.get('reason', '')
         txn_type = (request.data.get('txn_type') or 'SOLD').strip().upper()
+        external_id = str(request.data.get('external_id') or '').strip()
+
+        if len(external_id) > 100:
+            return Response({'error': 'external_id must be 100 characters or fewer.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if txn_type not in ['SOLD', 'DISCARDED', 'WASTED']:
             return Response(
                 {'error': "Invalid txn_type. Must be 'SOLD' or 'DISCARDED'."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        if not product_id:
-            return Response({'error': 'Product ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             req_qty = Decimal(str(quantity_val))
@@ -172,78 +185,86 @@ class BatchViewSet(TenantFilteredModelViewSet):
         except (ValueError, TypeError):
             return Response({'error': 'Quantity must be a positive number.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Ensure product belongs to the caller's organization
-        product = Product.objects.filter(id=product_id, organization=org).first()
-        if not product:
-            return Response(
-                {'error': 'Product not found or does not belong to your organization.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # Resolve product within caller's organization
+        product, err_data, err_status = resolve_product(
+            organization=org,
+            product=product_val,
+            barcode=barcode_val,
+            sku=sku_val
+        )
+        if err_data:
+            return Response(err_data, status=err_status)
 
-        today = date.today()
+        is_pos = isinstance(request.user, POSApiKeyUser) or (hasattr(request, 'auth') and hasattr(request.auth, 'org_type'))
+        source = "POS" if is_pos else "MANUAL"
+        user = request.user if (request.user and request.user.is_authenticated and not getattr(request.user, 'is_anonymous', False) and hasattr(request.user, 'pk') and request.user.pk) else None
 
-        with transaction.atomic():
-            # Lock the product's ACTIVE, non-expired batches for caller org ordered by expiry_date then received_date (FEFO)
-            batches = list(
-                Batch.objects.select_for_update().filter(
+        def _build_replay_response(txns):
+            tot = sum(t.quantity for t in txns)
+            tot_str = str(tot).rstrip('0').rstrip('.') if '.' in str(tot) else str(tot)
+            return {
+                'message': 'Stock deducted successfully.',
+                'product_id': txns[0].batch.product_id,
+                'total_deducted': tot_str,
+                'deductions': [
+                    {
+                        'batch_id': t.batch.id,
+                        'batch_code': t.batch.batch_code,
+                        'deducted_quantity': str(t.quantity).rstrip('0').rstrip('.') if '.' in str(t.quantity) else str(t.quantity),
+                        'remaining_batch_quantity': str(t.batch.quantity).rstrip('0').rstrip('.') if '.' in str(t.batch.quantity) else str(t.batch.quantity),
+                        'status': t.batch.status
+                    }
+                    for t in txns
+                ],
+                'idempotent_replay': True
+            }
+
+        try:
+            with transaction.atomic():
+                if external_id:
+                    acquire_external_id_lock(org.id, external_id)
+                    existing_txns = list(
+                        StockTransaction.objects.filter(
+                            organization=org, external_id=external_id
+                        ).select_related('batch').order_by('id')
+                    )
+                    if existing_txns:
+                        return Response(_build_replay_response(existing_txns), status=status.HTTP_200_OK)
+
+                deductions = deduct_product_fefo(
                     organization=org,
                     product=product,
-                    status=Batch.Status.ACTIVE,
-                    expiry_date__gte=today,
-                    quantity__gt=0
-                ).order_by('expiry_date', 'received_date')
-            )
-
-            total_available = sum((b.quantity for b in batches), Decimal('0'))
-            if total_available < req_qty:
-                return Response({
-                    'error': 'Insufficient available stock for deduction.',
-                    'available_quantity': str(total_available),
-                    'requested_quantity': str(req_qty)
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            remaining_to_deduct = req_qty
-            deductions = []
-
-            is_pos = isinstance(request.user, POSApiKeyUser) or (hasattr(request, 'auth') and hasattr(request.auth, 'org_type'))
-            source = "POS" if is_pos else "MANUAL"
-            user = request.user if (request.user and request.user.is_authenticated and not getattr(request.user, 'is_anonymous', False) and hasattr(request.user, 'pk') and request.user.pk) else None
-
-            for batch in batches:
-                if remaining_to_deduct <= 0:
-                    break
-
-                take = min(batch.quantity, remaining_to_deduct)
-                batch.quantity -= take
-                if batch.quantity == 0:
-                    batch.status = Batch.Status.DEPLETED
-                batch.save(update_fields=['quantity', 'status'])
-
-                StockTransaction.objects.create(
-                    organization=org,
-                    batch=batch,
+                    quantity=req_qty,
                     txn_type=txn_type,
-                    quantity=take,
                     reason=reason,
                     source=source,
-                    created_by=user
+                    user=user,
+                    external_id=external_id
                 )
 
-                deductions.append({
-                    'batch_id': batch.id,
-                    'batch_code': batch.batch_code,
-                    'deducted_quantity': str(take),
-                    'remaining_batch_quantity': str(batch.quantity),
-                    'status': batch.status
-                })
-
-                remaining_to_deduct -= take
+        except InsufficientStockError as exc:
+            return Response({
+                'error': str(exc),
+                'available_quantity': str(exc.available_quantity),
+                'requested_quantity': str(exc.requested_quantity)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError:
+            if external_id:
+                existing_txns = list(
+                    StockTransaction.objects.filter(
+                        organization=org, external_id=external_id
+                    ).select_related('batch').order_by('id')
+                )
+                if existing_txns:
+                    return Response(_build_replay_response(existing_txns), status=status.HTTP_200_OK)
+            raise
 
         return Response({
             'message': 'Stock deducted successfully.',
             'product_id': product.id,
             'total_deducted': str(req_qty),
-            'deductions': deductions
+            'deductions': deductions,
+            'idempotent_replay': False
         }, status=status.HTTP_200_OK)
 
 

@@ -5,8 +5,145 @@ import urllib.parse
 import urllib.request
 from datetime import date
 from decimal import Decimal
-from django.db import transaction
+from django.db import connection, transaction
 from .models import Category, StorageLocation, Product, Batch, StockTransaction, ImportJob
+
+
+class InsufficientStockError(Exception):
+    def __init__(self, message, available_quantity=Decimal('0'), requested_quantity=Decimal('0')):
+        super().__init__(message)
+        self.available_quantity = available_quantity
+        self.requested_quantity = requested_quantity
+
+
+def resolve_product(organization, product=None, barcode=None, sku=None):
+    """
+    Resolves a product within the caller's organization.
+    Accepts exactly one of product (id), barcode, or sku.
+    Returns (product, None, 200) on success.
+    Returns (None, error_dict, 400) if none or more than one given.
+    Returns (None, error_dict, 404) if not found in that organization.
+    """
+    inputs = {
+        'product': product,
+        'barcode': barcode,
+        'sku': sku,
+    }
+    provided = {
+        k: v for k, v in inputs.items()
+        if v is not None and str(v).strip() != ""
+    }
+
+    if len(provided) == 0:
+        return None, {'error': 'Exactly one of product, barcode, or sku must be provided.'}, 400
+
+    if len(provided) > 1:
+        return None, {'error': 'Ambiguous input: provide exactly one of product, barcode, or sku.'}, 400
+
+    key, val = next(iter(provided.items()))
+
+    if key == 'product':
+        try:
+            prod = Product.objects.filter(id=val, organization=organization).first()
+        except (ValueError, TypeError):
+            prod = None
+    elif key == 'barcode':
+        prod = Product.objects.filter(barcode=str(val).strip(), organization=organization).first()
+    elif key == 'sku':
+        prod = Product.objects.filter(sku=str(val).strip(), organization=organization).first()
+    else:
+        prod = None
+
+    if not prod:
+        return None, {'error': f'Product not found in your organization.'}, 404
+
+    return prod, None, 200
+
+
+def acquire_external_id_lock(organization_id, external_id: str):
+    """
+    Acquires a PostgreSQL transaction-scoped advisory lock based on (organization_id, external_id).
+    Prevents concurrent deduction requests with the same external_id from executing in parallel.
+    No-op on non-PostgreSQL databases (e.g., SQLite).
+    """
+    if connection.vendor == 'postgresql' and external_id:
+        lock_str = f"{organization_id}:{external_id}"
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_xact_lock(hashtext(%s));", [lock_str])
+
+
+def deduct_product_fefo(
+    organization,
+    product,
+    quantity: Decimal,
+    txn_type: str = "SOLD",
+    reason: str = "",
+    source: str = "MANUAL",
+    user=None,
+    external_id: str = ""
+):
+    """
+    Deducts stock for a product within organization using FEFO (First-Expired, First-Out).
+    Batches are locked with select_for_update().
+    Must be called inside transaction.atomic().
+    Returns list of deduction dictionaries.
+    Raises InsufficientStockError if total available stock is insufficient.
+    """
+    today = date.today()
+
+    batches = list(
+        Batch.objects.select_for_update().filter(
+            organization=organization,
+            product=product,
+            status=Batch.Status.ACTIVE,
+            expiry_date__gte=today,
+            quantity__gt=0
+        ).order_by('expiry_date', 'received_date', 'id')
+    )
+
+    total_available = sum((b.quantity for b in batches), Decimal('0'))
+    if total_available < quantity:
+        raise InsufficientStockError(
+            'Insufficient available stock for deduction.',
+            available_quantity=total_available,
+            requested_quantity=quantity,
+        )
+
+    remaining_to_deduct = quantity
+    deductions = []
+
+    for batch in batches:
+        if remaining_to_deduct <= 0:
+            break
+
+        take = min(batch.quantity, remaining_to_deduct)
+        batch.quantity -= take
+        if batch.quantity == 0:
+            batch.status = Batch.Status.DEPLETED
+        batch.save(update_fields=['quantity', 'status'])
+
+        StockTransaction.objects.create(
+            organization=organization,
+            batch=batch,
+            txn_type=txn_type,
+            quantity=take,
+            reason=reason,
+            source=source,
+            created_by=user,
+            external_id=external_id or ""
+        )
+
+        deductions.append({
+            'batch_id': batch.id,
+            'batch_code': batch.batch_code,
+            'deducted_quantity': str(take),
+            'remaining_batch_quantity': str(batch.quantity),
+            'status': batch.status
+        })
+
+        remaining_to_deduct -= take
+
+    return deductions
 
 
 def process_import_job(import_job: ImportJob):

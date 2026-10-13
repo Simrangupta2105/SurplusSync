@@ -101,6 +101,7 @@ class StockTransaction(models.Model):
         RECEIVED = "RECEIVED"
         SOLD = "SOLD"
         WASTED = "WASTED"
+        DISCARDED = "DISCARDED"
         DONATED = "DONATED"
         ADJUSTMENT = "ADJUSTMENT"
 
@@ -112,9 +113,17 @@ class StockTransaction(models.Model):
     source = models.CharField(max_length=20, default="MANUAL")  # MANUAL / CSV / POS / SCAN
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    external_id = models.CharField(max_length=100, blank=True, default="", db_index=True)
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "external_id", "batch"],
+                name="uniq_org_external_id_batch",
+                condition=~models.Q(external_id=""),
+            ),
+        ]
 
     def __str__(self):
         return f"{self.txn_type} {self.quantity} - {self.batch}"
