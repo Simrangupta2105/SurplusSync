@@ -1,0 +1,3 @@
+"""
+SurplusSync core application package.
+"""

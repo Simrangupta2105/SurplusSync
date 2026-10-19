@@ -1,0 +1,111 @@
+/* ==========================================================================
+   SurplusSync Design Tokens
+   Single source of truth for the entire design system and theme variables.
+   Linear / Vercel / Stripe quality dark-first design system.
+   ========================================================================== */
+
+:root {
+  /* Common Radii & Dimensions */
+  --radius-card: 12px;
+  --radius-control: 8px;
+  --radius-badge: 6px;
+  --max-content-width: 1280px;
+
+  /* Transitions & Animation speeds */
+  --transition-speed: 180ms;
+  --transition-timing: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition: all var(--transition-speed) var(--transition-timing);
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Semantic Status Colors (Used strictly for badges, status indicators, charts) */
+  --color-success: #34D399;
+  --color-success-bg: rgba(52, 211, 153, 0.12);
+  --color-success-border: rgba(52, 211, 153, 0.25);
+  --color-success-text: #065F46;
+
+  --color-warning: #FBBF24;
+  --color-warning-bg: rgba(251, 191, 36, 0.12);
+  --color-warning-border: rgba(251, 191, 36, 0.25);
+  --color-warning-text: #92400E;
+
+  --color-danger: #F43F5E;
+  --color-danger-bg: rgba(244, 63, 94, 0.12);
+  --color-danger-border: rgba(244, 63, 94, 0.25);
+  --color-danger-text: #9F1239;
+
+  --color-info: #38BDF8;
+  --color-info-bg: rgba(56, 189, 248, 0.12);
+  --color-info-border: rgba(56, 189, 248, 0.25);
+  --color-info-text: #075985;
+
+  /* --- LIGHT THEME TOKENS (Warm Stone) --- */
+  --bg: #F5F4F1;
+  --surface: #FFFFFF;
+  --surface-2: #EDEAE4;
+  --border: #E4E1DA;
+  --text: #15171F;
+  --muted: #5E6472;
+  --primary: #5B49E6;
+  --primary-hover: #4C3AD5;
+  --primary-foreground: #FFFFFF;
+  --primary-glow: rgba(91, 73, 230, 0.12);
+  --accent: #FF8A4C;
+  --accent-hover: #F27838;
+  --accent-foreground: #FFFFFF;
+  --ring: #5B49E6;
+
+  /* Tailwind / Shadcn UI mappings */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --muted-foreground: var(--muted);
+  --input: var(--border);
+  --destructive: var(--color-danger);
+  --destructive-foreground: #FFFFFF;
+}
+
+/* --- DARK THEME TOKENS (Default) --- */
+.dark, :root[class~="dark"] {
+  --bg: #0A0E17;
+  --surface: #111726;
+  --surface-2: #172033;
+  --border: #243049;
+  --text: #E6EAF2;
+  --muted: #8A94A8;
+  --primary: #6D5BF6;
+  --primary-hover: #7E6FF7;
+  --primary-foreground: #FFFFFF;
+  --primary-glow: rgba(109, 91, 246, 0.22);
+  --accent: #FF8A4C;
+  --accent-hover: #FFA06E;
+  --accent-foreground: #0A0E17;
+  --ring: #6D5BF6;
+
+  /* Dark mode semantic badge text */
+  --color-success-text: #34D399;
+  --color-warning-text: #FBBF24;
+  --color-danger-text: #F43F5E;
+  --color-info-text: #38BDF8;
+
+  /* Tailwind / Shadcn UI mappings */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --muted-foreground: var(--muted);
+  --input: var(--border);
+  --destructive: var(--color-danger);
+  --destructive-foreground: #FFFFFF;
+}
