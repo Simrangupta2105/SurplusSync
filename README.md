@@ -1,4 +1,4 @@
-# SurplusSync — Enterprise Surplus Food Logistics & Waste Prevention
+# SurplusSync : Enterprise Surplus Food Logistics & Waste Prevention
 
 SurplusSync is an enterprise food surplus redistribution and inventory conservation platform built for hotels, restaurants, supermarket chains, and food redistribution NGO networks. It implements strict First-Expired-First-Out (FEFO) batch tracking, automated spoilage horizon alerts, barcode scanning, CSV manifest ingestion, background task processing, and secure logistics claiming workflows.
 
