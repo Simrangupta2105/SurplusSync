@@ -16,6 +16,8 @@ import { Button } from './components/ui/Button';
 import { Skeleton } from './components/ui/Skeleton';
 
 // Code-split / Lazy-loaded routes for optimal bundle performance
+const PublicHomePage = React.lazy(() => import('./pages/PublicHomePage').then(m => ({ default: m.PublicHomePage })));
+const AuthenticatedHomePage = React.lazy(() => import('./pages/AuthenticatedHomePage').then(m => ({ default: m.AuthenticatedHomePage })));
 const LoginPage = React.lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const ForbiddenPage = React.lazy(() => import('./pages/ForbiddenPage').then(m => ({ default: m.ForbiddenPage })));
@@ -26,14 +28,19 @@ const BusinessInventoryPage = React.lazy(() => import('./pages/business/Business
 const BusinessScanPage = React.lazy(() => import('./pages/business/BusinessScanPage').then(m => ({ default: m.BusinessScanPage })));
 const BusinessAlertsPage = React.lazy(() => import('./pages/business/BusinessAlertsPage').then(m => ({ default: m.BusinessAlertsPage })));
 const BusinessImportPage = React.lazy(() => import('./pages/business/BusinessImportPage').then(m => ({ default: m.BusinessImportPage })));
-const BusinessDonationsPage = React.lazy(() => import('./pages/business/BusinessDonationsPage').then(m => ({ default: m.BusinessDonationsPage })));
-const BusinessImpactPage = React.lazy(() => import('./pages/business/BusinessImpactPage').then(m => ({ default: m.BusinessImpactPage })));
 const BusinessSettingsPage = React.lazy(() => import('./pages/business/BusinessSettingsPage').then(m => ({ default: m.BusinessSettingsPage })));
 const BusinessPOSSimulatorPage = React.lazy(() => import('./pages/business/BusinessPOSSimulatorPage').then(m => ({ default: m.BusinessPOSSimulatorPage })));
+const BusinessPurchasePlannerPage = React.lazy(() => import('./pages/business/BusinessPurchasePlannerPage').then(m => ({ default: m.BusinessPurchasePlannerPage })));
+const BusinessAiInsightsPage = React.lazy(() => import('./pages/business/BusinessAiInsightsPage').then(m => ({ default: m.BusinessAiInsightsPage })));
+const DonationRequestsPage = React.lazy(() => import('./pages/DonationRequestsPage').then(m => ({ default: m.DonationRequestsPage })));
+const SurplusMarketplacePage = React.lazy(() => import('./pages/SurplusMarketplacePage').then(m => ({ default: m.SurplusMarketplacePage })));
+const NgoRequirementsPage = React.lazy(() => import('./pages/NgoRequirementsPage').then(m => ({ default: m.NgoRequirementsPage })));
+const PickupSchedulePage = React.lazy(() => import('./pages/PickupSchedulePage').then(m => ({ default: m.PickupSchedulePage })));
+const ImpactAnalyticsPage = React.lazy(() => import('./pages/ImpactAnalyticsPage').then(m => ({ default: m.ImpactAnalyticsPage })));
+const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const NgoDashboardPage = React.lazy(() => import('./pages/ngo/NgoDashboardPage').then(m => ({ default: m.NgoDashboardPage })));
 const NgoFoodFeedPage = React.lazy(() => import('./pages/ngo/NgoFoodFeedPage').then(m => ({ default: m.NgoFoodFeedPage })));
 const NgoClaimsPage = React.lazy(() => import('./pages/ngo/NgoClaimsPage').then(m => ({ default: m.NgoClaimsPage })));
-const NgoImpactPage = React.lazy(() => import('./pages/ngo/NgoImpactPage').then(m => ({ default: m.NgoImpactPage })));
 const NgoSettingsPage = React.lazy(() => import('./pages/ngo/NgoSettingsPage').then(m => ({ default: m.NgoSettingsPage })));
 const NgoProfilePage = React.lazy(() => import('./pages/ngo/NgoProfilePage').then(m => ({ default: m.NgoProfilePage })));
 const AdminOverviewPage = React.lazy(() => import('./pages/admin/AdminOverviewPage').then(m => ({ default: m.AdminOverviewPage })));
@@ -85,22 +92,24 @@ export const App: React.FC = () => {
     });
   }, []);
 
-  // Navigation & Shell State: Direct URL open without hash always defaults directly to the login page
+  // Navigation & Shell State: Direct URL open without hash defaults to landing page for logged-out visitors
   const [rawPath, setRawPath] = useState<string>(() => {
     const hash = window.location.hash.replace('#', '').trim();
     if (hash) {
       if (hash === 'ngo/profile' || hash === '/ngo/profile') return 'profile';
+      if (hash === '/' || hash === '') return '';
       return hash;
     }
     const pathname = window.location.pathname.replace(/^\//, '').trim();
     if (pathname === 'ngo/profile' || pathname === 'profile') return 'profile';
+    if (pathname === '/' || pathname === '') return '';
     const params = new URLSearchParams(window.location.search);
     const page = params.get('page');
     if (page) {
       if (page === 'ngo/profile' || page === '/ngo/profile') return 'profile';
       return page;
     }
-    return 'login';
+    return '';
   });
 
   const setActivePath = useCallback((path: string) => {
@@ -115,7 +124,7 @@ export const App: React.FC = () => {
       if (hash === 'ngo/profile' || hash === '/ngo/profile') {
         setRawPath('profile');
       } else {
-        setRawPath(hash || 'login');
+        setRawPath(hash || '');
       }
     };
     window.addEventListener('hashchange', handleHash);
@@ -214,12 +223,40 @@ export const App: React.FC = () => {
   }, [isDemo, rawPath, queryClient, refetchUser]);
 
   // Route Authentication Derivation:
-  // In live mode, unauthenticated access redirects to 'login'.
-  // In demo mode, users are authenticated by default into the demo persona.
+  // - In live mode, unauthenticated access:
+  //     - '' or '/' or 'public' or 'landing' or 'public-home' -> 'public-home' (shows PublicHomePage)
+  //     - 'register' -> 'register'
+  //     - all other paths -> 'login'
+  // - In demo mode (or authenticated live mode):
+  //     - 'public' or 'landing' or 'public-home' -> 'public-home' (allows previewing landing page)
+  //     - '' or '/' or 'login' -> 'home' (redirects authenticated users to home)
+  //     - all other paths -> rawPath
   const isLiveUnauthenticated = !isDemo && (!isAuthenticated() || isUserError);
-  const activePath = (rawPath === 'login' || rawPath === 'register')
-    ? rawPath
-    : (isLiveUnauthenticated ? 'login' : rawPath);
+  let activePath: string;
+  if (isLiveUnauthenticated) {
+    if (
+      rawPath === '' ||
+      rawPath === '/' ||
+      rawPath === 'public' ||
+      rawPath === 'landing' ||
+      rawPath === 'public-home'
+    ) {
+      activePath = 'public-home';
+    } else if (rawPath === 'register') {
+      activePath = 'register';
+    } else {
+      activePath = 'login';
+    }
+  } else {
+    // Authenticated session (Live or Demo)
+    if (rawPath === 'public' || rawPath === 'landing' || rawPath === 'public-home') {
+      activePath = 'public-home';
+    } else if (rawPath === '' || rawPath === '/' || rawPath === 'login') {
+      activePath = 'home';
+    } else {
+      activePath = rawPath;
+    }
+  }
 
   const isPlatformAdmin = Boolean(currentUser?.is_platform_admin);
   const { data: adminStats } = useAdminStats({ enabled: isPlatformAdmin });
@@ -238,6 +275,7 @@ export const App: React.FC = () => {
   }, []);
 
   const refreshQueries = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.homeAuth });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboardSummary });
     queryClient.invalidateQueries({ queryKey: ['batches'] });
     queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -345,13 +383,28 @@ export const App: React.FC = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         triggerToast('Signed out of session');
-        setActivePath('login');
+        setActivePath('');
       },
       onError: () => {
-        setActivePath('login');
+        setActivePath('');
       },
     });
   };
+
+  // Standalone Public Home Landing Page
+  if (activePath === 'public-home') {
+    return (
+      <React.Suspense fallback={<PageLoadingFallback />}>
+        <PublicHomePage
+          onNavigateToLogin={() => setActivePath('login')}
+          onNavigateToRegister={(role) => setActivePath(role ? `register?role=${role}` : 'register')}
+          isDark={isDark}
+          onToggleDark={toggleDarkMode}
+          isDemo={isDemo}
+        />
+      </React.Suspense>
+    );
+  }
 
   // Auth Standalone Pages
   if (activePath === 'login') {
@@ -364,15 +417,14 @@ export const App: React.FC = () => {
             if (userObj?.is_platform_admin) {
               setActivePath('admin/overview');
             } else {
-              setActivePath('dashboard');
+              setActivePath('home');
             }
           }}
           onNavigateToRegister={() => setActivePath('register')}
-
-          onBackToPlatform={() => setActivePath('dashboard')}
+          onBackToPlatform={() => setActivePath(isLiveUnauthenticated ? '' : 'home')}
           onNavigate={(path) => {
             if (path === 'register') setActivePath('register');
-            else setActivePath('dashboard');
+            else setActivePath(isLiveUnauthenticated ? '' : 'home');
           }}
           isDark={isDark}
           onToggleDark={toggleDarkMode}
@@ -387,13 +439,13 @@ export const App: React.FC = () => {
         <RegisterPage
           onRegisterSuccess={() => {
             refetchUser();
-            setActivePath('dashboard');
+            setActivePath('home');
           }}
           onNavigateToLogin={() => setActivePath('login')}
-          onBackToPlatform={() => setActivePath('dashboard')}
+          onBackToPlatform={() => setActivePath(isLiveUnauthenticated ? '' : 'home')}
           onNavigate={(path) => {
             if (path === 'login') setActivePath('login');
-            else setActivePath('dashboard');
+            else setActivePath(isLiveUnauthenticated ? '' : 'home');
           }}
           isDark={isDark}
           onToggleDark={toggleDarkMode}
@@ -408,15 +460,25 @@ export const App: React.FC = () => {
 
   // Route Titles
   const pageTitles: Record<string, string> = {
+    home: 'Home',
     dashboard: 'Dashboard',
+    marketplace: 'Surplus Food Marketplace',
+    'surplus-marketplace': 'Surplus Food Marketplace',
+    requirements: 'NGO Food Requirements',
+    'ngo/requirements': 'NGO Food Requirements',
+    'ngo-requirements': 'NGO Food Requirements',
+    donations: 'Donation Requests & Rescues',
+    'donation-requests': 'Donation Requests & Rescues',
+    schedule: 'Pickup & Logistics Schedule',
+    'pickup-schedule': 'Pickup & Logistics Schedule',
+    impact: 'Environmental & Social Impact (ESG)',
+    notifications: 'Notifications & Alerts Center',
     inventory: 'Inventory & Batches',
     scan: 'Barcode Scanner',
     alerts: 'Stock & Spoilage Alerts',
     import: 'CSV Import Manifest',
-    donations: 'Donations & NGO Rescues',
     feed: 'Live Surplus Food Feed',
     claims: 'My Food Rescue Claims',
-    impact: 'Environmental & Social Impact',
     settings: 'Organization Settings',
     profile: 'NGO Profile & Donor Ratings',
     'ngo/profile': 'NGO Profile & Donor Ratings',
@@ -429,6 +491,12 @@ export const App: React.FC = () => {
     'admin/settings': 'Platform Settings',
     'business/pos-simulator': 'POS Cash Register Simulator',
     'pos-simulator': 'POS Cash Register Simulator',
+    'business/ai/planner': 'Purchase Planner (AI)',
+    'ai/planner': 'Purchase Planner (AI)',
+    planner: 'Purchase Planner (AI)',
+    'business/ai/insights': 'Benchmark Waste Insights',
+    'ai/insights': 'Benchmark Waste Insights',
+    insights: 'Benchmark Waste Insights',
   };
 
   // Business Only Routes Guard
@@ -436,9 +504,14 @@ export const App: React.FC = () => {
     'inventory',
     'scan',
     'import',
-    'donations',
     'business/pos-simulator',
     'pos-simulator',
+    'business/ai/planner',
+    'ai/planner',
+    'planner',
+    'business/ai/insights',
+    'ai/insights',
+    'insights',
   ].includes(activePath);
 
   // Render Shell Content with Route Guards
@@ -491,8 +564,15 @@ export const App: React.FC = () => {
     }
 
 
-    // 1. Pending Verification Screen for Unverified NGOs
-    if (orgType === 'NGO' && !isVerified && activePath !== 'profile' && activePath !== 'ngo/profile' && activePath !== 'settings') {
+    // 1. Pending Verification Screen for Unverified NGOs (Home, Profile, Settings are accessible)
+    if (
+      orgType === 'NGO' &&
+      !isVerified &&
+      activePath !== 'home' &&
+      activePath !== 'profile' &&
+      activePath !== 'ngo/profile' &&
+      activePath !== 'settings'
+    ) {
       return (
         <PendingVerificationPage
           organizationName={orgName}
@@ -512,7 +592,18 @@ export const App: React.FC = () => {
       );
     }
 
-    // 3. Route: Dashboard
+    // 3. Route: Home
+    if (activePath === 'home') {
+      return (
+        <AuthenticatedHomePage
+          onNavigate={(path: string) => setActivePath(path)}
+          onOpenAddBatch={() => setIsSheetOpen(true)}
+          onTriggerToast={triggerToast}
+        />
+      );
+    }
+
+    // 4. Route: Dashboard
     if (activePath === 'dashboard') {
       if (orgType === 'NGO') {
         return (
@@ -572,23 +663,64 @@ export const App: React.FC = () => {
       );
     }
 
-    // 8. Route: Donations & Surplus Listings
-    if (activePath === 'donations') {
+    // 8. Route: Surplus Marketplace
+    if (activePath === 'marketplace' || activePath === 'surplus-marketplace') {
       return (
-        <BusinessDonationsPage
+        <SurplusMarketplacePage
           onTriggerToast={triggerToast}
           onNavigate={(path: string) => setActivePath(path)}
         />
       );
     }
 
-    // 9. Route: Environmental & Social Impact
-    if (activePath === 'impact') {
-      if (orgType === 'NGO') {
-        return <NgoImpactPage onTriggerToast={triggerToast} />;
-      }
+    // 9. Route: Donation Requests & Lifecycle Management
+    if (activePath === 'donations' || activePath === 'donation-requests') {
       return (
-        <BusinessImpactPage
+        <DonationRequestsPage
+          onTriggerToast={triggerToast}
+          onNavigate={(path: string) => setActivePath(path)}
+        />
+      );
+    }
+
+    // 10. Route: NGO Food Requirements
+    if (
+      activePath === 'requirements' ||
+      activePath === 'ngo/requirements' ||
+      activePath === 'ngo-requirements'
+    ) {
+      return (
+        <NgoRequirementsPage
+          onTriggerToast={triggerToast}
+          onNavigate={(path: string) => setActivePath(path)}
+        />
+      );
+    }
+
+    // 11. Route: Pickup & Logistics Schedule
+    if (activePath === 'schedule' || activePath === 'pickup-schedule') {
+      return (
+        <PickupSchedulePage
+          onTriggerToast={triggerToast}
+          onNavigate={(path: string) => setActivePath(path)}
+        />
+      );
+    }
+
+    // 12. Route: Environmental & Social Impact (ESG)
+    if (activePath === 'impact') {
+      return (
+        <ImpactAnalyticsPage
+          onTriggerToast={triggerToast}
+          onNavigate={(path: string) => setActivePath(path)}
+        />
+      );
+    }
+
+    // 14. Route: Notifications Center
+    if (activePath === 'notifications') {
+      return (
+        <NotificationsPage
           onTriggerToast={triggerToast}
           onNavigate={(path: string) => setActivePath(path)}
         />
@@ -624,6 +756,21 @@ export const App: React.FC = () => {
           onNavigate={(path: string) => setActivePath(path)}
         />
       );
+    }
+
+    // Route: AI Purchase Planner (Business)
+    if (activePath === 'business/ai/planner' || activePath === 'ai/planner' || activePath === 'planner') {
+      return (
+        <BusinessPurchasePlannerPage
+          onNavigate={(path: string) => setActivePath(path)}
+          onTriggerToast={triggerToast}
+        />
+      );
+    }
+
+    // Route: AI Benchmark Waste Insights (Business)
+    if (activePath === 'business/ai/insights' || activePath === 'ai/insights' || activePath === 'insights') {
+      return <BusinessAiInsightsPage />;
     }
 
     // 11. Route: Food Feed (NGO)

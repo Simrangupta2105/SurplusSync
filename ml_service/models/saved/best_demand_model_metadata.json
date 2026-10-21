@@ -1,0 +1,60 @@
+{
+  "model_name": "Poisson_Regression",
+  "model_type": "<class 'sklearn.pipeline.Pipeline'>",
+  "target": "Daily_Demand",
+  "features": [
+    "Business_Type",
+    "Food_Category",
+    "Promotion",
+    "Weather",
+    "day_of_week",
+    "month",
+    "Shelf_Life_Days",
+    "Storage_Temperature"
+  ],
+  "random_state": 42,
+  "train_date_range": [
+    "2025-01-01",
+    "2025-10-31"
+  ],
+  "val_date_range": [
+    "2025-11-01",
+    "2025-11-30"
+  ],
+  "test_date_range": [
+    "2025-12-01",
+    "2025-12-31"
+  ],
+  "train_rows": 6642,
+  "val_rows": 638,
+  "test_rows": 657,
+  "test_metrics": {
+    "wape": 0.12237718909406638,
+    "mae": 12.919454848652123,
+    "rmse": 17.632802348080382,
+    "bias": -0.9735241280949606,
+    "coverage": 0.8112633181126332,
+    "coverage_90": 0.8949771689497716
+  },
+  "val_metrics": {
+    "wape": 0.12113070231894614,
+    "mae": 12.797705518042138,
+    "rmse": 17.149659872438697,
+    "bias": 0.46902911616195964
+  },
+  "residual_quantiles": {
+    "0.8": [
+      -20.216826807190422,
+      20.866009107632856
+    ],
+    "0.9": [
+      -27.338808207955733,
+      25.998148727172524
+    ]
+  },
+  "trained_at": "2026-10-20T20:55:57.143243+00:00",
+  "python_version": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "scikit_learn_version": "3.0.6",
+  "lightgbm_version": "4.7.0"
+}

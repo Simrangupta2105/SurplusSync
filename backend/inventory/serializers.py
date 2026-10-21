@@ -58,6 +58,7 @@ class BatchSerializer(serializers.ModelSerializer):
     unit = serializers.CharField(source='product.unit', read_only=True, default='kg')
     unit_cost = serializers.DecimalField(source='product.unit_cost', max_digits=10, decimal_places=2, read_only=True, allow_null=True)
     location_name = serializers.CharField(source='location.name', read_only=True, default='')
+    sellable_quantity = serializers.DecimalField(max_digits=12, decimal_places=3, read_only=True)
 
     class Meta:
         model = Batch

@@ -1,0 +1,5 @@
+policy,service_level,total_purchase_units,over_purchase_units,over_purchase_pct_reduction,stockout_rows,stockout_pct_of_rows,lost_sales_units,counterfactual_waste_estimate,counterfactual_waste_reduction_pct,shelf_cap_applied_count
+Actual_Operator_History,,79843.0,15668.0,0.0,236,35.92,5185.0,4157.0,0.0,0
+AI_Reorder_SL_80,0.8,73803.0,8885.0,43.29,192,29.22,4442.0,2257.8,45.69,96
+AI_Reorder_SL_90,0.9,77924.0,12455.0,20.51,152,23.14,3891.0,3164.4,23.88,102
+AI_Reorder_SL_95,0.95,81285.0,15520.0,0.94,140,21.31,3595.0,3940.0,5.22,111

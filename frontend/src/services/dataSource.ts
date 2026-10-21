@@ -36,6 +36,19 @@ import type {
   PlatformStats,
   IssueStatus,
   IssuePriority,
+  DonationRequest,
+  SurplusListingItem,
+  NGORequirementItem,
+  PickupScheduleItem,
+  ImpactAnalytics,
+  PublicImpactMetrics,
+  MarketplaceNotification,
+  MatchingResultItem,
+  PublicHomeTotals,
+  HomeData,
+  PlanPredictionRequest,
+  PlanPredictionResponse,
+  DatasetInsightsResponse,
 } from '../types';
 
 export interface RegisterPayload {
@@ -176,5 +189,71 @@ export interface DataSource {
   // Issues (Tenant reporting)
   reportIssue(payload: IssueReportPayload): Promise<AdminIssue>;
   getMyIssues(): Promise<AdminIssue[]>;
+
+  // Redistribution: Donation Requests Lifecycle (Task 2 & 4)
+  getDonationRequests(filters?: { status?: string; search?: string }): Promise<DonationRequest[]>;
+  getDonationRequest(codeOrId: string | number): Promise<DonationRequest>;
+  createDonationRequest(payload: {
+    listing?: number;
+    item_name?: string;
+    requested_quantity: number | string;
+    requested_pickup_time: string;
+    pickup_notes?: string;
+  }): Promise<DonationRequest>;
+  approveDonationRequest(codeOrId: string | number, scheduledPickupTime?: string): Promise<DonationRequest>;
+  confirmScheduleDonationRequest(codeOrId: string | number, scheduledPickupTime: string, notes?: string): Promise<DonationRequest>;
+  rejectDonationRequest(codeOrId: string | number, reason: string): Promise<DonationRequest>;
+  cancelDonationRequest(codeOrId: string | number, reason?: string): Promise<DonationRequest>;
+  setInTransitDonationRequest(
+    codeOrId: string | number,
+    payload?: { driver_name?: string; driver_phone?: string; vehicle_plate?: string }
+  ): Promise<DonationRequest>;
+  collectDonationRequest(codeOrId: string | number, notes?: string): Promise<DonationRequest>;
+  confirmReceiptDonationRequest(codeOrId: string | number, notes?: string): Promise<DonationRequest>;
+  reportNoShowDonationRequest(codeOrId: string | number, notes?: string): Promise<DonationRequest>;
+
+  // Redistribution: Surplus Marketplace
+  getSurplusListings(filters?: {
+    status?: string;
+    category?: string;
+    search?: string;
+    mine?: boolean;
+    is_cooked?: boolean;
+  }): Promise<SurplusListingItem[]>;
+  getSurplusListing(id: number): Promise<SurplusListingItem>;
+  createSurplusListing(payload: Partial<SurplusListingItem>): Promise<SurplusListingItem>;
+  updateSurplusListing(id: number, payload: Partial<SurplusListingItem>): Promise<SurplusListingItem>;
+  deleteSurplusListing(id: number): Promise<void>;
+  getListingMatches(listingId: number): Promise<{ count: number; matches: MatchingResultItem[] }>;
+  notifyListingMatches(listingId: number, requirementIds?: number[]): Promise<{ notified: number }>;
+
+  // Redistribution: NGO Requirements & Matching (Task 3 & 4)
+  getNGORequirements(filters?: { status?: string; search?: string }): Promise<NGORequirementItem[]>;
+  getNGORequirement(id: number): Promise<NGORequirementItem>;
+  createNGORequirement(payload: Partial<NGORequirementItem>): Promise<NGORequirementItem>;
+  updateNGORequirement(id: number, payload: Partial<NGORequirementItem>): Promise<NGORequirementItem>;
+  deleteNGORequirement(id: number): Promise<void>;
+  getRequirementMatches(requirementId: number): Promise<{ count: number; matches: MatchingResultItem[] }>;
+
+  // Redistribution: Pickup Schedule
+  getPickupSchedule(filters?: { date?: string; status?: string; range?: string }): Promise<PickupScheduleItem[]>;
+
+  // Redistribution: Impact Analytics & ESG Scorecard
+  getImpactAnalytics(period?: string): Promise<ImpactAnalytics>;
+  getPublicImpactMetrics(): Promise<PublicImpactMetrics>;
+
+  // Redistribution: Notifications Center
+  getMarketplaceNotifications(unreadOnly?: boolean): Promise<{ count: number; unread_count: number; results: MarketplaceNotification[] }>;
+  markMarketplaceNotificationRead(id: number): Promise<void>;
+  markAllMarketplaceNotificationsRead(): Promise<void>;
+
+  // Home API (Task B1 & B2 & B3)
+  getPublicHomeTotals(): Promise<PublicHomeTotals>;
+  getHomeData(): Promise<HomeData>;
+
+  // AI Waste Predictions & Benchmark Insights (Task 3)
+  getPlanPrediction(payload: PlanPredictionRequest): Promise<PlanPredictionResponse>;
+  getDatasetInsights(): Promise<DatasetInsightsResponse>;
 }
+
 

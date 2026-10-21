@@ -1,0 +1,7 @@
+category,evaluated_rows,actual_purchase,simulated_purchase,actual_over_purchase,simulated_over_purchase,over_purchase_reduction_pct,actual_stockouts,simulated_stockouts,stockout_change,actual_waste_units,counterfactual_waste_units,counterfactual_waste_reduction_pct
+Bakery,92,10849.0,11610.0,1981.0,2566.0,-29.53,29,10,-19,580.0,710.8,-22.55
+Dairy,98,11792.0,12118.0,1862.0,1829.0,1.77,41,18,-23,364.0,388.1,-6.63
+Fruits,118,13788.0,14542.0,2587.0,2348.0,9.24,47,18,-29,560.0,572.5,-2.24
+Meat,97,12059.0,11672.0,2347.0,1634.0,30.38,36,18,-18,560.0,418.3,25.31
+Prepared Food,121,14681.0,11442.0,2990.0,1009.0,66.25,41,74,33,1130.0,393.8,65.15
+Vegetables,131,16674.0,16540.0,3901.0,3069.0,21.33,42,14,-28,963.0,680.9,29.29

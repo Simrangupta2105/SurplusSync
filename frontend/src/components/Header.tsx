@@ -13,6 +13,7 @@ import {
   Shield,
   Database,
   ArrowRightLeft,
+  ArrowRight,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { cn } from '../lib/utils';
@@ -216,6 +217,20 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   ))
                 )}
+              </div>
+
+              <div className="p-2 border-t border-[var(--border)] bg-[var(--surface-2)]/60 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsNotifOpen(false);
+                    onNavigate?.('notifications');
+                  }}
+                  className="w-full py-1 text-xs font-semibold text-[var(--primary)] hover:underline flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  <span>Open Full Notifications Center</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           )}

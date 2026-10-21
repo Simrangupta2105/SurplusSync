@@ -157,8 +157,14 @@ class BatchViewSet(TenantFilteredModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'product', 'location', 'expiry_date']
     search_fields = ['batch_code', 'product__name', 'product__sku']
-    ordering_fields = ['expiry_date', 'received_date', 'quantity', 'created_at', 'id']
+    ordering_fields = ['expiry_date', 'received_date', 'quantity', 'reserved_quantity', 'created_at', 'id']
     ordering = ['-created_at', '-id']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.query_params.get('sellable', '').lower() in ('1', 'true', 'yes'):
+            qs = qs.sellable()
+        return qs
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
@@ -327,12 +333,17 @@ class DashboardSummaryView(APIView):
             status=Batch.Status.ACTIVE
         ).count()
 
-        # 2. Total active quantity
+        # 2. Total active quantity (sellable stock = quantity - reserved_quantity)
         batch_qty_agg = Batch.objects.filter(
             organization=org,
             status=Batch.Status.ACTIVE
-        ).aggregate(total_qty=Sum('quantity'))
-        total_active_quantity = batch_qty_agg['total_qty'] or Decimal('0.0')
+        ).aggregate(
+            total_qty=Sum('quantity'),
+            total_reserved=Sum('reserved_quantity')
+        )
+        total_active_quantity = (batch_qty_agg['total_qty'] or Decimal('0.0')) - (batch_qty_agg['total_reserved'] or Decimal('0.0'))
+        if total_active_quantity < Decimal('0.0'):
+            total_active_quantity = Decimal('0.0')
 
         # 3. Batches expiring within 48 hours
         batches_expiring_48h = Batch.objects.filter(

@@ -94,11 +94,14 @@ class AdminOrganizationDetailSerializer(AdminOrganizationListSerializer):
         }
 
         if obj.org_type == Organization.Type.BUSINESS:
-            activity["listings"] = list(
+            listings_data = list(
                 Listing.objects.filter(donor=obj)
                 .order_by("-created_at")[:10]
-                .values("id", "title", "quantity", "status", "created_at")
+                .values("id", "title", "quantity_offered", "status", "created_at")
             )
+            for item in listings_data:
+                item["quantity"] = item.pop("quantity_offered", None)
+            activity["listings"] = listings_data
             activity["batches"] = list(
                 Batch.objects.filter(organization=obj)
                 .select_related("product")

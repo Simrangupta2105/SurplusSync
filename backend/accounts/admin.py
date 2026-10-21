@@ -5,9 +5,9 @@ from .models import Organization, User
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'org_type', 'phone', 'is_verified', 'created_at')
-    list_filter = ('org_type', 'is_verified')
-    list_editable = ('is_verified',)
+    list_display = ('name', 'org_type', 'business_segment', 'promotion_active', 'phone', 'is_verified', 'created_at')
+    list_filter = ('org_type', 'business_segment', 'promotion_active', 'is_verified')
+    list_editable = ('is_verified', 'promotion_active')
     search_fields = ('name', 'phone', 'address')
     actions = ['approve_organizations', 'revoke_verification']
 

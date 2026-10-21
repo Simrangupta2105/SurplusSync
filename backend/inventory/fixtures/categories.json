@@ -14,7 +14,7 @@
     "model": "inventory.category",
     "pk": 2,
     "fields": {
-      "name": "Produce & Fresh Greens",
+      "name": "Produce",
       "parent": null,
       "perishability_risk": 4,
       "storage_type": "CHILLED",
@@ -96,6 +96,50 @@
       "perishability_risk": 2,
       "storage_type": "AMBIENT",
       "default_shelf_life_days": 60
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 10,
+    "fields": {
+      "name": "Prepared Food",
+      "parent": null,
+      "perishability_risk": 4,
+      "storage_type": "CHILLED",
+      "default_shelf_life_days": 2
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 11,
+    "fields": {
+      "name": "Fruits",
+      "parent": 2,
+      "perishability_risk": 3,
+      "storage_type": "CHILLED",
+      "default_shelf_life_days": 5
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 12,
+    "fields": {
+      "name": "Vegetables",
+      "parent": 2,
+      "perishability_risk": 3,
+      "storage_type": "CHILLED",
+      "default_shelf_life_days": 5
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 13,
+    "fields": {
+      "name": "Meat",
+      "parent": 4,
+      "perishability_risk": 4,
+      "storage_type": "CHILLED",
+      "default_shelf_life_days": 3
     }
   }
 ]

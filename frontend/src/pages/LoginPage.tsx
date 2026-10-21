@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Repeat,
   Lock,
@@ -14,6 +14,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { dataSource } from '../services';
+import type { PublicImpactMetrics } from '../types';
 import { isAuthenticated } from '../services/auth';
 import { Button } from '../components/ui/Button';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -42,6 +43,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [publicMetrics, setPublicMetrics] = useState<PublicImpactMetrics | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (dataSource && typeof dataSource.getPublicImpactMetrics === 'function') {
+      dataSource
+        .getPublicImpactMetrics()
+        .then((data) => {
+          if (isMounted) setPublicMetrics(data);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const hasImpact = Boolean(publicMetrics && (publicMetrics.total_quantity_donated_kg > 0 || publicMetrics.meals_provided > 0));
 
   const {
     register,
@@ -148,6 +167,42 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               </p>
             </div>
           </div>
+
+          {/* Public Environmental & Food Rescue Impact Ticker */}
+          {hasImpact && publicMetrics && (
+            <div className="p-3.5 rounded-[12px] bg-[var(--surface-2)] border border-[var(--border)] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+                  Platform Rescue Impact
+                </span>
+                {publicMetrics.total_donors > 0 && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[var(--surface)] text-[var(--muted)] border border-[var(--border)]">
+                    {publicMetrics.total_donors} Donors • {publicMetrics.total_ngos} NGOs
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="p-2 rounded-[8px] bg-[var(--surface)] border border-[var(--border)]">
+                  <span className="block text-base font-extrabold text-[var(--primary)]">
+                    {publicMetrics.meals_provided.toLocaleString()}
+                  </span>
+                  <span className="text-[10px] text-[var(--muted)] font-medium">Meals Delivered</span>
+                </div>
+                <div className="p-2 rounded-[8px] bg-[var(--surface)] border border-[var(--border)]">
+                  <span className="block text-base font-extrabold text-[var(--text)]">
+                    {publicMetrics.total_quantity_donated_kg.toLocaleString()} kg
+                  </span>
+                  <span className="text-[10px] text-[var(--muted)] font-medium">Surplus Rescued</span>
+                </div>
+                <div className="p-2 rounded-[8px] bg-[var(--surface)] border border-[var(--border)]">
+                  <span className="block text-base font-extrabold text-[var(--color-success)]">
+                    {publicMetrics.co2_diverted_kg.toLocaleString()} kg
+                  </span>
+                  <span className="text-[10px] text-[var(--muted)] font-medium">CO₂e Avoided</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Truthful Footer Note */}

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.conf import settings
 from django.db import models
 
@@ -67,6 +68,17 @@ class Product(models.Model):
         return self.name
 
 
+class BatchQuerySet(models.QuerySet):
+    def sellable(self):
+        from datetime import date
+        today = date.today()
+        return self.filter(
+            status=Batch.Status.ACTIVE,
+            expiry_date__gte=today,
+            quantity__gt=models.F('reserved_quantity')
+        )
+
+
 class Batch(models.Model):
     class Status(models.TextChoices):
         ACTIVE = "ACTIVE"
@@ -79,10 +91,13 @@ class Batch(models.Model):
     location = models.ForeignKey(StorageLocation, null=True, blank=True, on_delete=models.SET_NULL)
     batch_code = models.CharField(max_length=64, blank=True)
     quantity = models.DecimalField(max_digits=12, decimal_places=3)
+    reserved_quantity = models.DecimalField(max_digits=12, decimal_places=3, default=Decimal('0'))
     received_date = models.DateField()
     expiry_date = models.DateField()
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = BatchQuerySet.as_manager()
 
     class Meta:
         verbose_name_plural = "Batches"
@@ -90,6 +105,16 @@ class Batch(models.Model):
         indexes = [
             models.Index(fields=["organization", "status", "expiry_date"]),
         ]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(reserved_quantity__gte=0) & models.Q(reserved_quantity__lte=models.F('quantity')),
+                name="batch_reserved_quantity_valid"
+            ),
+        ]
+
+    @property
+    def sellable_quantity(self):
+        return max(Decimal('0'), self.quantity - self.reserved_quantity)
 
     def __str__(self):
         return f"{self.product.name} - Batch {self.batch_code or self.id}"

@@ -43,6 +43,19 @@ import type {
   IssuePriority,
   ListingStatus,
   ClaimStatus,
+  DonationRequest,
+  SurplusListingItem,
+  NGORequirementItem,
+  PickupScheduleItem,
+  ImpactAnalytics,
+  PublicImpactMetrics,
+  MarketplaceNotification,
+  MatchingResultItem,
+  PublicHomeTotals,
+  HomeData,
+  PlanPredictionRequest,
+  PlanPredictionResponse,
+  DatasetInsightsResponse,
 } from '../types';
 import {
   getAccessToken,
@@ -97,6 +110,26 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+interface RawMarketplaceListing {
+  id?: number | string;
+  donor?: number | string;
+  donor_name?: string;
+  donor_rating_avg?: number | string;
+  donor_rating_count?: number | string;
+  batch?: number | string;
+  title?: string;
+  category?: string;
+  quantity?: number | string;
+  unit?: string;
+  pickup_window_start?: string;
+  pickup_window_end?: string;
+  status?: string;
+  address?: string;
+  latitude?: number | string;
+  longitude?: number | string;
+  created_at?: string;
+}
 
 export class LiveSource implements DataSource {
   readonly mode = 'live' as const;
@@ -385,27 +418,27 @@ export class LiveSource implements DataSource {
   // 5. Marketplace & NGO Operations (Live Integration)
   async getListings(_filters?: { status?: string; category?: string; maxDistance?: number }): Promise<DonationListing[]> {
     try {
-      const res = await apiClient.get<DonationListing[] | { results: DonationListing[] }>('/marketplace/listings/');
-      const list = Array.isArray(res.data) ? res.data : (res.data as { results: DonationListing[] }).results || [];
-      return list.map((l: any) => ({
-        id: l.id,
-        business_id: l.donor || 1,
-        business_name: l.donor_name || 'Business Partner',
-        business_rating: l.donor_rating_avg || 5.0,
-        business_rating_count: l.donor_rating_count || 0,
-        batch_id: l.batch || 0,
-        product_name: l.title || 'Surplus Item',
-        category: l.category || 'Surplus Food',
-        quantity: parseFloat(l.quantity) || 0,
-        unit: l.unit || 'units',
-        expiry_date: l.pickup_window_end ? l.pickup_window_end.split('T')[0] : new Date().toISOString().split('T')[0],
-        pickup_window_start: l.pickup_window_start || new Date().toISOString(),
-        pickup_window_end: l.pickup_window_end || new Date().toISOString(),
+      const res = await apiClient.get<RawMarketplaceListing[] | { results: RawMarketplaceListing[] }>('/marketplace/listings/');
+      const list: RawMarketplaceListing[] = Array.isArray(res.data) ? res.data : res.data?.results || [];
+      return list.map((l: RawMarketplaceListing) => ({
+        id: Number(l.id),
+        business_id: Number(l.donor) || 1,
+        business_name: String(l.donor_name || 'Business Partner'),
+        business_rating: Number(l.donor_rating_avg) || 5.0,
+        business_rating_count: Number(l.donor_rating_count) || 0,
+        batch_id: Number(l.batch) || 0,
+        product_name: String(l.title || 'Surplus Item'),
+        category: String(l.category || 'Surplus Food'),
+        quantity: typeof l.quantity === 'number' ? l.quantity : parseFloat(String(l.quantity)) || 0,
+        unit: String(l.unit || 'units'),
+        expiry_date: l.pickup_window_end ? String(l.pickup_window_end).split('T')[0] : new Date().toISOString().split('T')[0],
+        pickup_window_start: String(l.pickup_window_start || new Date().toISOString()),
+        pickup_window_end: String(l.pickup_window_end || new Date().toISOString()),
         status: (l.status === 'OPEN' ? 'AVAILABLE' : l.status === 'RESERVED' ? 'CLAIMED' : l.status === 'COMPLETED' ? 'PICKED_UP' : 'CANCELLED') as ListingStatus,
-        address: l.address || '',
-        latitude: l.latitude || 12.9716,
-        longitude: l.longitude || 77.5946,
-        created_at: l.created_at || new Date().toISOString(),
+        address: String(l.address || ''),
+        latitude: Number(l.latitude) || 12.9716,
+        longitude: Number(l.longitude) || 77.5946,
+        created_at: String(l.created_at || new Date().toISOString()),
       }));
     } catch {
       return [];
@@ -416,7 +449,7 @@ export class LiveSource implements DataSource {
     const start = new Date();
     const end = new Date(start.getTime() + windowHours * 3600 * 1000);
     try {
-      const res = await apiClient.post<any>('/marketplace/listings/', {
+      const res = await apiClient.post<Record<string, unknown>>('/marketplace/listings/', {
         batch: batchId,
         quantity: '10.000',
         title: `Surplus Batch #${batchId}`,
@@ -425,14 +458,14 @@ export class LiveSource implements DataSource {
       });
       const l = res.data;
       return {
-        id: l.id,
-        business_id: l.donor || 1,
-        business_name: l.donor_name || 'Business Partner',
+        id: Number(l.id),
+        business_id: Number(l.donor) || 1,
+        business_name: String(l.donor_name || 'Business Partner'),
         business_rating: 5.0,
-        batch_id: l.batch || batchId,
-        product_name: l.title,
+        batch_id: Number(l.batch) || batchId,
+        product_name: String(l.title),
         category: 'Surplus Food',
-        quantity: parseFloat(l.quantity) || 10,
+        quantity: typeof l.quantity === 'number' ? l.quantity : parseFloat(String(l.quantity)) || 10,
         unit: 'kg',
         expiry_date: end.toISOString().split('T')[0],
         pickup_window_start: start.toISOString(),
@@ -443,8 +476,12 @@ export class LiveSource implements DataSource {
         longitude: 77.5946,
         created_at: new Date().toISOString(),
       };
-    } catch (e: any) {
-      throw new Error(e.response?.data?.detail || 'Failed to broadcast listing to marketplace', { cause: e });
+    } catch (e: unknown) {
+      const errDetail = typeof e === 'object' && e !== null && 'response' in e
+        ? (e as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
+        : undefined;
+      const errMsg = typeof errDetail === 'string' ? errDetail : 'Failed to broadcast listing to marketplace';
+      throw new Error(errMsg, { cause: e });
     }
   }
 
@@ -708,5 +745,235 @@ export class LiveSource implements DataSource {
     const res = await apiClient.get<AdminIssue[] | PaginatedResponse<AdminIssue>>('/issues/');
     return Array.isArray(res.data) ? res.data : res.data.results || [];
   }
+
+  // 9. Redistribution: Donation Requests Lifecycle
+  async getDonationRequests(filters?: { status?: string; search?: string }): Promise<DonationRequest[]> {
+    const res = await apiClient.get<DonationRequest[] | { results: DonationRequest[] }>('/marketplace/requests/', {
+      params: filters,
+    });
+    return Array.isArray(res.data) ? res.data : res.data.results || [];
+  }
+
+  async getDonationRequest(codeOrId: string | number): Promise<DonationRequest> {
+    const res = await apiClient.get<DonationRequest>(`/marketplace/requests/${codeOrId}/`);
+    return res.data;
+  }
+
+  async createDonationRequest(payload: {
+    listing?: number;
+    item_name?: string;
+    requested_quantity: number | string;
+    requested_pickup_time: string;
+    pickup_notes?: string;
+  }): Promise<DonationRequest> {
+    const res = await apiClient.post<DonationRequest>('/marketplace/requests/', payload);
+    return res.data;
+  }
+
+  async approveDonationRequest(codeOrId: string | number, scheduledPickupTime?: string): Promise<DonationRequest> {
+    const res = await apiClient.post<DonationRequest>(`/marketplace/requests/${codeOrId}/approve/`, {
+      scheduled_pickup_time: scheduledPickupTime,
+    });
+    return res.data;
+  }
+
+  async confirmScheduleDonationRequest(
+    codeOrId: string | number,
+    scheduledPickupTime: string,
+    notes?: string
+  ): Promise<DonationRequest> {
+    const res = await apiClient.post<DonationRequest>(`/marketplace/requests/${codeOrId}/confirm-schedule/`, {
+      scheduled_pickup_time: scheduledPickupTime,
+      pickup_notes: notes,
+    });
+    return res.data;
+  }
+
+  async rejectDonationRequest(codeOrId: string | number, reason: string): Promise<DonationRequest> {
+    const res = await apiClient.post<DonationRequest>(`/marketplace/requests/${codeOrId}/reject/`, {
+      reason,
+    });
+    return res.data;
+  }
+
+  async cancelDonationRequest(codeOrId: string | number, reason?: string): Promise<DonationRequest> {
+    const res = await apiClient.post<DonationRequest>(`/marketplace/requests/${codeOrId}/cancel/`, {
+      reason,
+    });
+    return res.data;
+  }
+
+  async setInTransitDonationRequest(
+    codeOrId: string | number,
+    payload?: { driver_name?: string; driver_phone?: string; vehicle_plate?: string }
+  ): Promise<DonationRequest> {
+    const res = await apiClient.post<DonationRequest>(`/marketplace/requests/${codeOrId}/in-transit/`, payload || {});
+    return res.data;
+  }
+
+  async collectDonationRequest(codeOrId: string | number, notes?: string): Promise<DonationRequest> {
+    const res = await apiClient.post<DonationRequest>(`/marketplace/requests/${codeOrId}/collect/`, {
+      notes,
+    });
+    return res.data;
+  }
+
+  async confirmReceiptDonationRequest(codeOrId: string | number, notes?: string): Promise<DonationRequest> {
+    const res = await apiClient.post<DonationRequest>(`/marketplace/requests/${codeOrId}/confirm-receipt/`, {
+      notes,
+    });
+    return res.data;
+  }
+
+  async reportNoShowDonationRequest(codeOrId: string | number, notes?: string): Promise<DonationRequest> {
+    const res = await apiClient.post<DonationRequest>(`/marketplace/requests/${codeOrId}/no-show/`, {
+      notes,
+    });
+    return res.data;
+  }
+
+  // 10. Redistribution: Surplus Marketplace
+  async getSurplusListings(filters?: {
+    status?: string;
+    category?: string;
+    search?: string;
+    mine?: boolean;
+    is_cooked?: boolean;
+  }): Promise<SurplusListingItem[]> {
+    const res = await apiClient.get<SurplusListingItem[] | { results: SurplusListingItem[] }>('/marketplace/listings/', {
+      params: filters,
+    });
+    return Array.isArray(res.data) ? res.data : res.data.results || [];
+  }
+
+  async getSurplusListing(id: number): Promise<SurplusListingItem> {
+    const res = await apiClient.get<SurplusListingItem>(`/marketplace/listings/${id}/`);
+    return res.data;
+  }
+
+  async createSurplusListing(payload: Partial<SurplusListingItem>): Promise<SurplusListingItem> {
+    const res = await apiClient.post<SurplusListingItem>('/marketplace/listings/', payload);
+    return res.data;
+  }
+
+  async updateSurplusListing(id: number, payload: Partial<SurplusListingItem>): Promise<SurplusListingItem> {
+    const res = await apiClient.patch<SurplusListingItem>(`/marketplace/listings/${id}/`, payload);
+    return res.data;
+  }
+
+  async deleteSurplusListing(id: number): Promise<void> {
+    await apiClient.delete(`/marketplace/listings/${id}/`);
+  }
+
+  async getListingMatches(listingId: number): Promise<{ count: number; matches: MatchingResultItem[] }> {
+    const res = await apiClient.get<{ count: number; matches: MatchingResultItem[] }>(
+      `/marketplace/listings/${listingId}/matches/`
+    );
+    return res.data;
+  }
+
+  async notifyListingMatches(listingId: number, requirementIds?: number[]): Promise<{ notified: number }> {
+    const res = await apiClient.post<{ notified: number }>(`/marketplace/listings/${listingId}/notify-matches/`, {
+      requirement_ids: requirementIds,
+    });
+    return res.data;
+  }
+
+  // 11. Redistribution: NGO Requirements
+  async getNGORequirements(filters?: { status?: string; search?: string }): Promise<NGORequirementItem[]> {
+    const res = await apiClient.get<NGORequirementItem[] | { results: NGORequirementItem[] }>('/marketplace/requirements/', {
+      params: filters,
+    });
+    return Array.isArray(res.data) ? res.data : res.data.results || [];
+  }
+
+  async getNGORequirement(id: number): Promise<NGORequirementItem> {
+    const res = await apiClient.get<NGORequirementItem>(`/marketplace/requirements/${id}/`);
+    return res.data;
+  }
+
+  async createNGORequirement(payload: Partial<NGORequirementItem>): Promise<NGORequirementItem> {
+    const res = await apiClient.post<NGORequirementItem>('/marketplace/requirements/', payload);
+    return res.data;
+  }
+
+  async updateNGORequirement(id: number, payload: Partial<NGORequirementItem>): Promise<NGORequirementItem> {
+    const res = await apiClient.patch<NGORequirementItem>(`/marketplace/requirements/${id}/`, payload);
+    return res.data;
+  }
+
+  async deleteNGORequirement(id: number): Promise<void> {
+    await apiClient.delete(`/marketplace/requirements/${id}/`);
+  }
+
+  async getRequirementMatches(requirementId: number): Promise<{ count: number; matches: MatchingResultItem[] }> {
+    const res = await apiClient.get<{ count: number; matches: MatchingResultItem[] }>(
+      `/marketplace/requirements/${requirementId}/matches/`
+    );
+    return res.data;
+  }
+
+  // 12. Redistribution: Pickup Schedule
+  async getPickupSchedule(filters?: { date?: string; status?: string; range?: string }): Promise<PickupScheduleItem[]> {
+    const res = await apiClient.get<PickupScheduleItem[] | { results: PickupScheduleItem[] }>('/marketplace/schedule/', {
+      params: filters,
+    });
+    return Array.isArray(res.data) ? res.data : res.data.results || [];
+  }
+
+  // 13. Redistribution: Impact Analytics & ESG Scorecard
+  async getImpactAnalytics(period?: string): Promise<ImpactAnalytics> {
+    const res = await apiClient.get<ImpactAnalytics>('/marketplace/impact/', {
+      params: period ? { period } : undefined,
+    });
+    return res.data;
+  }
+
+  async getPublicImpactMetrics(): Promise<PublicImpactMetrics> {
+    const res = await apiClient.get<PublicImpactMetrics>('/marketplace/impact/public/');
+    return res.data;
+  }
+
+  // 15. Redistribution: Notifications
+  async getMarketplaceNotifications(unreadOnly?: boolean): Promise<{ count: number; unread_count: number; results: MarketplaceNotification[] }> {
+    const res = await apiClient.get<{ count: number; unread_count: number; results: MarketplaceNotification[] }>(
+      '/marketplace/notifications/',
+      {
+        params: unreadOnly ? { unread_only: 'true' } : undefined,
+      }
+    );
+    return res.data;
+  }
+
+  async markMarketplaceNotificationRead(id: number): Promise<void> {
+    await apiClient.patch(`/marketplace/notifications/${id}/read/`);
+  }
+
+  async markAllMarketplaceNotificationsRead(): Promise<void> {
+    await apiClient.post('/marketplace/notifications/mark-all-read/');
+  }
+
+  // Home API (Task B1 & B2 & B3)
+  async getPublicHomeTotals(): Promise<PublicHomeTotals> {
+    const res = await apiClient.get<PublicHomeTotals>('/home/public/');
+    return res.data;
+  }
+
+  async getHomeData(): Promise<HomeData> {
+    const res = await apiClient.get<HomeData>('/home/');
+    return res.data;
+  }
+
+  // AI Waste Predictions & Benchmark Insights (Task 3)
+  async getPlanPrediction(payload: PlanPredictionRequest): Promise<PlanPredictionResponse> {
+    const res = await apiClient.post<PlanPredictionResponse>('/predictions/plan/', payload);
+    return res.data;
+  }
+
+  async getDatasetInsights(): Promise<DatasetInsightsResponse> {
+    const res = await apiClient.get<DatasetInsightsResponse>('/predictions/insights/');
+    return res.data;
+  }
 }
+
 

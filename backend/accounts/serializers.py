@@ -35,6 +35,16 @@ class OrganizationSerializer(serializers.ModelSerializer):
             'created_at',
         ]
 
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        org_type = data.get("org_type") or getattr(self.instance, "org_type", None)
+        segment = data.get("business_segment")
+        if segment and org_type != Organization.Type.BUSINESS:
+            raise serializers.ValidationError({
+                "business_segment": "Business segment can only be configured for BUSINESS organizations."
+            })
+        return data
+
     def get_rating_avg(self, obj):
         if obj.org_type != Organization.Type.BUSINESS:
             return None
@@ -79,6 +89,8 @@ class MeSerializer(serializers.ModelSerializer):
             'id': o.id,
             'name': o.name,
             'type': o.org_type,
+            'business_segment': o.business_segment,
+            'promotion_active': o.promotion_active,
             'is_verified': o.is_verified,
         }
 

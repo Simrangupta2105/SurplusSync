@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'inventory',
     'marketplace',
     'administration',
+    'predictions',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -179,9 +180,24 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day',
+        'predictions': '60/minute',
+    },
     'DEFAULT_PAGINATION_CLASS': 'SURPLUSSYNC.pagination.StandardResultsSetPagination',
     'PAGE_SIZE': 50,
 }
+
+# Internal ML Microservice Configuration
+ML_SERVICE_URL = os.getenv('ML_SERVICE_URL', 'http://127.0.0.1:8001')
+ML_SERVICE_TOKEN = os.getenv('ML_SERVICE_TOKEN', 'surplussync-service-token-dev')
+ML_SERVICE_TIMEOUT = float(os.getenv('ML_SERVICE_TIMEOUT', '3.0'))
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),

@@ -99,16 +99,13 @@ def deduct_product_fefo(
     today = date.today()
 
     batches = list(
-        Batch.objects.select_for_update().filter(
+        Batch.objects.sellable().select_for_update().filter(
             organization=organization,
             product=product,
-            status=Batch.Status.ACTIVE,
-            expiry_date__gte=today,
-            quantity__gt=0
         ).order_by('expiry_date', 'received_date', 'id')
     )
 
-    total_available = sum((b.quantity for b in batches), Decimal('0'))
+    total_available = sum((b.sellable_quantity for b in batches), Decimal('0'))
     if total_available < quantity:
         raise InsufficientStockError(
             'Insufficient available stock for deduction.',
@@ -123,7 +120,11 @@ def deduct_product_fefo(
         if remaining_to_deduct <= 0:
             break
 
-        take = min(batch.quantity, remaining_to_deduct)
+        sellable_qty = batch.sellable_quantity
+        if sellable_qty <= 0:
+            continue
+
+        take = min(sellable_qty, remaining_to_deduct)
         batch.quantity -= take
         if batch.quantity == 0:
             batch.status = Batch.Status.DEPLETED
@@ -598,9 +599,14 @@ def fetch_open_food_facts(barcode: str):
                         cats_lower = categories_str.lower()
                         keyword_rules = [
                             ("Dairy", ["dairy", "dairies", "milk", "cheese", "yogurt", "butter", "paneer", "curd", "cream", "fromage", "lait"]),
+                            ("Fruits", ["fruit", "fruits", "apple", "banana", "berry", "citrus", "orange"]),
+                            ("Vegetables", ["vegetable", "vegetables", "tomato", "potato", "onion", "carrot"]),
+                            ("Produce", ["produce", "greens", "salad", "fresh"]),
                             ("Produce & Fresh Greens", ["produce", "fruit", "vegetable", "greens", "salad", "fresh"]),
                             ("Bakery", ["bakery", "bread", "cake", "pastry", "cookie", "biscuit", "toast", "bun"]),
                             ("Meat & Poultry", ["meat", "poultry", "chicken", "beef", "pork", "fish", "seafood"]),
+                            ("Meat", ["meat", "poultry", "chicken", "beef", "pork", "mutton"]),
+                            ("Prepared Food", ["prepared", "ready-to-eat", "meal box"]),
                             ("Prepared & Cooked Meals", ["prepared", "meal", "cooked", "sandwich", "ready-to-eat", "deli"]),
                             ("Frozen Foods", ["frozen", "ice cream", "sorbet"]),
                             ("Dry Goods & Grains", ["grain", "dry", "cereal", "flour", "rice", "pasta", "noodles", "snack", "chips", "cracker"]),

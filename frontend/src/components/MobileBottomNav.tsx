@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Home,
   LayoutDashboard,
   Package,
   ScanLine,
@@ -18,6 +19,11 @@ import {
   Building2,
   ScrollText,
   Terminal,
+  Store,
+  Truck,
+  ClipboardList,
+  Bell,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import type { OrganizationType } from '../types';
@@ -66,18 +72,34 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     };
   }, []);
 
-  // Business 4 Primary items + More
+  // Business 4 Primary items + More (Task B4)
   const businessPrimary: NavItem[] = [
+    { id: 'home', label: 'Home', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'inventory', label: 'Inventory', icon: Package },
-    { id: 'scan', label: 'Scan', icon: ScanLine },
     { id: 'alerts', label: 'Alerts', icon: BellRing, badge: alertCount },
   ];
 
   const businessMore: NavItem[] = [
+    { id: 'scan', label: 'Scan', icon: ScanLine, subtitle: 'Barcode scanner' },
     { id: 'import', label: 'CSV Import', icon: UploadCloud, subtitle: 'Batch file import' },
-    { id: 'donations', label: 'Donations', icon: HeartHandshake, subtitle: 'Surplus food listings & claims' },
-    { id: 'impact', label: 'Impact', icon: BarChart3, subtitle: 'Diverted kg & meals' },
+    { id: 'marketplace', label: 'Surplus Marketplace', icon: Store, subtitle: 'Surplus listings' },
+    { id: 'donations', label: 'Donation Requests', icon: HeartHandshake, subtitle: 'Review and approve requests' },
+    { id: 'schedule', label: 'Pickup Schedule', icon: Truck, subtitle: 'Logistics and pickups' },
+    { id: 'impact', label: 'Impact Analytics', icon: BarChart3, subtitle: 'Diverted kg & meals' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, subtitle: 'System & matching alerts' },
+    {
+      id: 'business/ai/planner',
+      label: 'Purchase Planner',
+      icon: Sparkles,
+      subtitle: 'AI demand & waste planner',
+    },
+    {
+      id: 'business/ai/insights',
+      label: 'Waste Insights',
+      icon: BarChart3,
+      subtitle: 'Benchmark waste patterns',
+    },
     ...(devToolsEnabled
       ? [
           {
@@ -91,15 +113,19 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     { id: 'settings', label: 'Settings', icon: Settings, subtitle: 'Account & POS keys' },
   ];
 
-  // NGO 4 Primary items + More
+  // NGO 4 Primary items + More (Task B4)
   const ngoPrimary: NavItem[] = [
+    { id: 'home', label: 'Home', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'feed', label: 'Food Feed', icon: UtensilsCrossed },
-    { id: 'claims', label: 'My Claims', icon: HeartHandshake },
-    { id: 'impact', label: 'Impact', icon: BarChart3 },
+    { id: 'donations', label: 'My Requests', icon: HeartHandshake },
   ];
 
   const ngoMore: NavItem[] = [
+    { id: 'requirements', label: 'Our Requirements', icon: ClipboardList, subtitle: 'Food intake needs' },
+    { id: 'schedule', label: 'Pickup Schedule', icon: Truck, subtitle: 'Logistics and pickups' },
+    { id: 'impact', label: 'Impact Analytics', icon: BarChart3, subtitle: 'Diverted kg & meals' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, subtitle: 'System & matching alerts' },
     { id: 'profile', label: 'Profile & Ratings', icon: Star, subtitle: 'Rate donors & view reviews' },
     { id: 'settings', label: 'Settings', icon: Settings, subtitle: 'Hub & preferences' },
   ];
@@ -157,6 +183,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         {/* 5th Item: More Drawer Trigger */}
         <button
           onClick={() => setIsMoreOpen(true)}
+          aria-label="More navigation options"
           className={cn(
             'flex flex-col items-center justify-center gap-1 text-center relative py-1 px-3 rounded-[8px] transition-colors cursor-pointer select-none min-w-[56px]',
             isMoreOpen ||

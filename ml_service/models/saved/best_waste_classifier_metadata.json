@@ -1,0 +1,129 @@
+{
+  "model_name": "LightGBM",
+  "target": "Waste_Level",
+  "classes": [
+    "Low",
+    "Medium",
+    "High"
+  ],
+  "features": [
+    "Food_Category",
+    "Business_Type",
+    "Promotion",
+    "Weather",
+    "Purchase_Quantity",
+    "forecast_demand",
+    "over_order_ratio",
+    "Shelf_Life_Days",
+    "Storage_Temperature",
+    "day_of_week"
+  ],
+  "forbidden_features": [
+    "Waste_Reason",
+    "Donation_Made",
+    "Remaining_Stock",
+    "Waste_Quantity",
+    "Units_Sold",
+    "Daily_Demand"
+  ],
+  "random_state": 42,
+  "train_rows": 6688,
+  "val_rows": 645,
+  "test_rows": 667,
+  "test_metrics": {
+    "accuracy": 0.6881559220389805,
+    "macro_f1": 0.6654433210040676,
+    "weighted_f1": 0.6936265676225015,
+    "log_loss": 2.3877636876123747,
+    "brier_score": 0.4057733373060303,
+    "per_class": {
+      "Low": {
+        "precision": 0.8212121212121212,
+        "recall": 0.7486187845303868,
+        "f1": 0.7832369942196532,
+        "support": 362
+      },
+      "Medium": {
+        "precision": 0.5087719298245614,
+        "recall": 0.5829145728643216,
+        "f1": 0.5433255269320844,
+        "support": 199
+      },
+      "High": {
+        "precision": 0.6605504587155964,
+        "recall": 0.6792452830188679,
+        "f1": 0.6697674418604651,
+        "support": 106
+      }
+    },
+    "confusion_matrix": [
+      [
+        271,
+        82,
+        9
+      ],
+      [
+        55,
+        116,
+        28
+      ],
+      [
+        4,
+        30,
+        72
+      ]
+    ]
+  },
+  "val_metrics": {
+    "accuracy": 0.6775193798449612,
+    "macro_f1": 0.6464871234312627,
+    "weighted_f1": 0.6842203051920687,
+    "log_loss": 2.4240278329724743,
+    "brier_score": 0.4200557849726761,
+    "per_class": {
+      "Low": {
+        "precision": 0.8415841584158416,
+        "recall": 0.7566765578635015,
+        "f1": 0.796875,
+        "support": 337
+      },
+      "Medium": {
+        "precision": 0.502127659574468,
+        "recall": 0.5812807881773399,
+        "f1": 0.5388127853881278,
+        "support": 203
+      },
+      "High": {
+        "precision": 0.5981308411214953,
+        "recall": 0.6095238095238096,
+        "f1": 0.6037735849056604,
+        "support": 105
+      }
+    },
+    "confusion_matrix": [
+      [
+        255,
+        81,
+        1
+      ],
+      [
+        43,
+        118,
+        42
+      ],
+      [
+        5,
+        36,
+        64
+      ]
+    ]
+  },
+  "heuristic_thresholds": {
+    "threshold_medium": 1.121,
+    "threshold_high": 1.525
+  },
+  "label_noise_note": "Operational Note on Label Noise: In the dataset, some 'Low' waste rows have positive waste (mean 0.48 units, max 46 units), and some 'High' waste rows have low/zero waste (54 zero-waste rows). This empirical label noise stems from ratio-based binning anomalies and explains why tree/linear classifiers plateau around ~0.665-0.670 Macro-F1.",
+  "trained_at": "2026-10-20T21:12:54.099348+00:00",
+  "python_version": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26300-SP0"
+}

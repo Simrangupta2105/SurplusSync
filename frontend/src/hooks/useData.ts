@@ -11,6 +11,9 @@ import type {
   IssueStatus,
   IssuePriority,
   ImportJob,
+  SurplusListingItem,
+  NGORequirementItem,
+  PlanPredictionRequest,
 } from '../types';
 
 
@@ -34,6 +37,21 @@ export const QUERY_KEYS = {
   impact: ['impact'],
   notifications: ['notifications'],
   me: ['auth', 'me'],
+  donationRequests: (filters?: Record<string, unknown>) => ['donationRequests', filters],
+  donationRequest: (codeOrId: string | number) => ['donationRequest', codeOrId],
+  surplusListings: (filters?: Record<string, unknown>) => ['surplusListings', filters],
+  surplusListing: (id: number) => ['surplusListing', id],
+  listingMatches: (id: number) => ['listingMatches', id],
+  ngoRequirements: (filters?: Record<string, unknown>) => ['ngoRequirements', filters],
+  ngoRequirement: (id: number) => ['ngoRequirement', id],
+  requirementMatches: (id: number) => ['requirementMatches', id],
+  pickupSchedule: (filters?: Record<string, unknown>) => ['pickupSchedule', filters],
+  impactAnalytics: (period?: string) => ['impactAnalytics', period],
+  marketplaceNotifications: (unreadOnly?: boolean) => ['marketplaceNotifications', unreadOnly],
+  publicImpact: ['publicImpact'] as const,
+  homePublic: ['home', 'public'] as const,
+  homeAuth: ['home', 'auth'] as const,
+  predictionsInsights: ['predictions', 'insights'] as const,
 };
 
 // --- Read Queries ---
@@ -608,5 +626,369 @@ export function useMyIssues() {
     queryFn: () => dataSource.getMyIssues(),
   });
 }
+
+// --- Redistribution Hooks (Donation Requests, Surplus Marketplace, Requirements, Schedule, ESG) ---
+
+export function useDonationRequests(filters?: { status?: string; search?: string }) {
+  return useQuery({
+    queryKey: QUERY_KEYS.donationRequests(filters),
+    queryFn: () => dataSource.getDonationRequests(filters),
+  });
+}
+
+export function useDonationRequest(codeOrId: string | number) {
+  return useQuery({
+    queryKey: QUERY_KEYS.donationRequest(codeOrId),
+    queryFn: () => dataSource.getDonationRequest(codeOrId),
+    enabled: Boolean(codeOrId),
+  });
+}
+
+export function useCreateDonationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      listing?: number;
+      item_name?: string;
+      requested_quantity: number | string;
+      requested_pickup_time: string;
+      pickup_notes?: string;
+    }) => dataSource.createDonationRequest(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['surplusListings'] });
+      queryClient.invalidateQueries({ queryKey: ['pickupSchedule'] });
+      queryClient.invalidateQueries({ queryKey: ['marketplaceNotifications'] });
+    },
+  });
+}
+
+export function useApproveDonationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ codeOrId, scheduledPickupTime }: { codeOrId: string | number; scheduledPickupTime?: string }) =>
+      dataSource.approveDonationRequest(codeOrId, scheduledPickupTime),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['pickupSchedule'] });
+      queryClient.invalidateQueries({ queryKey: ['surplusListings'] });
+    },
+  });
+}
+
+export function useConfirmScheduleDonationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      codeOrId,
+      scheduledPickupTime,
+      notes,
+    }: {
+      codeOrId: string | number;
+      scheduledPickupTime: string;
+      notes?: string;
+    }) => dataSource.confirmScheduleDonationRequest(codeOrId, scheduledPickupTime, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['pickupSchedule'] });
+    },
+  });
+}
+
+export function useRejectDonationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ codeOrId, reason }: { codeOrId: string | number; reason: string }) =>
+      dataSource.rejectDonationRequest(codeOrId, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['surplusListings'] });
+      queryClient.invalidateQueries({ queryKey: ['pickupSchedule'] });
+    },
+  });
+}
+
+export function useCancelDonationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ codeOrId, reason }: { codeOrId: string | number; reason?: string }) =>
+      dataSource.cancelDonationRequest(codeOrId, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['surplusListings'] });
+      queryClient.invalidateQueries({ queryKey: ['pickupSchedule'] });
+    },
+  });
+}
+
+export function useSetInTransitDonationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      codeOrId,
+      driver_name,
+      driver_phone,
+      vehicle_plate,
+    }: {
+      codeOrId: string | number;
+      driver_name?: string;
+      driver_phone?: string;
+      vehicle_plate?: string;
+    }) => dataSource.setInTransitDonationRequest(codeOrId, { driver_name, driver_phone, vehicle_plate }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['pickupSchedule'] });
+    },
+  });
+}
+
+export function useCollectDonationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ codeOrId, notes }: { codeOrId: string | number; notes?: string }) =>
+      dataSource.collectDonationRequest(codeOrId, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['pickupSchedule'] });
+      queryClient.invalidateQueries({ queryKey: ['impactAnalytics'] });
+    },
+  });
+}
+
+export function useConfirmReceiptDonationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ codeOrId, notes }: { codeOrId: string | number; notes?: string }) =>
+      dataSource.confirmReceiptDonationRequest(codeOrId, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['pickupSchedule'] });
+      queryClient.invalidateQueries({ queryKey: ['impactAnalytics'] });
+    },
+  });
+}
+
+export function useReportNoShowDonationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ codeOrId, notes }: { codeOrId: string | number; notes?: string }) =>
+      dataSource.reportNoShowDonationRequest(codeOrId, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donationRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['pickupSchedule'] });
+    },
+  });
+}
+
+// Surplus Listings Hooks
+export function useSurplusListings(filters?: {
+  status?: string;
+  category?: string;
+  search?: string;
+  mine?: boolean;
+  is_cooked?: boolean;
+}) {
+  return useQuery({
+    queryKey: QUERY_KEYS.surplusListings(filters),
+    queryFn: () => dataSource.getSurplusListings(filters),
+  });
+}
+
+export function useSurplusListing(id: number) {
+  return useQuery({
+    queryKey: QUERY_KEYS.surplusListing(id),
+    queryFn: () => dataSource.getSurplusListing(id),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCreateSurplusListing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Partial<SurplusListingItem>) => dataSource.createSurplusListing(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['surplusListings'] });
+    },
+  });
+}
+
+export function useUpdateSurplusListing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: Partial<SurplusListingItem> }) =>
+      dataSource.updateSurplusListing(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['surplusListings'] });
+    },
+  });
+}
+
+export function useDeleteSurplusListing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => dataSource.deleteSurplusListing(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['surplusListings'] });
+    },
+  });
+}
+
+export function useListingMatches(listingId: number) {
+  return useQuery({
+    queryKey: QUERY_KEYS.listingMatches(listingId),
+    queryFn: () => dataSource.getListingMatches(listingId),
+    enabled: Boolean(listingId),
+  });
+}
+
+export function useNotifyListingMatches() {
+  return useMutation({
+    mutationFn: ({ listingId, requirementIds }: { listingId: number; requirementIds?: number[] }) =>
+      dataSource.notifyListingMatches(listingId, requirementIds),
+  });
+}
+
+// NGO Requirements Hooks
+export function useNGORequirements(filters?: { status?: string; search?: string }) {
+  return useQuery({
+    queryKey: QUERY_KEYS.ngoRequirements(filters),
+    queryFn: () => dataSource.getNGORequirements(filters),
+  });
+}
+
+export function useNGORequirement(id: number) {
+  return useQuery({
+    queryKey: QUERY_KEYS.ngoRequirement(id),
+    queryFn: () => dataSource.getNGORequirement(id),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCreateNGORequirement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Partial<NGORequirementItem>) => dataSource.createNGORequirement(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ngoRequirements'] });
+    },
+  });
+}
+
+export function useUpdateNGORequirement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: Partial<NGORequirementItem> }) =>
+      dataSource.updateNGORequirement(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ngoRequirements'] });
+    },
+  });
+}
+
+export function useDeleteNGORequirement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => dataSource.deleteNGORequirement(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ngoRequirements'] });
+    },
+  });
+}
+
+export function useRequirementMatches(requirementId: number) {
+  return useQuery({
+    queryKey: QUERY_KEYS.requirementMatches(requirementId),
+    queryFn: () => dataSource.getRequirementMatches(requirementId),
+    enabled: Boolean(requirementId),
+  });
+}
+
+// Pickup Schedule Hook
+export function usePickupSchedule(filters?: { date?: string; status?: string; range?: string }) {
+  return useQuery({
+    queryKey: QUERY_KEYS.pickupSchedule(filters),
+    queryFn: () => dataSource.getPickupSchedule(filters),
+  });
+}
+
+// Impact Analytics Hook
+export function useImpactAnalytics(period?: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.impactAnalytics(period),
+    queryFn: () => dataSource.getImpactAnalytics(period),
+  });
+}
+
+// Public Impact Hook (Cached 10 minutes, unauthenticated home/landing ticker)
+export function usePublicImpact() {
+  return useQuery({
+    queryKey: QUERY_KEYS.publicImpact,
+    queryFn: () => dataSource.getPublicImpactMetrics(),
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
+// Marketplace Notifications Hooks
+export function useMarketplaceNotifications(unreadOnly = false) {
+  return useQuery({
+    queryKey: QUERY_KEYS.marketplaceNotifications(unreadOnly),
+    queryFn: () => dataSource.getMarketplaceNotifications(unreadOnly),
+  });
+}
+
+export function useMarkMarketplaceNotificationRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => dataSource.markMarketplaceNotificationRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplaceNotifications'] });
+    },
+  });
+}
+
+export function useMarkAllMarketplaceNotificationsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => dataSource.markAllMarketplaceNotificationsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplaceNotifications'] });
+    },
+  });
+}
+
+// Home API Hooks (Task B1 & B2 & B3)
+export function usePublicHomeTotals() {
+  return useQuery({
+    queryKey: QUERY_KEYS.homePublic,
+    queryFn: () => dataSource.getPublicHomeTotals(),
+    staleTime: 1000 * 60 * 10, // 10 minutes cache as per API
+  });
+}
+
+export function useHomeData(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: QUERY_KEYS.homeAuth,
+    queryFn: () => dataSource.getHomeData(),
+    staleTime: 1000 * 60 * 1, // 1 minute
+    enabled: options?.enabled,
+  });
+}
+
+// AI Waste Prediction & Insights (Task 3)
+export function usePlanPrediction() {
+  return useMutation({
+    mutationFn: (payload: PlanPredictionRequest) => dataSource.getPlanPrediction(payload),
+  });
+}
+
+export function useDatasetInsights() {
+  return useQuery({
+    queryKey: QUERY_KEYS.predictionsInsights,
+    queryFn: () => dataSource.getDatasetInsights(),
+    staleTime: 1000 * 60 * 30, // 30 minutes cache
+  });
+}
+
+
 
 

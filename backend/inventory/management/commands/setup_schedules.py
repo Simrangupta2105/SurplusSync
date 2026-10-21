@@ -79,9 +79,49 @@ class Command(BaseCommand):
                     f"{action_list} schedule 'expire_stale_marketplace_listings': every 15 minutes."
                 )
             )
+
+            # 4. Process donation lifecycle timeouts (every 15 minutes)
+            donation_schedule, created_don = Schedule.objects.update_or_create(
+                name="process_donation_lifecycle",
+                defaults={
+                    "func": "marketplace.tasks.process_donations_task",
+                    "schedule_type": Schedule.MINUTES,
+                    "minutes": 15,
+                    "repeats": -1,
+                    "cluster": "SurplusSync",
+                    "next_run": now_utc,
+                },
+            )
+            action_don = "Created" if created_don else "Updated"
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{action_don} schedule 'process_donation_lifecycle': every 15 minutes."
+                )
+            )
+
+            # 5. Matching engine batch runs & notifications (every 15 minutes)
+            matching_schedule, created_match = Schedule.objects.update_or_create(
+                name="run_surplus_matching_engine",
+                defaults={
+                    "func": "marketplace.tasks.run_matching_engine_task",
+                    "schedule_type": Schedule.MINUTES,
+                    "minutes": 15,
+                    "repeats": -1,
+                    "cluster": "SurplusSync",
+                    "next_run": now_utc,
+                },
+            )
+            action_match = "Created" if created_match else "Updated"
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{action_match} schedule 'run_surplus_matching_engine': every 15 minutes."
+                )
+            )
         else:
             self.stdout.write(
                 self.style.WARNING(
                     "Marketplace app and expire_listings command not found. Skipping marketplace listings schedule."
                 )
             )
+
+

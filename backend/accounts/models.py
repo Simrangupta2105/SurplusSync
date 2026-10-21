@@ -13,8 +13,26 @@ class Organization(models.Model):
         REJECTED = "REJECTED", "Rejected"
         SUSPENDED = "SUSPENDED", "Suspended"
 
+    class BusinessSegment(models.TextChoices):
+        RESTAURANT = "Restaurant", "Restaurant"
+        SUPERMARKET = "Supermarket", "Supermarket"
+        CAFETERIA = "Cafeteria", "Cafeteria"
+        CLOUD_KITCHEN = "Cloud Kitchen", "Cloud Kitchen"
+
     name = models.CharField(max_length=200)
     org_type = models.CharField(max_length=10, choices=Type.choices)
+    business_segment = models.CharField(
+        max_length=20,
+        choices=BusinessSegment.choices,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Operational business segment for AI demand scaling and waste benchmarks.",
+    )
+    promotion_active = models.BooleanField(
+        default=False,
+        help_text="Flag indicating whether an active promotional discount is running, driving demand lift.",
+    )
     address = models.TextField(blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -29,6 +47,8 @@ class Organization(models.Model):
     )
     verification_note = models.TextField(blank=True, default="")
     verified_at = models.DateTimeField(null=True, blank=True)
+    timezone = models.CharField(max_length=64, default="Asia/Kolkata")
+    max_concurrent_pickups = models.PositiveIntegerField(default=3)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

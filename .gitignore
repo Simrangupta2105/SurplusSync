@@ -35,3 +35,8 @@ staticfiles/
 node_modules/
 dist/
 
+# ML Service
+ml_service/venv/
+ml_service/.env
+ml_service/data/raw/
+

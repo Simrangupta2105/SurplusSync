@@ -8,6 +8,7 @@ import { RegisterPage } from '../pages/RegisterPage';
 import { BusinessDashboardPage } from '../pages/business/BusinessDashboardPage';
 import { BusinessInventoryPage } from '../pages/business/BusinessInventoryPage';
 import { BusinessScanPage } from '../pages/business/BusinessScanPage';
+import { AuthenticatedHomePage } from '../pages/AuthenticatedHomePage';
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -106,6 +107,24 @@ describe('Axe-Core Automated Accessibility Audits (WCAG 2.1 AA)', () => {
     const results = await runAxe(container);
     if (results.violations.length > 0) {
       console.log('Scan Page Axe Violations:', JSON.stringify(results.violations, null, 2));
+    }
+    expect(results.violations).toEqual([]);
+  });
+
+  it('Authenticated Home Page: zero accessibility violations', async () => {
+    const client = createTestQueryClient();
+    const { container } = render(
+      <QueryClientProvider client={client}>
+        <AuthenticatedHomePage
+          onNavigate={() => {}}
+          onOpenAddBatch={() => {}}
+          onOpenCreateListing={() => {}}
+        />
+      </QueryClientProvider>
+    );
+    const results = await runAxe(container);
+    if (results.violations.length > 0) {
+      console.log('Home Page Axe Violations:', JSON.stringify(results.violations, null, 2));
     }
     expect(results.violations).toEqual([]);
   });

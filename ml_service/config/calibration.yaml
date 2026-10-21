@@ -1,0 +1,243 @@
+meta:
+  generated_from: ml_service/data/raw/food_waste_dataset.csv
+  total_records: 8000
+  dataset_overall_mean_demand: 105.1
+  dataset_overall_median_demand: 94.0
+  dataset_overall_std_demand: 45.16
+business_types:
+  Cafeteria:
+    relative_scale: 0.5981
+    mean_demand: 62.86
+    median_demand: 61.0
+    std_demand: 15.93
+    sample_count: 1532
+  Cloud Kitchen:
+    relative_scale: 0.9855
+    mean_demand: 103.58
+    median_demand: 102.0
+    std_demand: 25.56
+    sample_count: 1520
+  Restaurant:
+    relative_scale: 0.7938
+    mean_demand: 83.43
+    median_demand: 81.0
+    std_demand: 21.13
+    sample_count: 2403
+  Supermarket:
+    relative_scale: 1.4853
+    mean_demand: 156.1
+    median_demand: 153.0
+    std_demand: 38.69
+    sample_count: 2335
+promotion:
+  lift_multiplier: 1.3306
+  mean_demand_promo_yes: 131.42
+  mean_demand_promo_no: 98.77
+  median_demand_promo_yes: 119.0
+  median_demand_promo_no: 89.0
+  pct_increase: 33.06
+weather:
+  Cloudy:
+    multiplier: 0.9747
+    mean_demand: 102.44
+    sample_count: 1891
+  Hot:
+    multiplier: 1.1347
+    mean_demand: 119.25
+    sample_count: 1556
+  Rainy:
+    multiplier: 0.7302
+    mean_demand: 76.74
+    sample_count: 1518
+  Sunny:
+    multiplier: 1.0926
+    mean_demand: 114.83
+    sample_count: 2629
+  Unknown:
+    multiplier: 1.0229
+    mean_demand: 107.51
+    sample_count: 196
+categories:
+  Bakery:
+    waste_rate_of_purchase: 0.0483
+    waste_rate_of_remaining: 0.2817
+    waste_reason_mix:
+      No Waste: 0.4162
+      Expired: 0.1997
+      Overproduction: 0.1852
+      Low Demand: 0.1411
+      Storage Issue: 0.0577
+    p_donation_given_waste: 0.2569
+    shelf_life_days:
+      min: 1.0
+      p10: 2.0
+      p25: 2.0
+      median: 3.0
+      p75: 4.0
+      p90: 5.0
+      max: 7.0
+      mean: 3.08
+      std: 1.18
+    storage_temperature:
+      min: 9.1
+      p25: 19.5
+      median: 22.0
+      p75: 24.7
+      max: 34.5
+      mean: 21.99
+      std: 3.92
+  Dairy:
+    waste_rate_of_purchase: 0.0382
+    waste_rate_of_remaining: 0.2114
+    waste_reason_mix:
+      No Waste: 0.4509
+      Overproduction: 0.241
+      Low Demand: 0.2083
+      Expired: 0.0783
+      Storage Issue: 0.0215
+    p_donation_given_waste: 0.2398
+    shelf_life_days:
+      min: 1.0
+      p10: 3.0
+      p25: 5.0
+      median: 7.0
+      p75: 9.0
+      p90: 11.0
+      max: 14.0
+      mean: 6.88
+      std: 2.94
+    storage_temperature:
+      min: -3.0
+      p25: 2.6
+      median: 3.9
+      p75: 5.2
+      max: 14.0
+      mean: 3.89
+      std: 1.99
+  Fruits:
+    waste_rate_of_purchase: 0.0421
+    waste_rate_of_remaining: 0.2398
+    waste_reason_mix:
+      No Waste: 0.4347
+      Overproduction: 0.2194
+      Low Demand: 0.2048
+      Expired: 0.1006
+      Storage Issue: 0.0405
+    p_donation_given_waste: 0.2707
+    shelf_life_days:
+      min: 1.0
+      p10: 2.0
+      p25: 4.0
+      median: 5.0
+      p75: 6.0
+      p90: 8.0
+      max: 10.0
+      mean: 5.1
+      std: 1.98
+    storage_temperature:
+      min: -2.8
+      p25: 5.9
+      median: 7.9
+      p75: 9.9
+      max: 16.6
+      mean: 7.9
+      std: 3.03
+  Meat:
+    waste_rate_of_purchase: 0.0449
+    waste_rate_of_remaining: 0.2533
+    waste_reason_mix:
+      No Waste: 0.4425
+      Overproduction: 0.2021
+      Low Demand: 0.1693
+      Expired: 0.1685
+      Storage Issue: 0.0176
+    p_donation_given_waste: 0.235
+    shelf_life_days:
+      min: 1.0
+      p10: 1.0
+      p25: 3.0
+      median: 4.0
+      p75: 5.0
+      p90: 6.0
+      max: 10.0
+      mean: 3.99
+      std: 1.87
+    storage_temperature:
+      min: -4.3
+      p25: 0.5
+      median: 1.9
+      p75: 3.3
+      max: 9.2
+      mean: 1.94
+      std: 2.02
+  Prepared Food:
+    waste_rate_of_purchase: 0.0761
+    waste_rate_of_remaining: 0.3875
+    waste_reason_mix:
+      Expired: 0.4057
+      No Waste: 0.3807
+      Overproduction: 0.1082
+      Storage Issue: 0.0534
+      Low Demand: 0.0521
+    p_donation_given_waste: 0.1572
+    shelf_life_days:
+      min: 1.0
+      p10: 1.0
+      p25: 1.0
+      median: 1.0
+      p75: 2.0
+      p90: 2.0
+      max: 3.0
+      mean: 1.55
+      std: 0.62
+    storage_temperature:
+      min: 4.8
+      p25: 16.8
+      median: 19.9
+      p75: 23.0
+      max: 36.6
+      mean: 19.9
+      std: 4.95
+  Vegetables:
+    waste_rate_of_purchase: 0.0396
+    waste_rate_of_remaining: 0.2223
+    waste_reason_mix:
+      No Waste: 0.443
+      Overproduction: 0.2183
+      Low Demand: 0.2064
+      Expired: 0.0812
+      Storage Issue: 0.0511
+    p_donation_given_waste: 0.2374
+    shelf_life_days:
+      min: 1.0
+      p10: 3.0
+      p25: 5.0
+      median: 6.0
+      p75: 7.0
+      p90: 9.0
+      max: 12.0
+      mean: 5.95
+      std: 2.06
+    storage_temperature:
+      min: -4.4
+      p25: 3.9
+      median: 5.9
+      p75: 8.0
+      max: 14.9
+      mean: 5.93
+      std: 2.99
+donation:
+  p_donation_given_waste: 0.2303
+  p_donation_given_zero_waste: 0.0
+  total_waste_records: 4585
+  donated_waste_records: 1056
+purchase_demand_ratio:
+  min: 0.3854
+  p10: 0.764
+  p25: 0.9091
+  median: 1.1016
+  p75: 1.3539
+  p90: 1.6627
+  max: 8.8523
+  mean: 1.1866
+  std: 0.4765

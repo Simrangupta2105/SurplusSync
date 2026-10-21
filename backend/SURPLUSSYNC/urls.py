@@ -31,6 +31,8 @@ urlpatterns = [
     path('api/v1/marketplace/', include('marketplace.urls')),
     path('api/v1/issues/', include('administration.tenant_urls')),
     path('api/v1/admin/', include('administration.urls')),
+    path('api/v1/home/', include('core.home_urls')),
+    path('api/v1/predictions/', include('predictions.urls')),
 ]
 
 if settings.DEBUG:

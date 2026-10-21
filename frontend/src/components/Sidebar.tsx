@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Home,
   LayoutDashboard,
   Package,
   ScanLine,
@@ -11,7 +12,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Repeat,
-  UtensilsCrossed,
   X,
   Building2,
   Users,
@@ -21,6 +21,11 @@ import {
   ScrollText,
   Shield,
   Terminal,
+  Store,
+  Truck,
+  ClipboardList,
+  Bell,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import type { OrganizationType } from '../types';
@@ -38,6 +43,7 @@ interface SidebarProps {
   isPlatformAdmin?: boolean;
   pendingVerificationCount?: number;
   openIssuesCount?: number;
+  aiPredictionAvailable?: boolean;
 }
 
 interface NavItem {
@@ -45,6 +51,7 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   badge?: number;
+  section?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -60,6 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isPlatformAdmin = false,
   pendingVerificationCount = 0,
   openIssuesCount = 0,
+  aiPredictionAvailable = true,
 }) => {
   // Listen to developer tools toggle
   const [devToolsEnabled, setDevToolsEnabled] = React.useState<boolean>(() => {
@@ -78,25 +86,48 @@ export const Sidebar: React.FC<SidebarProps> = ({
     };
   }, []);
 
-  // Navigation defined strictly by role
+  // Navigation defined strictly by role (Task B4)
   const businessNav: NavItem[] = [
+    { id: 'home', label: 'Home', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'inventory', label: 'Inventory', icon: Package },
+    { id: 'alerts', label: 'Expiry Alerts', icon: BellRing, badge: alertCount },
     { id: 'scan', label: 'Scan', icon: ScanLine },
-    { id: 'alerts', label: 'Alerts', icon: BellRing, badge: alertCount },
     { id: 'import', label: 'CSV Import', icon: UploadCloud },
-    { id: 'donations', label: 'Donations', icon: HeartHandshake },
-    { id: 'impact', label: 'Impact', icon: BarChart3 },
+    { id: 'marketplace', label: 'Surplus Marketplace', icon: Store },
+    { id: 'donations', label: 'Donation Requests', icon: HeartHandshake },
+    { id: 'schedule', label: 'Pickup Schedule', icon: Truck },
+    { id: 'impact', label: 'Impact Analytics', icon: BarChart3 },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    ...(aiPredictionAvailable !== false
+      ? [
+          {
+            id: 'business/ai/planner',
+            label: 'Purchase Planner',
+            icon: Sparkles,
+            section: 'AI Waste Prediction',
+          },
+          {
+            id: 'business/ai/insights',
+            label: 'Waste Insights',
+            icon: BarChart3,
+          },
+        ]
+      : []),
     ...(devToolsEnabled ? [{ id: 'business/pos-simulator', label: 'POS Simulator', icon: Terminal }] : []),
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   const ngoNav: NavItem[] = [
+    { id: 'home', label: 'Home', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'feed', label: 'Food Feed', icon: UtensilsCrossed },
-    { id: 'claims', label: 'My Claims', icon: HeartHandshake },
+    { id: 'feed', label: 'Food Feed', icon: Store },
+    { id: 'requirements', label: 'Our Requirements', icon: ClipboardList },
+    { id: 'donations', label: 'My Requests', icon: HeartHandshake },
+    { id: 'schedule', label: 'Pickup Schedule', icon: Truck },
+    { id: 'impact', label: 'Impact Analytics', icon: BarChart3 },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'profile', label: 'Profile & Ratings', icon: Star },
-    { id: 'impact', label: 'Impact', icon: BarChart3 },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -177,17 +208,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3 space-y-1 overflow-y-auto">
+          <nav aria-label="Sidebar navigation" className="p-3 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
-              const isActive = activePath === item.id || (item.id === 'business/pos-simulator' && (activePath === 'pos-simulator' || activePath === 'business/pos-simulator'));
+              const isActive =
+                activePath === item.id ||
+                (item.id === 'business/pos-simulator' &&
+                  (activePath === 'pos-simulator' || activePath === 'business/pos-simulator')) ||
+                (item.id === 'business/ai/planner' &&
+                  (activePath === 'business/ai/planner' || activePath === 'ai/planner' || activePath === 'planner')) ||
+                (item.id === 'business/ai/insights' &&
+                  (activePath === 'business/ai/insights' || activePath === 'ai/insights' || activePath === 'insights'));
               const Icon = item.icon;
               return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    onNavigate(item.id);
-                    onClose();
-                  }}
+                <React.Fragment key={item.id}>
+                  {item.section && !isCollapsed && (
+                    <div className="pt-2.5 pb-1 px-3 text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">
+                      {item.section}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => {
+                      onNavigate(item.id);
+                      onClose();
+                    }}
                   title={isCollapsed ? item.label : undefined}
                   className={cn(
                     'w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-xs font-medium transition-all duration-150 cursor-pointer select-none',
@@ -220,9 +263,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[var(--color-danger)]" />
                   )}
                 </button>
-              );
-            })}
-          </nav>
+              </React.Fragment>
+            );
+          })}
+        </nav>
         </div>
 
         {/* Bottom Section: Organization & Collapse Toggle */}

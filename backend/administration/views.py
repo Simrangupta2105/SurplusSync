@@ -617,7 +617,7 @@ class AdminStatsView(APIView):
         # 3. Marketplace listings aggregates
         listing_stats = Listing.objects.aggregate(
             active_listings=Count("id", filter=Q(status=Listing.Status.OPEN)),
-            completed_kg=Sum("quantity", filter=Q(status=Listing.Status.COMPLETED)),
+            completed_kg=Sum("quantity_offered", filter=Q(status=Listing.Status.COMPLETED)),
         )
 
         # 4. Inventory donations aggregate

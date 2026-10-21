@@ -42,6 +42,19 @@ import type {
   PlatformStats,
   IssueStatus,
   IssuePriority,
+  DonationRequest,
+  SurplusListingItem,
+  NGORequirementItem,
+  PickupScheduleItem,
+  ImpactAnalytics,
+  PublicImpactMetrics,
+  MarketplaceNotification,
+  MatchingResultItem,
+  PublicHomeTotals,
+  HomeData,
+  PlanPredictionRequest,
+  PlanPredictionResponse,
+  DatasetInsightsResponse,
 } from '../types';
 
 // Deterministic PRNG (Mulberry32)
@@ -78,6 +91,10 @@ export class DemoSource implements DataSource {
   private donors: DonorPartner[] = [];
   private ngos: NGOPartner[] = [];
   private notifications: NotificationItem[] = [];
+  private donationRequests: DonationRequest[] = [];
+  private surplusListings: SurplusListingItem[] = [];
+  private ngoRequirements: NGORequirementItem[] = [];
+  private marketplaceNotifications: MarketplaceNotification[] = [];
 
   // Admin Tables
   private adminOrganizations: AdminOrganization[] = [];
@@ -1065,6 +1082,470 @@ export class DemoSource implements DataSource {
         target_id: '6',
         details: { reason: 'Repeated cold chain temperature compliance breach.' },
         created_at: '2026-08-25T14:40:00Z',
+      },
+    ];
+
+    // 14. Surplus Marketplace Listings
+    this.surplusListings = [
+      {
+        id: 1,
+        donor: 1,
+        donor_name: 'SurplusSync Partner Kitchen',
+        donor_rating: 4.9,
+        donor_address: 'Service Gate 3, MG Road, Bengaluru',
+        donor_latitude: 12.9754,
+        donor_longitude: 77.6190,
+        batch: 7,
+        title: 'Banquet Dal Makhani & Jeera Rice Trays',
+        description: 'Freshly prepared evening banquet surplus in insulated stainless-steel food pans.',
+        food_category: 'Prepared Meals',
+        quantity_offered: 35,
+        quantity_reserved: 10,
+        quantity_claimed: 0,
+        available_quantity: 25,
+        unit: 'kg',
+        is_cooked: true,
+        allergens: ['Dairy'],
+        temperature_control: 'CHILLED',
+        expiry_date: new Date(Date.now() + 3600000 * 18).toISOString(),
+        pickup_start: new Date(Date.now() + 3600000 * 1).toISOString(),
+        pickup_end: new Date(Date.now() + 3600000 * 5).toISOString(),
+        status: 'AVAILABLE',
+        distance_km: 1.8,
+        created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+      },
+      {
+        id: 2,
+        donor: 2,
+        donor_name: 'The Oberoi Luxury Banquets',
+        donor_rating: 4.8,
+        donor_address: 'Banquet Loading Dock, Oberoi MG Road, Bengaluru',
+        donor_latitude: 12.9733,
+        donor_longitude: 77.6185,
+        batch: 25,
+        title: 'Paneer Butter Masala Catering Tubs',
+        description: 'Unserved gourmet buffet trays maintained under continuous temperature logging.',
+        food_category: 'Prepared Meals',
+        quantity_offered: 28,
+        quantity_reserved: 28,
+        quantity_claimed: 0,
+        available_quantity: 0,
+        unit: 'kg',
+        is_cooked: true,
+        allergens: ['Dairy', 'Nuts'],
+        temperature_control: 'CHILLED',
+        expiry_date: new Date(Date.now() + 3600000 * 24).toISOString(),
+        pickup_start: new Date(Date.now() + 3600000 * 2).toISOString(),
+        pickup_end: new Date(Date.now() + 3600000 * 6).toISOString(),
+        status: 'CLAIMED',
+        distance_km: 2.1,
+        created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+      },
+      {
+        id: 3,
+        donor: 1,
+        donor_name: 'SurplusSync Partner Kitchen',
+        donor_rating: 4.9,
+        donor_address: 'Service Gate 3, MG Road, Bengaluru',
+        donor_latitude: 12.9754,
+        donor_longitude: 77.6190,
+        batch: 1,
+        title: 'Nandini Toned Fresh Milk Crates',
+        description: 'Pouch crates from morning distribution with intact cold chain certification.',
+        food_category: 'Dairy',
+        quantity_offered: 50,
+        quantity_reserved: 20,
+        quantity_claimed: 0,
+        available_quantity: 30,
+        unit: 'L',
+        is_cooked: false,
+        allergens: ['Dairy'],
+        temperature_control: 'CHILLED',
+        expiry_date: new Date(Date.now() + 3600000 * 36).toISOString(),
+        pickup_start: new Date(Date.now() + 3600000 * 1).toISOString(),
+        pickup_end: new Date(Date.now() + 3600000 * 8).toISOString(),
+        status: 'PARTIALLY_RESERVED',
+        distance_km: 1.8,
+        created_at: new Date(Date.now() - 3600000 * 1).toISOString(),
+      },
+      {
+        id: 4,
+        donor: 5,
+        donor_name: 'Daily Bread Artisanal Bakery',
+        donor_rating: 4.7,
+        donor_address: '100ft Road Indiranagar, Bengaluru',
+        donor_latitude: 12.9689,
+        donor_longitude: 77.6432,
+        batch: 12,
+        title: 'Whole Wheat Sourdough & Multigrain Loaves',
+        description: 'Artisanal day-end bakery bake, wrapped in food-safe paper liners.',
+        food_category: 'Bakery',
+        quantity_offered: 40,
+        quantity_reserved: 0,
+        quantity_claimed: 0,
+        available_quantity: 40,
+        unit: 'kg',
+        is_cooked: false,
+        allergens: ['Gluten'],
+        temperature_control: 'AMBIENT',
+        expiry_date: new Date(Date.now() + 3600000 * 48).toISOString(),
+        pickup_start: new Date(Date.now() + 3600000 * 1).toISOString(),
+        pickup_end: new Date(Date.now() + 3600000 * 10).toISOString(),
+        status: 'AVAILABLE',
+        distance_km: 3.5,
+        created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
+      },
+      {
+        id: 5,
+        donor: 3,
+        donor_name: 'BigBasket Fulfilment Centre #4',
+        donor_rating: 4.7,
+        donor_address: 'Gate 2, Hosur Road DC, Bommanahalli, Bengaluru',
+        donor_latitude: 12.9038,
+        donor_longitude: 77.6256,
+        batch: 18,
+        title: 'Hydroponic Spinach & Mixed Salad Greens Crates',
+        description: 'Crisp seasonal harvest boxes, ready for immediate shelter distribution.',
+        food_category: 'Produce',
+        quantity_offered: 60,
+        quantity_reserved: 15,
+        quantity_claimed: 0,
+        available_quantity: 45,
+        unit: 'kg',
+        is_cooked: false,
+        allergens: [],
+        temperature_control: 'CHILLED',
+        expiry_date: new Date(Date.now() + 3600000 * 30).toISOString(),
+        pickup_start: new Date(Date.now() + 3600000 * 2).toISOString(),
+        pickup_end: new Date(Date.now() + 3600000 * 12).toISOString(),
+        status: 'AVAILABLE',
+        distance_km: 5.4,
+        created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
+      },
+    ];
+
+    // 15. Donation Requests (covering all status flows)
+    this.donationRequests = [
+      {
+        id: 1,
+        request_code: 'REQ-2026-00101',
+        listing: 1,
+        listing_title: 'Banquet Dal Makhani & Jeera Rice Trays',
+        item_name: 'Dal Makhani & Jeera Rice Trays',
+        donor: 1,
+        donor_name: 'SurplusSync Partner Kitchen',
+        donor_address: 'Service Gate 3, MG Road, Bengaluru',
+        donor_phone: '+91 80 4123 4567',
+        recipient: 2,
+        recipient_name: 'Surplus Relief Foundation',
+        recipient_contact_phone: '+91 98765 43210',
+        recipient_address: 'Koramangala Community Kitchen, Bengaluru',
+        requested_quantity: 15,
+        unit: 'kg',
+        status: 'REQUESTED',
+        requested_pickup_time: new Date(Date.now() + 3600000 * 2).toISOString(),
+        scheduled_pickup_time: null,
+        collected_time: null,
+        completed_time: null,
+        driver_name: '',
+        driver_phone: '',
+        vehicle_plate: '',
+        pickup_notes: 'Will deploy volunteer van with insulated thermal containers.',
+        rejection_reason: '',
+        created_at: new Date(Date.now() - 3600000 * 1).toISOString(),
+        updated_at: new Date(Date.now() - 3600000 * 1).toISOString(),
+        can_approve: true,
+        can_reject: true,
+        can_cancel: false,
+      },
+      {
+        id: 2,
+        request_code: 'REQ-2026-00102',
+        listing: 3,
+        listing_title: 'Nandini Toned Fresh Milk Crates',
+        item_name: 'Nandini Toned Fresh Milk Crates',
+        donor: 1,
+        donor_name: 'SurplusSync Partner Kitchen',
+        donor_address: 'Service Gate 3, MG Road, Bengaluru',
+        donor_phone: '+91 80 4123 4567',
+        recipient: 3,
+        recipient_name: 'Robin Hood Army (Mysore Chapter)',
+        recipient_contact_phone: '+91 98450 11223',
+        recipient_address: 'Shelter Hub, Cantonment, Bengaluru',
+        requested_quantity: 20,
+        unit: 'L',
+        status: 'APPROVED',
+        requested_pickup_time: new Date(Date.now() + 3600000 * 3).toISOString(),
+        scheduled_pickup_time: new Date(Date.now() + 3600000 * 3).toISOString(),
+        collected_time: null,
+        completed_time: null,
+        driver_name: 'Suresh Kumar',
+        driver_phone: '+91 91234 56789',
+        vehicle_plate: 'KA-01-AB-1234',
+        pickup_notes: 'Confirmed pickup time slot. Loading dock bay 2 reserved.',
+        rejection_reason: '',
+        created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
+        updated_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+        can_approve: false,
+        can_reject: false,
+        can_cancel: true,
+      },
+      {
+        id: 3,
+        request_code: 'REQ-2026-00103',
+        listing: 4,
+        listing_title: 'Whole Wheat Sourdough & Multigrain Loaves',
+        item_name: 'Whole Wheat Sourdough & Multigrain Loaves',
+        donor: 5,
+        donor_name: 'Daily Bread Artisanal Bakery',
+        donor_address: '100ft Road Indiranagar, Bengaluru',
+        donor_phone: '+91 80 4888 9999',
+        recipient: 2,
+        recipient_name: 'Surplus Relief Foundation',
+        recipient_contact_phone: '+91 98765 43210',
+        recipient_address: 'Koramangala Community Kitchen, Bengaluru',
+        requested_quantity: 25,
+        unit: 'kg',
+        status: 'SCHEDULED',
+        requested_pickup_time: new Date(Date.now() + 3600000 * 4).toISOString(),
+        scheduled_pickup_time: new Date(Date.now() + 3600000 * 4).toISOString(),
+        collected_time: null,
+        completed_time: null,
+        driver_name: 'Anand Verma',
+        driver_phone: '+91 99887 76655',
+        vehicle_plate: 'KA-03-MG-9821',
+        pickup_notes: 'Direct loading from bakery rear parking bay.',
+        rejection_reason: '',
+        created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
+        updated_at: new Date(Date.now() - 3600000 * 3).toISOString(),
+        can_in_transit: true,
+        can_collect: true,
+      },
+      {
+        id: 4,
+        request_code: 'REQ-2026-00104',
+        listing: 2,
+        listing_title: 'Paneer Butter Masala Catering Tubs',
+        item_name: 'Paneer Butter Masala Catering Tubs',
+        donor: 2,
+        donor_name: 'The Oberoi Luxury Banquets',
+        donor_address: 'Banquet Loading Dock, Oberoi MG Road, Bengaluru',
+        donor_phone: '+91 80 2558 5858',
+        recipient: 2,
+        recipient_name: 'Surplus Relief Foundation',
+        recipient_contact_phone: '+91 98765 43210',
+        recipient_address: 'Koramangala Community Kitchen, Bengaluru',
+        requested_quantity: 28,
+        unit: 'kg',
+        status: 'IN_TRANSIT',
+        requested_pickup_time: new Date(Date.now() + 3600000 * 1).toISOString(),
+        scheduled_pickup_time: new Date(Date.now() + 3600000 * 1).toISOString(),
+        collected_time: null,
+        completed_time: null,
+        driver_name: 'Ramesh Gowda',
+        driver_phone: '+91 97412 34567',
+        vehicle_plate: 'KA-01-MJ-4021',
+        pickup_notes: 'Driver dispatched, estimated arrival at donor facility in 20 minutes.',
+        rejection_reason: '',
+        created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+        updated_at: new Date(Date.now() - 1800000).toISOString(),
+        can_collect: true,
+      },
+      {
+        id: 5,
+        request_code: 'REQ-2026-00105',
+        listing: 1,
+        listing_title: 'Banquet Dal Makhani & Jeera Rice Trays',
+        item_name: 'Jeera Rice Trays',
+        donor: 1,
+        donor_name: 'SurplusSync Partner Kitchen',
+        donor_address: 'Service Gate 3, MG Road, Bengaluru',
+        donor_phone: '+91 80 4123 4567',
+        recipient: 7,
+        recipient_name: 'Akshaya Patra Relief Hub',
+        recipient_contact_phone: '+91 80 2345 6789',
+        recipient_address: 'Hub 12, Rajajinagar, Bengaluru',
+        requested_quantity: 18,
+        unit: 'kg',
+        status: 'COLLECTED',
+        requested_pickup_time: new Date(Date.now() - 3600000 * 2).toISOString(),
+        scheduled_pickup_time: new Date(Date.now() - 3600000 * 2).toISOString(),
+        collected_time: new Date(Date.now() - 3600000 * 1).toISOString(),
+        completed_time: null,
+        driver_name: 'Manoj Patel',
+        driver_phone: '+91 98800 12345',
+        vehicle_plate: 'KA-04-E-5566',
+        pickup_notes: 'Food collected in sterile cambro insulated carriers.',
+        rejection_reason: '',
+        created_at: new Date(Date.now() - 3600000 * 6).toISOString(),
+        updated_at: new Date(Date.now() - 3600000 * 1).toISOString(),
+        can_complete: true,
+      },
+      {
+        id: 6,
+        request_code: 'REQ-2026-00106',
+        listing: 5,
+        listing_title: 'Hydroponic Spinach & Mixed Salad Greens Crates',
+        item_name: 'Hydroponic Spinach & Greens',
+        donor: 3,
+        donor_name: 'BigBasket Fulfilment Centre #4',
+        donor_address: 'Gate 2, Hosur Road DC, Bommanahalli, Bengaluru',
+        donor_phone: '+91 80 6789 0000',
+        recipient: 2,
+        recipient_name: 'Surplus Relief Foundation',
+        recipient_contact_phone: '+91 98765 43210',
+        recipient_address: 'Koramangala Community Kitchen, Bengaluru',
+        requested_quantity: 40,
+        unit: 'kg',
+        status: 'COMPLETED',
+        requested_pickup_time: new Date(Date.now() - 86400000).toISOString(),
+        scheduled_pickup_time: new Date(Date.now() - 86400000).toISOString(),
+        collected_time: new Date(Date.now() - 86400000 + 1800000).toISOString(),
+        completed_time: new Date(Date.now() - 86400000 + 7200000).toISOString(),
+        driver_name: 'Farhan Ali',
+        driver_phone: '+91 97312 99887',
+        vehicle_plate: 'KA-05-AB-7788',
+        pickup_notes: 'Successfully distributed across 160 families.',
+        rejection_reason: '',
+        created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+        updated_at: new Date(Date.now() - 86400000).toISOString(),
+      },
+      {
+        id: 7,
+        request_code: 'REQ-2026-00107',
+        listing: 3,
+        listing_title: 'Nandini Toned Fresh Milk Crates',
+        item_name: 'Nandini Toned Fresh Milk Crates',
+        donor: 1,
+        donor_name: 'SurplusSync Partner Kitchen',
+        donor_address: 'Service Gate 3, MG Road, Bengaluru',
+        donor_phone: '+91 80 4123 4567',
+        recipient: 3,
+        recipient_name: 'Robin Hood Army (Mysore Chapter)',
+        recipient_contact_phone: '+91 98450 11223',
+        recipient_address: 'Shelter Hub, Cantonment, Bengaluru',
+        requested_quantity: 30,
+        unit: 'L',
+        status: 'REJECTED',
+        requested_pickup_time: new Date(Date.now() - 3600000 * 10).toISOString(),
+        scheduled_pickup_time: null,
+        collected_time: null,
+        completed_time: null,
+        driver_name: '',
+        driver_phone: '',
+        vehicle_plate: '',
+        pickup_notes: '',
+        rejection_reason: 'Cold chain vehicle capacity already saturated for evening dispatch slot.',
+        created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
+        updated_at: new Date(Date.now() - 3600000 * 10).toISOString(),
+      },
+    ];
+
+    // 16. NGO Food Requirements
+    this.ngoRequirements = [
+      {
+        id: 1,
+        ngo: 2,
+        ngo_name: 'Surplus Relief Foundation',
+        title: 'Daily Evening Hot Dinner Meals for Night Shelters',
+        food_category: 'Prepared Meals',
+        min_quantity_kg: 25,
+        target_beneficiaries: 120,
+        is_urgent: true,
+        fulfillment_status: 'OPEN',
+        needed_by: new Date(Date.now() + 3600000 * 8).toISOString(),
+        notes: 'Require nutritious cooked food (rice, dal, sabzi) for 3 homeless shelters in Central Bengaluru.',
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+        matches_count: 2,
+      },
+      {
+        id: 2,
+        ngo: 2,
+        ngo_name: 'Surplus Relief Foundation',
+        title: 'Fresh Milk & Dairy for Child Nutrition Program',
+        food_category: 'Dairy',
+        min_quantity_kg: 20,
+        target_beneficiaries: 85,
+        is_urgent: false,
+        fulfillment_status: 'PARTIALLY_MET',
+        needed_by: new Date(Date.now() + 3600000 * 24).toISOString(),
+        notes: 'Pasteurized milk, curd or paneer needed for morning orphanage breakfast meal.',
+        created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+        matches_count: 1,
+      },
+      {
+        id: 3,
+        ngo: 3,
+        ngo_name: 'Robin Hood Army (Mysore Chapter)',
+        title: 'Bakery Loaves & Bread Rolls for Community Kitchen',
+        food_category: 'Bakery',
+        min_quantity_kg: 30,
+        target_beneficiaries: 150,
+        is_urgent: false,
+        fulfillment_status: 'OPEN',
+        needed_by: new Date(Date.now() + 3600000 * 36).toISOString(),
+        notes: 'Whole wheat bread, buns, or rolls suitable for immediate consumption or snack packs.',
+        created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+        matches_count: 1,
+      },
+      {
+        id: 4,
+        ngo: 7,
+        ngo_name: 'Akshaya Patra Relief Hub',
+        title: 'Fresh Vegetables & Leafy Greens for Mid-Day Prep',
+        food_category: 'Produce',
+        min_quantity_kg: 50,
+        target_beneficiaries: 300,
+        is_urgent: false,
+        fulfillment_status: 'OPEN',
+        needed_by: new Date(Date.now() + 3600000 * 48).toISOString(),
+        notes: 'Bulk vegetables, potatoes, onions, carrots, and green leafy vegetables.',
+        created_at: new Date(Date.now() - 86400000 * 4).toISOString(),
+        matches_count: 1,
+      },
+    ];
+
+    // 17. Marketplace Notifications
+    this.marketplaceNotifications = [
+      {
+        id: 1,
+        recipient_id: 1,
+        notification_type: 'DONATION_REQUEST_RECEIVED',
+        title: 'New Donation Request',
+        message: 'Surplus Relief Foundation requested 15 kg of Banquet Dal Makhani & Jeera Rice Trays.',
+        is_read: false,
+        created_at: new Date(Date.now() - 3600000 * 1).toISOString(),
+        action_url: '#/donations?tab=PENDING_APPROVAL',
+      },
+      {
+        id: 2,
+        recipient_id: 2,
+        notification_type: 'SURPLUS_MATCH_FOUND',
+        title: 'Matching Surplus Available!',
+        message: 'SurplusSync Partner Kitchen posted 25 kg of Prepared Meals matching your active requirement.',
+        is_read: false,
+        created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+        action_url: '#/marketplace',
+      },
+      {
+        id: 3,
+        recipient_id: 1,
+        notification_type: 'PICKUP_IN_TRANSIT',
+        title: 'Rescue Vehicle En Route',
+        message: 'Driver Ramesh Gowda is in transit to collect Paneer Butter Masala Catering Tubs.',
+        is_read: true,
+        created_at: new Date(Date.now() - 1800000).toISOString(),
+        action_url: '#/schedule',
+      },
+      {
+        id: 4,
+        recipient_id: 1,
+        notification_type: 'IMPACT_MILESTONE',
+        title: 'Impact Milestone Achieved! 🏆',
+        message: 'Your kitchen has prevented over 8,000 kg of CO2e and provided 7,700+ meals to date!',
+        is_read: true,
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+        action_url: '#/impact',
       },
     ];
 
@@ -2693,6 +3174,554 @@ export class DemoSource implements DataSource {
     return this.adminIssues.filter((i) => i.reporter_org === orgId);
   }
 
+  // --- Redistribution Methods (Donation Requests, Surplus Marketplace, NGO Requirements, Schedule, ESG) ---
+
+  async getDonationRequests(filters?: { status?: string; search?: string }): Promise<DonationRequest[]> {
+    await this.sleep(150, 300);
+    let list = [...this.donationRequests];
+
+    if (filters?.status) {
+      const s = filters.status.toUpperCase();
+      if (s === 'PENDING_APPROVAL') {
+        list = list.filter((r) => r.status === 'REQUESTED');
+      } else if (s === 'SCHEDULED') {
+        list = list.filter((r) => r.status === 'APPROVED' || r.status === 'SCHEDULED');
+      } else if (s === 'IN_TRANSIT') {
+        list = list.filter((r) => r.status === 'IN_TRANSIT');
+      } else if (s === 'COMPLETED') {
+        list = list.filter((r) => r.status === 'COLLECTED' || r.status === 'COMPLETED');
+      } else if (s !== 'ALL') {
+        list = list.filter((r) => r.status === s);
+      }
+    }
+
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      list = list.filter(
+        (r) =>
+          r.request_code.toLowerCase().includes(q) ||
+          r.item_name.toLowerCase().includes(q) ||
+          r.recipient_name.toLowerCase().includes(q) ||
+          r.donor_name.toLowerCase().includes(q)
+      );
+    }
+
+    return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
+
+  async getDonationRequest(codeOrId: string | number): Promise<DonationRequest> {
+    await this.sleep(100, 200);
+    const req = this.donationRequests.find(
+      (r) => String(r.id) === String(codeOrId) || r.request_code === String(codeOrId)
+    );
+    if (!req) {
+      throw new Error(`Donation request '${codeOrId}' not found.`);
+    }
+    return req;
+  }
+
+  async createDonationRequest(payload: {
+    listing?: number;
+    item_name?: string;
+    requested_quantity: number | string;
+    requested_pickup_time: string;
+    pickup_notes?: string;
+  }): Promise<DonationRequest> {
+    await this.sleep(200, 400);
+    const listing = payload.listing ? this.surplusListings.find((l) => l.id === payload.listing) : null;
+    const nextId = this.donationRequests.length + 1;
+    const code = `REQ-2026-${String(nextId).padStart(5, '0')}`;
+
+    const newReq: DonationRequest = {
+      id: nextId,
+      request_code: code,
+      listing: listing?.id || null,
+      listing_title: listing?.title || payload.item_name || 'Surplus Food Package',
+      item_name: listing?.title || payload.item_name || 'Surplus Food Package',
+      donor: listing?.donor || 1,
+      donor_name: listing?.donor_name || 'SurplusSync Partner Kitchen',
+      donor_address: listing?.donor_address || 'Service Gate 3, MG Road, Bengaluru',
+      donor_phone: '+91 80 4123 4567',
+      recipient: this.currentUser?.organization?.id || 2,
+      recipient_name: this.currentUser?.organization?.name || 'Surplus Relief Foundation',
+      recipient_contact_phone: '+91 98765 43210',
+      recipient_address: 'Relief Hub, Bengaluru',
+      requested_quantity: payload.requested_quantity,
+      unit: listing?.unit || 'kg',
+      status: 'REQUESTED',
+      requested_pickup_time: payload.requested_pickup_time || new Date(Date.now() + 7200000).toISOString(),
+      scheduled_pickup_time: null,
+      collected_time: null,
+      completed_time: null,
+      driver_name: '',
+      driver_phone: '',
+      vehicle_plate: '',
+      pickup_notes: payload.pickup_notes || '',
+      rejection_reason: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      can_approve: true,
+      can_reject: true,
+      can_cancel: true,
+    };
+
+    if (listing) {
+      const reqQty = Number(payload.requested_quantity) || 0;
+      listing.quantity_reserved = Number(listing.quantity_reserved) + reqQty;
+      listing.available_quantity = Math.max(0, Number(listing.quantity_offered) - Number(listing.quantity_reserved));
+      if (listing.available_quantity === 0) {
+        listing.status = 'CLAIMED';
+      } else {
+        listing.status = 'PARTIALLY_RESERVED';
+      }
+    }
+
+    this.donationRequests.unshift(newReq);
+    return newReq;
+  }
+
+  async approveDonationRequest(codeOrId: string | number, scheduledPickupTime?: string): Promise<DonationRequest> {
+    await this.sleep(150, 300);
+    const req = await this.getDonationRequest(codeOrId);
+    req.status = 'APPROVED';
+    req.scheduled_pickup_time = scheduledPickupTime || req.requested_pickup_time || new Date().toISOString();
+    req.updated_at = new Date().toISOString();
+    req.can_approve = false;
+    req.can_reject = false;
+    req.can_cancel = true;
+    return req;
+  }
+
+  async confirmScheduleDonationRequest(
+    codeOrId: string | number,
+    scheduledPickupTime: string,
+    notes?: string
+  ): Promise<DonationRequest> {
+    await this.sleep(150, 300);
+    const req = await this.getDonationRequest(codeOrId);
+    req.status = 'SCHEDULED';
+    req.scheduled_pickup_time = scheduledPickupTime;
+    if (notes) req.pickup_notes = notes;
+    if (!req.driver_name) {
+      req.driver_name = 'Suresh Kumar';
+      req.driver_phone = '+91 91234 56789';
+      req.vehicle_plate = 'KA-01-AB-1234';
+    }
+    req.updated_at = new Date().toISOString();
+    req.can_in_transit = true;
+    req.can_collect = true;
+    return req;
+  }
+
+  async rejectDonationRequest(codeOrId: string | number, reason: string): Promise<DonationRequest> {
+    await this.sleep(150, 300);
+    const req = await this.getDonationRequest(codeOrId);
+    req.status = 'REJECTED';
+    req.rejection_reason = reason;
+    req.updated_at = new Date().toISOString();
+    req.can_approve = false;
+    req.can_reject = false;
+
+    // Release reserved quantity if linked to listing
+    if (req.listing) {
+      const listing = this.surplusListings.find((l) => l.id === req.listing);
+      if (listing) {
+        listing.quantity_reserved = Math.max(0, Number(listing.quantity_reserved) - Number(req.requested_quantity));
+        listing.available_quantity = Number(listing.quantity_offered) - Number(listing.quantity_reserved);
+        listing.status = listing.available_quantity > 0 ? 'AVAILABLE' : 'CLAIMED';
+      }
+    }
+    return req;
+  }
+
+  async cancelDonationRequest(codeOrId: string | number, reason?: string): Promise<DonationRequest> {
+    await this.sleep(150, 300);
+    const req = await this.getDonationRequest(codeOrId);
+    req.status = 'CANCELLED';
+    if (reason) req.rejection_reason = reason;
+    req.updated_at = new Date().toISOString();
+
+    if (req.listing) {
+      const listing = this.surplusListings.find((l) => l.id === req.listing);
+      if (listing) {
+        listing.quantity_reserved = Math.max(0, Number(listing.quantity_reserved) - Number(req.requested_quantity));
+        listing.available_quantity = Number(listing.quantity_offered) - Number(listing.quantity_reserved);
+        listing.status = listing.available_quantity > 0 ? 'AVAILABLE' : 'CLAIMED';
+      }
+    }
+    return req;
+  }
+
+  async setInTransitDonationRequest(
+    codeOrId: string | number,
+    payload?: { driver_name?: string; driver_phone?: string; vehicle_plate?: string }
+  ): Promise<DonationRequest> {
+    await this.sleep(150, 300);
+    const req = await this.getDonationRequest(codeOrId);
+    req.status = 'IN_TRANSIT';
+    if (payload?.driver_name) req.driver_name = payload.driver_name;
+    if (payload?.driver_phone) req.driver_phone = payload.driver_phone;
+    if (payload?.vehicle_plate) req.vehicle_plate = payload.vehicle_plate;
+    req.updated_at = new Date().toISOString();
+    req.can_collect = true;
+    return req;
+  }
+
+  async collectDonationRequest(codeOrId: string | number, notes?: string): Promise<DonationRequest> {
+    await this.sleep(150, 300);
+    const req = await this.getDonationRequest(codeOrId);
+    req.status = 'COLLECTED';
+    req.collected_time = new Date().toISOString();
+    if (notes) req.pickup_notes = `${req.pickup_notes || ''}\nCollection note: ${notes}`.trim();
+    req.updated_at = new Date().toISOString();
+    req.can_complete = true;
+    return req;
+  }
+
+  async confirmReceiptDonationRequest(codeOrId: string | number, notes?: string): Promise<DonationRequest> {
+    await this.sleep(150, 300);
+    const req = await this.getDonationRequest(codeOrId);
+    req.status = 'COMPLETED';
+    req.completed_time = new Date().toISOString();
+    if (notes) req.pickup_notes = `${req.pickup_notes || ''}\nReceipt note: ${notes}`.trim();
+    req.updated_at = new Date().toISOString();
+    return req;
+  }
+
+  async reportNoShowDonationRequest(codeOrId: string | number, notes?: string): Promise<DonationRequest> {
+    await this.sleep(150, 300);
+    const req = await this.getDonationRequest(codeOrId);
+    req.status = 'NO_SHOW';
+    if (notes) req.rejection_reason = notes;
+    req.updated_at = new Date().toISOString();
+    return req;
+  }
+
+  // --- Surplus Marketplace Methods ---
+
+  async getSurplusListings(filters?: {
+    status?: string;
+    category?: string;
+    search?: string;
+    mine?: boolean;
+    is_cooked?: boolean;
+  }): Promise<SurplusListingItem[]> {
+    await this.sleep(150, 300);
+    let list = [...this.surplusListings];
+
+    if (filters?.category) {
+      list = list.filter((l) => l.food_category.toLowerCase() === filters.category!.toLowerCase());
+    }
+    if (filters?.status) {
+      list = list.filter((l) => l.status === filters.status);
+    }
+    if (filters?.is_cooked !== undefined) {
+      list = list.filter((l) => l.is_cooked === filters.is_cooked);
+    }
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      list = list.filter(
+        (l) =>
+          l.title.toLowerCase().includes(q) ||
+          l.description.toLowerCase().includes(q) ||
+          l.donor_name.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }
+
+  async getSurplusListing(id: number): Promise<SurplusListingItem> {
+    await this.sleep(100, 200);
+    const l = this.surplusListings.find((item) => item.id === id);
+    if (!l) throw new Error(`Listing #${id} not found.`);
+    return l;
+  }
+
+  async createSurplusListing(payload: Partial<SurplusListingItem>): Promise<SurplusListingItem> {
+    await this.sleep(200, 400);
+    const nextId = this.surplusListings.length + 1;
+    const qty = Number(payload.quantity_offered) || 10;
+    const newListing: SurplusListingItem = {
+      id: nextId,
+      donor: this.currentUser?.organization?.id || 1,
+      donor_name: this.currentUser?.organization?.name || 'SurplusSync Partner Kitchen',
+      donor_rating: 4.9,
+      donor_address: 'Service Gate 3, MG Road, Bengaluru',
+      donor_latitude: 12.9754,
+      donor_longitude: 77.6190,
+      batch: payload.batch || null,
+      title: payload.title || 'Surplus Food Batch',
+      description: payload.description || 'Verified food surplus ready for relief redistribution.',
+      food_category: payload.food_category || 'Prepared Meals',
+      quantity_offered: qty,
+      quantity_reserved: 0,
+      quantity_claimed: 0,
+      available_quantity: qty,
+      unit: payload.unit || 'kg',
+      is_cooked: payload.is_cooked ?? true,
+      allergens: payload.allergens || [],
+      temperature_control: payload.temperature_control || 'CHILLED',
+      expiry_date: payload.expiry_date || new Date(Date.now() + 86400000).toISOString(),
+      pickup_start: payload.pickup_start || new Date().toISOString(),
+      pickup_end: payload.pickup_end || new Date(Date.now() + 3600000 * 6).toISOString(),
+      status: 'AVAILABLE',
+      distance_km: 1.5,
+      created_at: new Date().toISOString(),
+    };
+    this.surplusListings.unshift(newListing);
+    return newListing;
+  }
+
+  async updateSurplusListing(id: number, payload: Partial<SurplusListingItem>): Promise<SurplusListingItem> {
+    await this.sleep(150, 300);
+    const l = await this.getSurplusListing(id);
+    Object.assign(l, payload);
+    if (payload.quantity_offered !== undefined) {
+      l.available_quantity = Math.max(0, Number(payload.quantity_offered) - Number(l.quantity_reserved));
+    }
+    return l;
+  }
+
+  async deleteSurplusListing(id: number): Promise<void> {
+    await this.sleep(150, 300);
+    this.surplusListings = this.surplusListings.filter((l) => l.id !== id);
+  }
+
+  async getListingMatches(listingId: number): Promise<{ count: number; matches: MatchingResultItem[] }> {
+    await this.sleep(150, 250);
+    const listing = await this.getSurplusListing(listingId);
+    const matches: MatchingResultItem[] = this.ngoRequirements
+      .filter((req) => req.fulfillment_status === 'OPEN' || req.fulfillment_status === 'PARTIALLY_MET')
+      .map((req) => {
+        let score = 50;
+        if (req.food_category === listing.food_category) score += 30;
+        if (req.is_urgent) score += 15;
+        if (Number(listing.available_quantity) >= Number(req.min_quantity_kg)) score += 5;
+        return {
+          match_score: Math.min(98, score),
+          requirement: req,
+          listing,
+          distance_km: 2.3,
+          factor_breakdowns: {
+            category_compatibility: req.food_category === listing.food_category ? 1.0 : 0.0,
+            urgency_score: req.is_urgent ? 0.9 : 0.5,
+            proximity_score: 0.85,
+          },
+        };
+      })
+      .sort((a, b) => b.match_score - a.match_score);
+
+    return { count: matches.length, matches };
+  }
+
+  async notifyListingMatches(_listingId: number, requirementIds?: number[]): Promise<{ notified: number }> {
+    await this.sleep(150, 250);
+    return { notified: requirementIds?.length || 2 };
+  }
+
+  // --- NGO Requirements Methods ---
+
+  async getNGORequirements(filters?: { status?: string; search?: string }): Promise<NGORequirementItem[]> {
+    await this.sleep(150, 300);
+    let list = [...this.ngoRequirements];
+    if (filters?.status) {
+      list = list.filter((r) => r.fulfillment_status === filters.status);
+    }
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      list = list.filter((r) => r.title.toLowerCase().includes(q) || r.ngo_name.toLowerCase().includes(q));
+    }
+    return list;
+  }
+
+  async getNGORequirement(id: number): Promise<NGORequirementItem> {
+    await this.sleep(100, 200);
+    const req = this.ngoRequirements.find((r) => r.id === id);
+    if (!req) throw new Error(`Requirement #${id} not found.`);
+    return req;
+  }
+
+  async createNGORequirement(payload: Partial<NGORequirementItem>): Promise<NGORequirementItem> {
+    await this.sleep(200, 400);
+    const nextId = this.ngoRequirements.length + 1;
+    const newReq: NGORequirementItem = {
+      id: nextId,
+      ngo: this.currentUser?.organization?.id || 2,
+      ngo_name: this.currentUser?.organization?.name || 'Surplus Relief Foundation',
+      title: payload.title || 'Urgent Food Relief Need',
+      food_category: payload.food_category || 'Prepared Meals',
+      min_quantity_kg: payload.min_quantity_kg || 20,
+      target_beneficiaries: payload.target_beneficiaries || 100,
+      is_urgent: payload.is_urgent ?? false,
+      fulfillment_status: 'OPEN',
+      needed_by: payload.needed_by || new Date(Date.now() + 86400000).toISOString(),
+      notes: payload.notes || '',
+      created_at: new Date().toISOString(),
+      matches_count: 2,
+    };
+    this.ngoRequirements.unshift(newReq);
+    return newReq;
+  }
+
+  async updateNGORequirement(id: number, payload: Partial<NGORequirementItem>): Promise<NGORequirementItem> {
+    await this.sleep(150, 300);
+    const req = await this.getNGORequirement(id);
+    Object.assign(req, payload);
+    return req;
+  }
+
+  async deleteNGORequirement(id: number): Promise<void> {
+    await this.sleep(150, 300);
+    this.ngoRequirements = this.ngoRequirements.filter((r) => r.id !== id);
+  }
+
+  async getRequirementMatches(requirementId: number): Promise<{ count: number; matches: MatchingResultItem[] }> {
+    await this.sleep(150, 250);
+    const req = await this.getNGORequirement(requirementId);
+    const matches: MatchingResultItem[] = this.surplusListings
+      .filter((l) => l.status === 'AVAILABLE' || l.status === 'PARTIALLY_RESERVED')
+      .map((listing) => {
+        let score = 55;
+        if (listing.food_category === req.food_category) score += 30;
+        if (Number(listing.available_quantity) >= Number(req.min_quantity_kg)) score += 10;
+        return {
+          match_score: Math.min(99, score),
+          listing,
+          requirement: req,
+          distance_km: listing.distance_km || 2.1,
+          factor_breakdowns: {
+            category_match: listing.food_category === req.food_category ? 1.0 : 0.0,
+            quantity_sufficiency: 0.9,
+          },
+        };
+      })
+      .sort((a, b) => b.match_score - a.match_score);
+
+    return { count: matches.length, matches };
+  }
+
+  // --- Pickup Schedule Methods ---
+
+  async getPickupSchedule(filters?: { date?: string; status?: string; range?: string }): Promise<PickupScheduleItem[]> {
+    await this.sleep(150, 300);
+    const now = Date.now();
+    const scheduled = this.donationRequests.filter((r) =>
+      ['APPROVED', 'SCHEDULED', 'IN_TRANSIT', 'COLLECTED'].includes(r.status)
+    );
+
+    const scheduleItems: PickupScheduleItem[] = scheduled.map((r) => {
+      const pickupTime = new Date(r.scheduled_pickup_time || r.requested_pickup_time).getTime();
+      const diffMinutes = Math.round((pickupTime - now) / 60000);
+      const isOverdue = diffMinutes < 0 && r.status !== 'COLLECTED' && r.status !== 'COMPLETED';
+
+      return {
+        id: r.id,
+        request_code: r.request_code,
+        item_name: r.item_name,
+        donor_name: r.donor_name,
+        donor_address: r.donor_address,
+        donor_phone: r.donor_phone || '+91 80 4123 4567',
+        donor_latitude: 12.9754,
+        donor_longitude: 77.6190,
+        recipient_name: r.recipient_name,
+        recipient_phone: r.recipient_contact_phone,
+        quantity: r.requested_quantity,
+        unit: r.unit,
+        scheduled_pickup_time: r.scheduled_pickup_time || r.requested_pickup_time,
+        status: r.status,
+        driver_name: r.driver_name || 'Driver Not Assigned',
+        driver_phone: r.driver_phone || '+91 91234 56789',
+        vehicle_plate: r.vehicle_plate || 'KA-01-AB-1234',
+        countdown_minutes: diffMinutes,
+        is_overdue: isOverdue,
+      };
+    });
+
+    if (filters?.status) {
+      return scheduleItems.filter((s) => s.status === filters.status);
+    }
+    return scheduleItems.sort(
+      (a, b) => new Date(a.scheduled_pickup_time).getTime() - new Date(b.scheduled_pickup_time).getTime()
+    );
+  }
+
+  // --- Impact Analytics Methods ---
+
+  async getImpactAnalytics(_period?: string): Promise<ImpactAnalytics> {
+    await this.sleep(200, 350);
+    const completedReqs = this.donationRequests.filter((r) => r.status === 'COMPLETED' || r.status === 'COLLECTED');
+    const dynamicRescuedKg = completedReqs.reduce((acc, r) => acc + (Number(r.requested_quantity) || 0), 0);
+    const totalKg = 3450 + dynamicRescuedKg;
+    const meals = Math.round(totalKg * 2.38);
+    const co2 = Math.round(totalKg * 2.5 * 10) / 10;
+    const water = Math.round(totalKg * 180);
+    const savings = Math.round(totalKg * 125);
+
+    return {
+      rescued_food_kg: totalKg,
+      meals_provided: meals,
+      co2_avoided_kg: co2,
+      water_saved_liters: water,
+      financial_savings_estimate: savings,
+      total_donations_count: 142 + completedReqs.length,
+      active_partners_count: 28,
+      category_breakdown: [
+        { category: 'Prepared Meals', rescued_kg: Math.round(totalKg * 0.42), meals: Math.round(meals * 0.42), percentage: 42 },
+        { category: 'Dairy & Milk', rescued_kg: Math.round(totalKg * 0.26), meals: Math.round(meals * 0.26), percentage: 26 },
+        { category: 'Bakery & Bread', rescued_kg: Math.round(totalKg * 0.18), meals: Math.round(meals * 0.18), percentage: 18 },
+        { category: 'Fresh Produce', rescued_kg: Math.round(totalKg * 0.14), meals: Math.round(meals * 0.14), percentage: 14 },
+      ],
+      monthly_trend: [
+        { month: 'May 2026', rescued_kg: 420, meals: 1000, co2_avoided_kg: 1050, donations_count: 16 },
+        { month: 'Jun 2026', rescued_kg: 560, meals: 1332, co2_avoided_kg: 1400, donations_count: 22 },
+        { month: 'Jul 2026', rescued_kg: 680, meals: 1618, co2_avoided_kg: 1700, donations_count: 27 },
+        { month: 'Aug 2026', rescued_kg: 790, meals: 1880, co2_avoided_kg: 1975, donations_count: 31 },
+        { month: 'Sep 2026', rescued_kg: 920, meals: 2189, co2_avoided_kg: 2300, donations_count: 38 },
+        { month: 'Oct 2026', rescued_kg: totalKg - 3370 + 980, meals: Math.round((totalKg - 3370 + 980) * 2.38), co2_avoided_kg: Math.round((totalKg - 3370 + 980) * 2.5), donations_count: 42 },
+      ],
+    };
+  }
+
+  async getPublicImpactMetrics(): Promise<PublicImpactMetrics> {
+    await this.sleep(100, 200);
+    return {
+      total_quantity_donated_kg: 3450,
+      meals_provided: 8214,
+      co2_diverted_kg: 8625,
+      total_donors: 14,
+      total_ngos: 28,
+    };
+  }
+
+  // --- Notifications Center Methods ---
+
+  async getMarketplaceNotifications(unreadOnly = false): Promise<{ count: number; unread_count: number; results: MarketplaceNotification[] }> {
+    await this.sleep(100, 200);
+    const unread = this.marketplaceNotifications.filter((n) => !n.is_read).length;
+    let list = this.marketplaceNotifications;
+    if (unreadOnly) {
+      list = list.filter((n) => !n.is_read);
+    }
+    return {
+      count: this.marketplaceNotifications.length,
+      unread_count: unread,
+      results: [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    };
+  }
+
+  async markMarketplaceNotificationRead(id: number): Promise<void> {
+    await this.sleep(100, 150);
+    const n = this.marketplaceNotifications.find((item) => item.id === id);
+    if (n) n.is_read = true;
+  }
+
+  async markAllMarketplaceNotificationsRead(): Promise<void> {
+    await this.sleep(100, 200);
+    this.marketplaceNotifications.forEach((n) => {
+      n.is_read = true;
+    });
+  }
+
   // --- Simulation Engine Accessors (Used in Task 2) ---
   public getInternalState() {
     return {
@@ -2752,6 +3781,389 @@ export class DemoSource implements DataSource {
     } catch {
       // Ignore
     }
+  }
+
+  // Home API (Task B1 & B2 & B3)
+  async getPublicHomeTotals(): Promise<PublicHomeTotals> {
+    let completedKg = 0;
+    let completedCount = 0;
+    this.donationRequests.forEach((req) => {
+      if (req.status === 'COLLECTED' || req.status === 'COMPLETED') {
+        completedKg += Number(req.requested_quantity || 0);
+        completedCount++;
+      }
+    });
+
+    const kg = completedKg > 0 ? Number(completedKg.toFixed(2)) : 1420.5;
+    const meals = Math.round(kg * 2.4);
+    const co2e = Number((kg * 2.5).toFixed(2));
+    const verifiedDonors = 8;
+    const verifiedNgos = 6;
+    const completedDonations = completedCount > 0 ? completedCount : 42;
+
+    return {
+      kg_redistributed: kg,
+      meals,
+      co2e,
+      verified_donors: verifiedDonors,
+      verified_ngos: verifiedNgos,
+      completed_donations: completedDonations,
+      total_quantity_donated_kg: kg,
+      meals_provided: meals,
+      co2_diverted_kg: co2e,
+      total_donors: verifiedDonors,
+      total_ngos: verifiedNgos,
+    };
+  }
+
+  async getHomeData(): Promise<HomeData> {
+    const isNgo = this.currentUser?.organization?.type === 'NGO';
+    const isVerified = Boolean(this.currentUser?.organization?.is_verified);
+    const orgName = this.currentUser?.organization?.name || 'SurplusSync Partner Kitchen';
+
+    let kg = 0;
+    this.donationRequests.forEach((req) => {
+      if (req.status === 'COLLECTED' || req.status === 'COMPLETED') {
+        kg += Number(req.requested_quantity || 0);
+      }
+    });
+    const impactKg = kg > 0 ? Number(kg.toFixed(2)) : 520.0;
+
+    if (isNgo) {
+      const pickupsToday = this.donationRequests
+        .filter(r => r.status === 'SCHEDULED' || r.status === 'APPROVED' || r.status === 'IN_TRANSIT')
+        .slice(0, 3)
+        .map(r => ({
+          id: r.id,
+          time: r.scheduled_pickup_time
+            ? new Date(r.scheduled_pickup_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : '14:30',
+          counterpart_name: r.donor_name || 'City Harvest Bakery',
+          status: r.status,
+          item_summary: 'Fresh Produce & Breads',
+        }));
+
+      const newNearYou = this.surplusListings
+        .filter(l => l.status === 'AVAILABLE')
+        .slice(0, 3)
+        .map((l, idx) => ({
+          id: l.id,
+          title: l.title,
+          distance_km: l.distance_km ?? Number((0.8 + idx * 0.5).toFixed(1)),
+          quantity: l.available_quantity ?? l.quantity_offered ?? 10,
+          unit: l.unit || 'kg',
+          category: l.food_category,
+        }));
+
+      return {
+        greeting: {
+          organization_name: orgName,
+          role: 'NGO',
+          verification_status: isVerified ? 'VERIFIED' : 'PENDING',
+          is_verified: isVerified,
+        },
+        needs_attention: !isVerified
+          ? [
+              {
+                id: 'ngo-pending-verification',
+                type: 'VERIFICATION_PENDING',
+                title: 'Account pending administrator verification',
+                link: 'profile',
+                urgency: 'high',
+              },
+            ]
+          : [
+              {
+                id: 'ngo-new-surplus',
+                type: 'SURPLUS_AVAILABLE',
+                title: 'New fresh surplus items available nearby',
+                link: 'feed',
+                urgency: 'medium',
+              },
+            ],
+        quick_stats: {
+          open_requests_awaiting_donor: this.donationRequests.filter(r => r.status === 'REQUESTED').length,
+          pickups_scheduled_24h: this.donationRequests.filter(r => r.status === 'SCHEDULED' || r.status === 'APPROVED').length,
+          new_matching_listings_24h: this.surplusListings.filter(l => l.status === 'AVAILABLE').length,
+          active_requirements: this.ngoRequirements.filter(r => r.fulfillment_status === 'OPEN').length,
+        },
+        new_near_you: newNearYou,
+        pickups_today: pickupsToday.length > 0 ? pickupsToday : [
+          {
+            id: 'demo-p-1',
+            time: '15:00',
+            counterpart_name: 'Metro Daily Bakery',
+            status: 'SCHEDULED',
+            item_summary: 'Pastries & Breads',
+          },
+        ],
+        journey_counts: {
+          track_or_need: this.ngoRequirements.filter(r => r.fulfillment_status === 'OPEN').length || 2,
+          spot_or_match: this.surplusListings.filter(l => l.status === 'AVAILABLE').length || 3,
+          share_or_request: this.donationRequests.filter(r => r.status === 'REQUESTED').length || 1,
+          collect: this.donationRequests.filter(r => r.status === 'SCHEDULED' || r.status === 'APPROVED').length || 1,
+          done_or_received: this.donationRequests.filter(r => r.status === 'COMPLETED' || r.status === 'COLLECTED').length || 4,
+        },
+        recent_activity: [
+          {
+            id: 'act-1',
+            title: 'Claimed Artisan Sourdough Batch #204',
+            time: '2 hours ago',
+            link: 'donations',
+          },
+          {
+            id: 'act-2',
+            title: 'Submitted requirement for Whole Fresh Milk',
+            time: '1 day ago',
+            link: 'requirements',
+          },
+        ],
+        getting_started: [
+          { id: 'set_location', title: 'Set organization location', link: 'settings', done: true },
+          { id: 'create_requirement', title: 'Add first requirement', link: 'requirements', done: this.ngoRequirements.length > 0 },
+          { id: 'make_request', title: 'Make first food request', link: 'marketplace', done: false },
+        ],
+        impact_snapshot: {
+          period_days: 30,
+          kg_redistributed: impactKg,
+          meals_provided: Math.round(impactKg * 2.4),
+          co2e_kg_diverted: Number((impactKg * 2.5).toFixed(2)),
+        },
+      };
+    }
+
+    const expiringBatches = this.batches
+      .filter(b => b.status === 'ACTIVE')
+      .slice(0, 3)
+      .map(b => {
+        const prod = this.products.find(p => p.id === b.product);
+        const days = Math.max(0, Math.ceil((new Date(b.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+        return {
+          id: b.id,
+          product_name: prod?.name || 'Surplus Inventory Item',
+          batch_code: b.batch_code,
+          days_to_expiry: days || 1,
+          expiry_date: b.expiry_date,
+          quantity: b.quantity,
+          unit: b.unit || 'kg',
+        };
+      });
+
+    const pickupsToday = this.donationRequests
+      .filter(r => r.status === 'SCHEDULED' || r.status === 'APPROVED' || r.status === 'IN_TRANSIT')
+      .slice(0, 3)
+      .map(r => ({
+        id: r.id,
+        time: r.scheduled_pickup_time
+          ? new Date(r.scheduled_pickup_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : '14:00',
+        counterpart_name: r.recipient_name || 'Robin Hood Army',
+        status: r.status,
+        item_summary: 'Daily surplus redistribution',
+      }));
+
+    return {
+      greeting: {
+        organization_name: orgName,
+        role: 'BUSINESS',
+        verification_status: 'VERIFIED',
+        is_verified: true,
+      },
+      needs_attention: [
+        {
+          id: 'biz-req-pending',
+          type: 'REQUEST_APPROVAL_PENDING',
+          title: `${this.donationRequests.filter(r => r.status === 'REQUESTED').length || 1} donation request awaiting approval`,
+          link: 'donations',
+          urgency: 'high',
+        },
+        {
+          id: 'biz-expiring-batches',
+          type: 'EXPIRING_BATCH',
+          title: 'Batches expiring within 48 hours',
+          link: 'alerts',
+          urgency: 'medium',
+        },
+      ],
+      quick_stats: {
+        batches_expiring_48h: 4,
+        unacknowledged_critical_alerts: this.alerts.filter(a => a.severity === 'CRITICAL' && !a.is_acknowledged).length,
+        donation_requests_pending_approval: this.donationRequests.filter(r => r.status === 'REQUESTED').length,
+        pickups_scheduled_24h: this.donationRequests.filter(r => r.status === 'SCHEDULED' || r.status === 'APPROVED').length,
+        active_listings: this.surplusListings.filter(l => l.status === 'AVAILABLE').length,
+      },
+      expiring_batches: expiringBatches.length > 0 ? expiringBatches : [
+        { id: 101, product_name: 'Organic Sourdough Bread', batch_code: 'B-101', days_to_expiry: 1, expiry_date: '2026-10-21T18:00:00Z', quantity: 12, unit: 'kg' },
+        { id: 102, product_name: 'Fresh Whole Milk', batch_code: 'B-102', days_to_expiry: 2, expiry_date: '2026-10-22T12:00:00Z', quantity: 20, unit: 'L' },
+        { id: 103, product_name: 'Mixed Salad Greens', batch_code: 'B-103', days_to_expiry: 2, expiry_date: '2026-10-22T18:00:00Z', quantity: 8, unit: 'kg' },
+      ],
+      pickups_today: pickupsToday.length > 0 ? pickupsToday : [
+        { id: 'biz-p-1', time: '14:00', counterpart_name: 'Robin Hood Army', status: 'SCHEDULED', item_summary: 'Artisan Bakery Surplus' },
+      ],
+      journey_counts: {
+        track_or_need: this.batches.filter(b => b.status === 'ACTIVE').length || 18,
+        spot_or_match: 4,
+        share_or_request: this.surplusListings.filter(l => l.status === 'AVAILABLE').length || 2,
+        collect: this.donationRequests.filter(r => r.status === 'SCHEDULED' || r.status === 'APPROVED').length || 1,
+        done_or_received: this.donationRequests.filter(r => r.status === 'COMPLETED' || r.status === 'COLLECTED').length || 6,
+      },
+      recent_activity: [
+        {
+          id: 'act-biz-1',
+          title: 'Donation request received from Robin Hood Army',
+          time: '30 minutes ago',
+          link: 'donations',
+        },
+        {
+          id: 'act-biz-2',
+          title: 'Created surplus listing: Organic Sandwich Bread',
+          time: '3 hours ago',
+          link: 'marketplace',
+        },
+      ],
+      getting_started: [
+        { id: '1', title: 'Set organization location', link: 'settings', done: true },
+        { id: '2', title: 'Add first product', link: 'inventory', done: this.products.length > 0 },
+        { id: '3', title: 'Add first batch', link: 'inventory', done: this.batches.length > 0 },
+        { id: '4', title: 'Upload CSV or create POS key', link: 'import', done: false },
+        { id: '5', title: 'Create first surplus listing', link: 'marketplace', done: false },
+      ],
+      impact_snapshot: {
+        period_days: 30,
+        kg_redistributed: impactKg,
+        meals_provided: Math.round(impactKg * 2.4),
+        co2e_kg_diverted: Number((impactKg * 2.5).toFixed(2)),
+      },
+    };
+  }
+
+  // AI Waste Predictions & Benchmark Insights (Task 3)
+  async getPlanPrediction(payload: PlanPredictionRequest): Promise<PlanPredictionResponse> {
+    const category = payload.category || 'Bakery';
+    const planned = Number(payload.planned_quantity) > 0 ? Number(payload.planned_quantity) : 100;
+    const promo = Boolean(payload.promotion);
+    const weather = payload.weather || 'Sunny';
+
+    // Baseline category demand from empirical Poisson model
+    const categoryBaseDemand: Record<string, number> = {
+      Bakery: 112.5,
+      Dairy: 96.0,
+      Fruits: 104.2,
+      Meat: 88.4,
+      'Prepared Food': 124.0,
+      Vegetables: 108.6,
+      Produce: 108.6,
+      'Meat & Poultry': 88.4,
+      'Prepared & Cooked Meals': 124.0,
+    };
+
+    const base = categoryBaseDemand[category] || 105.0;
+    const promoMultiplier = promo ? 1.33 : 1.0;
+    const weatherMultiplier =
+      weather === 'Hot' ? 1.0385 : weather === 'Cloudy' ? 0.8921 : weather === 'Rainy' ? 0.6683 : 1.0;
+
+    const forecast_demand = Math.round(base * promoMultiplier * weatherMultiplier * 10) / 10;
+    const min_forecast = Math.max(0, Math.round((forecast_demand - 17.63 * 1.645) * 10) / 10);
+    const max_forecast = Math.round((forecast_demand + 17.63 * 1.645) * 10) / 10;
+
+    const over_order_ratio = Math.round((planned / Math.max(1, forecast_demand)) * 1000) / 1000;
+
+    let predicted_waste_level: 'Low' | 'Medium' | 'High' = 'Low';
+    let pLow = 0.82;
+    let pMed = 0.14;
+    let pHigh = 0.04;
+
+    if (over_order_ratio > 1.25) {
+      predicted_waste_level = 'High';
+      pLow = 0.07;
+      pMed = 0.23;
+      pHigh = 0.70;
+    } else if (over_order_ratio > 1.05) {
+      predicted_waste_level = 'Medium';
+      pLow = 0.22;
+      pMed = 0.63;
+      pHigh = 0.15;
+    }
+
+    const rawSafetyStock = Math.round(1.28 * 17.63);
+    const rawRecommended = Math.round(forecast_demand + rawSafetyStock);
+    const recommended_quantity = Math.max(1, Math.min(rawRecommended, Math.max(10, Math.round(planned * 0.7))));
+
+    const explanation = `(Demo data) For ${category} under ${weather} conditions and ${
+      promo ? 'active' : 'inactive'
+    } promotions, forecast demand is ${forecast_demand} units (90% range: ${min_forecast}–${max_forecast} units). Your planned purchase of ${planned} units produces an over-order ratio of ${over_order_ratio}x (${
+      over_order_ratio > 1.0
+        ? `+${Math.round((over_order_ratio - 1) * 100)}% over forecast`
+        : `${Math.round((1 - over_order_ratio) * 100)}% under forecast`
+    }), classified as ${predicted_waste_level} waste risk (${Math.round(
+      (predicted_waste_level === 'High' ? pHigh : predicted_waste_level === 'Medium' ? pMed : pLow) * 100
+    )}% probability). Recommended purchasing quantity is ${recommended_quantity} units.`;
+
+    return {
+      forecast_demand,
+      forecast_range: { min: min_forecast, max: max_forecast },
+      over_order_ratio,
+      predicted_waste_level,
+      waste_probabilities: { Low: pLow, Medium: pMed, High: pHigh },
+      recommended_quantity,
+      explanation,
+      model_version: '1.0.0-demo-poisson-lightgbm',
+      confidence_note:
+        'Demo data: Deterministic sample response generated from benchmark distribution parameters for evaluation.',
+      mapped_category: category,
+    };
+  }
+
+  async getDatasetInsights(): Promise<DatasetInsightsResponse> {
+    return {
+      source: 'benchmark dataset',
+      data_disclosure:
+        'Based on a benchmark dataset that appears synthetic. These are general patterns, not your own data.',
+      waste_rate_by_category: {
+        'Prepared Food': { waste_pct_of_remaining: 38.75, waste_pct_of_purchase: 7.61 },
+        Bakery: { waste_pct_of_remaining: 28.17, waste_pct_of_purchase: 4.83 },
+        Meat: { waste_pct_of_remaining: 25.33, waste_pct_of_purchase: 4.49 },
+        Fruits: { waste_pct_of_remaining: 23.98, waste_pct_of_purchase: 4.21 },
+        Vegetables: { waste_pct_of_remaining: 22.23, waste_pct_of_purchase: 3.96 },
+        Dairy: { waste_pct_of_remaining: 21.14, waste_pct_of_purchase: 3.82 },
+      },
+      waste_reasons_by_category: {
+        'Prepared Food': { Expired: 40.57, 'No Waste': 38.07, Overproduction: 10.82, 'Storage Issue': 5.34, 'Low Demand': 5.21 },
+        Bakery: { 'No Waste': 41.62, Expired: 19.97, Overproduction: 18.52, 'Low Demand': 14.11, 'Storage Issue': 5.77 },
+        Meat: { 'No Waste': 44.25, Overproduction: 20.21, 'Low Demand': 16.93, Expired: 16.85, 'Storage Issue': 1.76 },
+        Fruits: { 'No Waste': 43.47, Overproduction: 21.94, 'Low Demand': 20.48, Expired: 10.06, 'Storage Issue': 4.05 },
+        Vegetables: { 'No Waste': 44.30, Overproduction: 21.83, 'Low Demand': 20.64, Expired: 8.12, 'Storage Issue': 5.11 },
+        Dairy: { 'No Waste': 45.09, Overproduction: 24.10, 'Low Demand': 20.83, Expired: 7.83, 'Storage Issue': 2.15 },
+      },
+      demand_lift_promotion: {
+        percentage_lift: 33.06,
+        mean_demand_with_promo: 131.42,
+        mean_demand_without_promo: 98.77,
+      },
+      demand_lift_weather: {
+        Sunny: { multiplier: 1.0, relative_effect: 'Baseline', mean_demand: 114.83 },
+        Hot: { multiplier: 1.0385, relative_effect: '+3.85%', mean_demand: 119.25 },
+        Cloudy: { multiplier: 0.8921, relative_effect: '-10.79%', mean_demand: 102.44 },
+        Rainy: { multiplier: 0.6683, relative_effect: '-33.17%', mean_demand: 76.74 },
+      },
+      over_purchase_share: {
+        share_of_orders_over_purchased_pct: 64.08,
+        total_purchased_units: 946310,
+        total_sold_units: 775677,
+        total_excess_units: 170633,
+      },
+      data_card: {
+        title: 'Benchmark Commercial Food Waste Dataset',
+        records: 8000,
+        period: '2025-01-01 to 2025-12-31',
+        scope: '8,000 daily observations across 4 business segments and 6 perishable food categories.',
+        provenance_placeholder:
+          'Synthetically calibrated microdata benchmark simulating commercial food service and retail inventory operations.',
+        limitations:
+          'Deterministic sales-accounting constraints; population-level ratio binning creates minor label noise; single-day snapshots without persistent store IDs. This data serves as an empirical cross-sectional benchmark and does not represent live individual tenant operations.',
+        accounting_invariants: 'All 5 accounting invariants verified with 0 discrepancies across 8,000 records.',
+      },
+    };
   }
 }
 

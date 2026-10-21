@@ -7,12 +7,15 @@
  */
 
 export type OrganizationType = 'BUSINESS' | 'NGO';
+export type BusinessSegment = 'Restaurant' | 'Supermarket' | 'Cafeteria' | 'Cloud Kitchen';
 export type UserRole = 'OWNER' | 'STAFF';
 
 export interface Organization {
   id: number;
   name: string;
   org_type: OrganizationType;
+  business_segment?: BusinessSegment | null;
+  promotion_active?: boolean;
   address: string;
   latitude: number | null;
   longitude: number | null;
@@ -33,6 +36,8 @@ export interface User {
     id: number;
     name: string;
     type: OrganizationType;
+    business_segment?: BusinessSegment | null;
+    promotion_active?: boolean;
     is_verified: boolean;
   } | null;
 }
@@ -47,6 +52,8 @@ export interface MeResponse {
     id: number;
     name: string;
     type: OrganizationType;
+    business_segment?: BusinessSegment | null;
+    promotion_active?: boolean;
     is_verified: boolean;
     address?: string;
     phone?: string;
@@ -606,4 +613,388 @@ export interface PlatformStats {
     created_at: string;
   }>;
 }
+
+/* =========================================================================
+   REDISTRIBUTION DOMAIN TYPES (Donations, Marketplace, NGO, Schedule, ESG)
+   ========================================================================= */
+
+export type DonationRequestStatus =
+  | 'REQUESTED'
+  | 'APPROVED'
+  | 'SCHEDULED'
+  | 'IN_TRANSIT'
+  | 'COLLECTED'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'NO_SHOW';
+
+export type DonationRequestFilterTab =
+  | 'ALL'
+  | 'PENDING_APPROVAL'
+  | 'SCHEDULED'
+  | 'IN_TRANSIT'
+  | 'COMPLETED';
+
+export interface DonationRequest {
+  id: number;
+  request_code: string;
+  listing?: number | null;
+  listing_title: string;
+  item_name: string;
+  donor: number;
+  donor_name: string;
+  donor_address: string;
+  donor_phone?: string;
+  recipient: number;
+  recipient_name: string;
+  recipient_contact_phone: string;
+  recipient_address?: string;
+  requested_quantity: string | number;
+  unit: string;
+  status: DonationRequestStatus;
+  requested_pickup_time: string;
+  scheduled_pickup_time: string | null;
+  collected_time: string | null;
+  completed_time: string | null;
+  driver_name: string;
+  driver_phone: string;
+  vehicle_plate: string;
+  pickup_notes: string;
+  rejection_reason: string;
+  created_at: string;
+  updated_at: string;
+  can_approve?: boolean;
+  can_reject?: boolean;
+  can_cancel?: boolean;
+  can_in_transit?: boolean;
+  can_collect?: boolean;
+  can_complete?: boolean;
+}
+
+export type SurplusListingStatus =
+  | 'AVAILABLE'
+  | 'PARTIALLY_RESERVED'
+  | 'CLAIMED'
+  | 'EXPIRED'
+  | 'CANCELLED';
+
+export interface SurplusListingItem {
+  id: number;
+  donor: number;
+  donor_name: string;
+  donor_rating?: number | null;
+  donor_address?: string;
+  donor_latitude?: number | null;
+  donor_longitude?: number | null;
+  batch?: number | null;
+  title: string;
+  description: string;
+  food_category: string;
+  quantity_offered: string | number;
+  quantity_reserved: string | number;
+  quantity_claimed: string | number;
+  available_quantity: string | number;
+  unit: string;
+  is_cooked: boolean;
+  allergens: string[];
+  temperature_control: 'AMBIENT' | 'CHILLED' | 'FROZEN';
+  expiry_date: string;
+  pickup_start: string;
+  pickup_end: string;
+  status: SurplusListingStatus;
+  distance_km?: number;
+  created_at: string;
+}
+
+export type NGORequirementStatus = 'OPEN' | 'PARTIALLY_MET' | 'FULFILLED' | 'CLOSED';
+
+export interface NGORequirementItem {
+  id: number;
+  ngo: number;
+  ngo_name: string;
+  title: string;
+  food_category: string;
+  min_quantity_kg: string | number;
+  target_beneficiaries: number;
+  is_urgent: boolean;
+  fulfillment_status: NGORequirementStatus;
+  needed_by: string;
+  notes: string;
+  created_at: string;
+  matches_count?: number;
+}
+
+export interface PickupScheduleItem {
+  id: number;
+  request_code: string;
+  item_name: string;
+  donor_name: string;
+  donor_address: string;
+  donor_phone: string;
+  donor_latitude: number | null;
+  donor_longitude: number | null;
+  recipient_name: string;
+  recipient_phone: string;
+  quantity: string | number;
+  unit: string;
+  scheduled_pickup_time: string;
+  status: DonationRequestStatus;
+  driver_name: string;
+  driver_phone: string;
+  vehicle_plate: string;
+  countdown_minutes: number | null;
+  is_overdue: boolean;
+}
+
+export interface ImpactCategoryBreakdown {
+  category: string;
+  rescued_kg: number;
+  meals: number;
+  percentage: number;
+}
+
+export interface ImpactMonthlyTrend {
+  month: string;
+  rescued_kg: number;
+  meals: number;
+  co2_avoided_kg: number;
+  donations_count: number;
+}
+
+export interface ImpactAnalytics {
+  rescued_food_kg: number;
+  meals_provided: number;
+  co2_avoided_kg: number;
+  water_saved_liters: number;
+  financial_savings_estimate: number;
+  total_donations_count: number;
+  active_partners_count: number;
+  category_breakdown: ImpactCategoryBreakdown[];
+  monthly_trend: ImpactMonthlyTrend[];
+}
+
+export interface PublicImpactMetrics {
+  total_quantity_donated_kg: number;
+  meals_provided: number;
+  co2_diverted_kg: number;
+  total_donors: number;
+  total_ngos: number;
+}
+
+export interface MarketplaceNotification {
+  id: number;
+  recipient_id: number;
+  notification_type: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  action_url?: string;
+  data?: Record<string, unknown>;
+}
+
+export interface MatchingResultItem {
+  match_score: number;
+  listing?: SurplusListingItem;
+  requirement?: NGORequirementItem;
+  distance_km?: number;
+  factor_breakdowns?: Record<string, number>;
+}
+
+export interface PublicHomeTotals {
+  kg_redistributed: number;
+  meals: number;
+  co2e: number;
+  verified_donors: number;
+  verified_ngos: number;
+  completed_donations: number;
+  total_quantity_donated_kg?: number;
+  meals_provided?: number;
+  co2_diverted_kg?: number;
+  total_donors?: number;
+  total_ngos?: number;
+}
+
+export interface HomeGreeting {
+  organization_name: string;
+  role: OrganizationType;
+  verification_status: string;
+  is_verified: boolean;
+}
+
+export interface HomeNeedsAttentionItem {
+  id: string;
+  type: string;
+  title: string;
+  link: string;
+  urgency: 'low' | 'medium' | 'high' | 'critical';
+}
+
+export interface HomeRecentActivityItem {
+  id: string;
+  title: string;
+  time: string;
+  link: string;
+}
+
+export interface HomeChecklistItem {
+  id: string;
+  title: string;
+  link: string;
+  done: boolean;
+}
+
+export interface HomeImpactSnapshot {
+  period_days: number;
+  kg_redistributed: number;
+  meals_provided: number;
+  co2e_kg_diverted: number;
+}
+
+export interface BusinessHomeQuickStats {
+  batches_expiring_48h: number;
+  unacknowledged_critical_alerts: number;
+  donation_requests_pending_approval: number;
+  pickups_scheduled_24h: number;
+  active_listings: number;
+}
+
+export interface NgoHomeQuickStats {
+  open_requests_awaiting_donor: number;
+  pickups_scheduled_24h: number;
+  new_matching_listings_24h: number;
+  active_requirements: number;
+}
+
+export interface HomeExpiringBatch {
+  id: number;
+  product_name: string;
+  batch_code: string;
+  days_to_expiry: number;
+  expiry_date?: string;
+  quantity: string | number;
+  unit?: string;
+}
+
+export interface HomeNewNearYouItem {
+  id: number;
+  title: string;
+  distance_km: number;
+  quantity: string | number;
+  unit?: string;
+  category?: string;
+}
+
+export interface HomePickupTodayItem {
+  id: string | number;
+  time: string;
+  counterpart_name: string;
+  status: string;
+  item_summary?: string;
+}
+
+export interface SurplusJourneyCounts {
+  track_or_need: number;
+  spot_or_match: number;
+  share_or_request: number;
+  collect: number;
+  done_or_received: number;
+}
+
+export interface HomeData {
+  greeting: HomeGreeting;
+  needs_attention: HomeNeedsAttentionItem[];
+  quick_stats: BusinessHomeQuickStats | NgoHomeQuickStats;
+  waste_risk_summary?: {
+    high_risk_batches_count: number;
+    recommended_action: string;
+  };
+  recent_activity: HomeRecentActivityItem[];
+  getting_started: HomeChecklistItem[];
+  impact_snapshot: HomeImpactSnapshot;
+  expiring_batches?: HomeExpiringBatch[];
+  new_near_you?: HomeNewNearYouItem[];
+  pickups_today?: HomePickupTodayItem[];
+  journey_counts?: SurplusJourneyCounts;
+}
+
+// AI Waste Prediction & Benchmark Insights (Task 3)
+export interface PlanPredictionRequest {
+  category: string;
+  planned_quantity: number;
+  promotion?: boolean | null;
+  weather?: 'Sunny' | 'Rainy' | 'Cloudy' | 'Hot' | 'Unknown';
+  date?: string | null;
+}
+
+export interface PlanPredictionRange {
+  min: number;
+  max: number;
+}
+
+export interface PlanPredictionResponse {
+  forecast_demand: number;
+  forecast_range: PlanPredictionRange;
+  over_order_ratio: number;
+  predicted_waste_level: 'Low' | 'Medium' | 'High' | string;
+  waste_probabilities: {
+    Low: number;
+    Medium: number;
+    High: number;
+    [key: string]: number;
+  };
+  recommended_quantity: number;
+  explanation: string;
+  model_version: string;
+  confidence_note: string;
+  original_category?: string;
+  mapped_category?: string;
+  status?: string;
+  detail?: string;
+  retry_after_seconds?: number;
+}
+
+export interface DatasetInsightsResponse {
+  source: string;
+  data_disclosure: string;
+  waste_rate_by_category: Record<
+    string,
+    {
+      waste_pct_of_remaining: number;
+      waste_pct_of_purchase: number;
+    }
+  >;
+  waste_reasons_by_category: Record<string, Record<string, number>>;
+  demand_lift_promotion: {
+    percentage_lift: number;
+    mean_demand_with_promo: number;
+    mean_demand_without_promo: number;
+  };
+  demand_lift_weather: Record<
+    string,
+    {
+      multiplier: number;
+      relative_effect: string;
+      mean_demand: number;
+    }
+  >;
+  over_purchase_share: {
+    share_of_orders_over_purchased_pct: number;
+    total_purchased_units: number;
+    total_sold_units: number;
+    total_excess_units: number;
+  };
+  data_card: {
+    title: string;
+    records: number;
+    period: string;
+    scope: string;
+    provenance_placeholder: string;
+    limitations: string;
+    accounting_invariants: string;
+  };
+}
+
+
 

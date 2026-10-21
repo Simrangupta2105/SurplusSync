@@ -968,4 +968,171 @@ class AsyncCSVImportTests(TestCase):
         self.assertTrue(res.data["worker_may_be_down"])
 
 
+class BatchReservationAndSellableTests(TestCase):
+    def setUp(self):
+        self.org = Organization.objects.create(name="Reservation Test Org", org_type="BUSINESS")
+        self.user = User.objects.create_user(
+            username="res_user",
+            password="password123",
+            organization=self.org,
+        )
+        self.cat = Category.objects.create(name="Test Cat", perishability_risk=Category.Risk.MEDIUM)
+        self.prod = Product.objects.create(
+            organization=self.org,
+            name="Test Milk",
+            sku="TMILK-1",
+            category=self.cat,
+            unit="L",
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_batch_reserved_quantity_check_constraints(self):
+        from django.db import IntegrityError, transaction
+        # 1. Negative reserved quantity must violate constraint
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Batch.objects.create(
+                    organization=self.org,
+                    product=self.prod,
+                    quantity=Decimal("10.000"),
+                    reserved_quantity=Decimal("-1.000"),
+                    received_date=date.today(),
+                    expiry_date=date.today() + timedelta(days=5),
+                )
+
+        # 2. reserved_quantity > quantity must violate constraint
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Batch.objects.create(
+                    organization=self.org,
+                    product=self.prod,
+                    quantity=Decimal("10.000"),
+                    reserved_quantity=Decimal("11.000"),
+                    received_date=date.today(),
+                    expiry_date=date.today() + timedelta(days=5),
+                )
+
+    def test_batch_objects_sellable_queryset(self):
+        # Active batch with sellable stock (10 total, 3 reserved -> 7 sellable)
+        b1 = Batch.objects.create(
+            organization=self.org,
+            product=self.prod,
+            quantity=Decimal("10.000"),
+            reserved_quantity=Decimal("3.000"),
+            received_date=date.today(),
+            expiry_date=date.today() + timedelta(days=5),
+            status=Batch.Status.ACTIVE,
+        )
+        # Fully reserved batch (5 total, 5 reserved -> 0 sellable)
+        b2 = Batch.objects.create(
+            organization=self.org,
+            product=self.prod,
+            quantity=Decimal("5.000"),
+            reserved_quantity=Decimal("5.000"),
+            received_date=date.today(),
+            expiry_date=date.today() + timedelta(days=5),
+            status=Batch.Status.ACTIVE,
+        )
+        # Expired batch
+        b3 = Batch.objects.create(
+            organization=self.org,
+            product=self.prod,
+            quantity=Decimal("10.000"),
+            reserved_quantity=Decimal("0.000"),
+            received_date=date.today() - timedelta(days=10),
+            expiry_date=date.today() - timedelta(days=1),
+            status=Batch.Status.ACTIVE,
+        )
+        # Depleted batch
+        b4 = Batch.objects.create(
+            organization=self.org,
+            product=self.prod,
+            quantity=Decimal("0.000"),
+            reserved_quantity=Decimal("0.000"),
+            received_date=date.today(),
+            expiry_date=date.today() + timedelta(days=5),
+            status=Batch.Status.DEPLETED,
+        )
+
+        sellable = list(Batch.objects.sellable().filter(organization=self.org))
+        self.assertEqual(len(sellable), 1)
+        self.assertEqual(sellable[0].id, b1.id)
+        self.assertEqual(sellable[0].sellable_quantity, Decimal("7.000"))
+
+    def test_fefo_deduct_and_pos_cannot_take_reserved_stock(self):
+        # Batch: 10 total, 6 reserved for an approved donation (4 sellable)
+        batch = Batch.objects.create(
+            organization=self.org,
+            product=self.prod,
+            quantity=Decimal("10.000"),
+            reserved_quantity=Decimal("6.000"),
+            received_date=date.today(),
+            expiry_date=date.today() + timedelta(days=5),
+            status=Batch.Status.ACTIVE,
+        )
+
+        # 1. Attempting to deduct 5 via POS API should fail with 400 (only 4 available)
+        payload_fail = {
+            "sku": self.prod.sku,
+            "quantity": "5",
+            "source": "POS",
+        }
+        res_fail = self.client.post("/api/v1/inventory/batches/deduct/", payload_fail, format="json")
+        self.assertEqual(res_fail.status_code, 400)
+        self.assertIn("Insufficient", res_fail.data["error"])
+        self.assertEqual(Decimal(str(res_fail.data["available_quantity"])), Decimal("4"))
+
+        # 2. Deducting exactly 4 succeeds
+        payload_ok = {
+            "sku": self.prod.sku,
+            "quantity": "4",
+            "source": "POS",
+        }
+        res_ok = self.client.post("/api/v1/inventory/batches/deduct/", payload_ok, format="json")
+        self.assertEqual(res_ok.status_code, 200)
+        self.assertEqual(res_ok.data["total_deducted"], "4")
+
+        # Refresh batch: quantity is now 6, reserved_quantity is still 6
+        batch.refresh_from_db()
+        self.assertEqual(batch.quantity, Decimal("6.000"))
+        self.assertEqual(batch.reserved_quantity, Decimal("6.000"))
+        self.assertEqual(batch.sellable_quantity, Decimal("0.000"))
+        # Batch must remain ACTIVE because it still has 6 units reserved for donation
+        self.assertEqual(batch.status, Batch.Status.ACTIVE)
+
+        # 3. Subsequent deduction of even 1 unit fails
+        payload_subsequent = {
+            "sku": self.prod.sku,
+            "quantity": "1",
+            "source": "POS",
+        }
+        res_sub = self.client.post("/api/v1/inventory/batches/deduct/", payload_subsequent, format="json")
+        self.assertEqual(res_sub.status_code, 400)
+
+    def test_dashboard_and_batch_list_sellable_quantity(self):
+        # Create a batch with 20 total, 5 reserved
+        batch = Batch.objects.create(
+            organization=self.org,
+            product=self.prod,
+            quantity=Decimal("20.000"),
+            reserved_quantity=Decimal("5.000"),
+            received_date=date.today(),
+            expiry_date=date.today() + timedelta(days=5),
+            status=Batch.Status.ACTIVE,
+        )
+
+        # 1. Batch detail/list API returns sellable_quantity
+        res_batch = self.client.get(f"/api/v1/inventory/batches/{batch.id}/")
+        self.assertEqual(res_batch.status_code, 200)
+        self.assertEqual(Decimal(str(res_batch.data["quantity"])), Decimal("20.000"))
+        self.assertEqual(Decimal(str(res_batch.data["reserved_quantity"])), Decimal("5.000"))
+        self.assertEqual(Decimal(str(res_batch.data["sellable_quantity"])), Decimal("15.000"))
+
+        # 2. Dashboard API reflects sellable stock (total_qty - total_reserved = 15)
+        res_dash = self.client.get("/api/v1/inventory/dashboard/summary/")
+        self.assertEqual(res_dash.status_code, 200)
+        self.assertEqual(Decimal(str(res_dash.data["total_active_quantity"])), Decimal("15.000"))
+
+
 
