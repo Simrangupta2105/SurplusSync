@@ -49,6 +49,7 @@ import type {
   PlanPredictionRequest,
   PlanPredictionResponse,
   DatasetInsightsResponse,
+  RecentSaleItem,
 } from '../types';
 
 export interface RegisterPayload {
@@ -237,10 +238,14 @@ export interface DataSource {
 
   // Redistribution: Pickup Schedule
   getPickupSchedule(filters?: { date?: string; status?: string; range?: string }): Promise<PickupScheduleItem[]>;
+  exportScheduleIcs(requestId?: number): Promise<Blob>;
+  getScheduleIcsUrl(requestId?: number): string;
 
   // Redistribution: Impact Analytics & ESG Scorecard
-  getImpactAnalytics(period?: string): Promise<ImpactAnalytics>;
+  getImpactAnalytics(filters?: string | { period?: string; startDate?: string; endDate?: string }): Promise<ImpactAnalytics>;
   getPublicImpactMetrics(): Promise<PublicImpactMetrics>;
+  exportImpactCsv(filters?: string | { period?: string; startDate?: string; endDate?: string }): Promise<Blob>;
+  exportImpactPdf(filters?: string | { period?: string; startDate?: string; endDate?: string }): Promise<Blob>;
 
   // Redistribution: Notifications Center
   getMarketplaceNotifications(unreadOnly?: boolean): Promise<{ count: number; unread_count: number; results: MarketplaceNotification[] }>;
@@ -254,6 +259,9 @@ export interface DataSource {
   // AI Waste Predictions & Benchmark Insights (Task 3)
   getPlanPrediction(payload: PlanPredictionRequest): Promise<PlanPredictionResponse>;
   getDatasetInsights(): Promise<DatasetInsightsResponse>;
+
+  // Recent Sales & Unified Forecast (Task 2 & 3)
+  getRecentSales(params?: { days?: number; category?: string; end_date?: string }): Promise<RecentSaleItem[]>;
 }
 
 

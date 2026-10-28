@@ -1,0 +1,103 @@
+services:
+  # 1. PostgreSQL Database (Isolated container on host port 5433)
+  postgres:
+    image: postgres:16-alpine
+    container_name: surplussync_postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: surplussync
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: SurplusSync@2026
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d surplussync"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Machine Learning Microservice (FastAPI on port 8001)
+  ml_service:
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
+    container_name: surplussync_ml
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - ML_SERVICE_TOKEN=surplussync-service-token-dev
+
+  # 3. Django Web API Backend (Port 8000)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: surplussync_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=django-insecure-docker-prod-key-surplussync-2026
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+      - USE_POSTGRES=True
+      - DB_NAME=surplussync
+      - DB_USER=postgres
+      - DB_PASSWORD=SurplusSync@2026
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - ML_SERVICE_URL=http://ml_service:8001
+      - ML_SERVICE_TOKEN=surplussync-service-token-dev
+      - CORS_ALLOW_ALL_ORIGINS=True
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/health/', timeout=5).getcode() == 200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ml_service:
+        condition: service_started
+
+  # 4. Django Q2 Cluster Background Worker
+  qcluster:
+    image: surplussync_clean-backend:latest
+    container_name: surplussync_qcluster
+    restart: unless-stopped
+    command: ["python", "manage.py", "qcluster"]
+    environment:
+      - SECRET_KEY=django-insecure-docker-prod-key-surplussync-2026
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+      - USE_POSTGRES=True
+      - DB_NAME=surplussync
+      - DB_USER=postgres
+      - DB_PASSWORD=SurplusSync@2026
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - ML_SERVICE_URL=http://ml_service:8001
+      - ML_SERVICE_TOKEN=surplussync-service-token-dev
+    healthcheck:
+      disable: true
+    depends_on:
+      backend:
+        condition: service_started
+
+  # 5. Frontend React SPA (Served with Nginx on port 5173)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: surplussync_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

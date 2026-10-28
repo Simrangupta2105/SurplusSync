@@ -33,6 +33,12 @@ from django.utils import timezone
 
 from accounts.models import Organization
 from inventory.models import Batch, Category, Product, StockTransaction, StorageLocation
+from marketplace.models import (
+    DonationRequest,
+    NGORequirement,
+    Rating,
+    SurplusListing,
+)
 
 try:
     import yaml
@@ -87,8 +93,47 @@ class Command(BaseCommand):
             default=str(DEFAULT_CALIBRATION_FILE),
             help="Path to calibration.yaml configuration file.",
         )
+        parser.add_argument(
+            "--seed-matching-history",
+            action="store_true",
+            help="Also seed synthetic matching history records (labeled [SYNTHETIC DEMO DATA]) for the learning layer.",
+        )
+        parser.add_argument(
+            "--matching-requests-count",
+            type=int,
+            default=300,
+            help="Number of synthetic matching donation requests to generate (default: 300).",
+        )
+        parser.add_argument(
+            "--from-panel",
+            type=str,
+            default=None,
+            help="Path to synthetic panel CSV to seed from (e.g. ml_service/data/raw/synthetic_panel_full.csv).",
+        )
+        parser.add_argument(
+            "--org",
+            type=str,
+            default=None,
+            help="ID or Name of the target Organization to seed.",
+        )
+        parser.add_argument(
+            "--shops",
+            type=str,
+            default="S01",
+            help="Comma-separated Shop_IDs from panel to seed into this organization (default: S01).",
+        )
+        parser.add_argument(
+            "--last-days",
+            type=int,
+            default=None,
+            help="Optional: Filter to only the last N calendar days of the synthetic panel.",
+        )
 
     def handle(self, *args, **options):
+        # Panel seeding path (Track B Task 7)
+        if options.get("from_panel"):
+            return self._seed_from_panel(options)
+
         org_name = options["org_name"]
         days_to_seed = options["days"]
         seed = options["seed"]
@@ -157,6 +202,22 @@ class Command(BaseCommand):
             f"Donated({stats['total_donated']}) + Remaining({stats['total_remaining']}) "
             f"[Discrepancy: {stats['reconciliation_discrepancy']}]"
         ))
+
+        # 6. Optional: Seed Synthetic Matching History for Learning Layer
+        if options.get("seed_matching_history"):
+            self.stdout.write("Generating synthetic matching history records labeled [SYNTHETIC DEMO DATA]...")
+            matching_stats = seed_synthetic_matching_history(
+                donor_org=org,
+                count=options.get("matching_requests_count", 300),
+                seed=seed,
+                days=days_to_seed,
+                stdout_write=self.stdout.write,
+            )
+            self.stdout.write(self.style.SUCCESS(
+                f"Synthetic matching history seeded: {matching_stats['total']} requests "
+                f"({matching_stats['completed']} completed, {matching_stats['rejected']} rejected, "
+                f"{matching_stats['no_show']} no-show, {matching_stats['expired']} expired)."
+            ))
 
     def _load_calibration(self, path: Path) -> Dict[str, Any]:
         """Load calibration YAML if present, otherwise fallback to empirical defaults."""
@@ -518,6 +579,13 @@ class Command(BaseCommand):
 
         created_txns = StockTransaction.objects.bulk_create(txns_to_create, batch_size=1000)
 
+        # Ensure historical created_at timestamp matches batch received_date
+        # (Django's auto_now_add=True stamps bulk_create with today's timestamp by default)
+        for saved_b in created_batches:
+            if saved_b.received_date:
+                dt = timezone.make_aware(datetime.combine(saved_b.received_date, datetime.min.time().replace(hour=12)))
+                StockTransaction.objects.filter(batch=saved_b).update(created_at=dt)
+
         reconciliation_discrepancy = total_received - (total_sold + total_discarded + total_donated + total_remaining)
 
         return {
@@ -530,3 +598,586 @@ class Command(BaseCommand):
             "total_remaining": float(total_remaining),
             "reconciliation_discrepancy": float(reconciliation_discrepancy),
         }
+
+    def _seed_from_panel(self, options: Dict[str, Any]) -> None:
+        """Seed demo inventory and transactions strictly from the synthetic panel dataset (Track B Task 7)."""
+        import pandas as pd
+
+        panel_path_str = options["from_panel"]
+        panel_path = Path(panel_path_str)
+        if not panel_path.exists():
+            # Check relative to backend or workspace root
+            workspace_root = Path(__file__).resolve().parents[4]
+            alt_path = workspace_root / panel_path_str
+            if alt_path.exists():
+                panel_path = alt_path
+            else:
+                raise CommandError(f"Panel CSV file not found at {panel_path_str} or {alt_path}")
+
+        org_identifier = options.get("org") or options.get("org_name")
+        shops_arg = options.get("shops", "S01")
+        target_shops = [s.strip() for s in shops_arg.split(",") if s.strip()]
+        last_days = options.get("last_days")
+        force = options.get("force", False)
+
+        self.stdout.write(f"Loading synthetic panel from '{panel_path}' for shop(s) {target_shops}...")
+        df = pd.read_csv(panel_path)
+        df["Date"] = pd.to_datetime(df["Date"]).dt.date
+        df["Expiry_Date"] = pd.to_datetime(df["Expiry_Date"]).dt.date
+
+        # Filter by shops
+        df = df[df["Shop_ID"].isin(target_shops)].copy()
+        if len(df) == 0:
+            raise CommandError(f"No records found in panel '{panel_path.name}' for shop(s): {target_shops}")
+
+        # Filter by last_days if specified
+        max_date = df["Date"].max()
+        if last_days is not None and last_days > 0:
+            cutoff_date = max_date - timedelta(days=last_days)
+            df = df[df["Date"] >= cutoff_date].copy()
+            self.stdout.write(f"Filtered to last {last_days} days ({cutoff_date} to {max_date}): {len(df)} rows.")
+
+        df = df.sort_values(["Date", "Shop_ID", "Food_Category"]).reset_index(drop=True)
+
+        with transaction.atomic():
+            # Resolve or create target Organization
+            org = None
+            if str(org_identifier).isdigit():
+                org = Organization.objects.filter(pk=int(org_identifier)).first()
+            if not org:
+                org = Organization.objects.filter(name=org_identifier).first()
+
+            first_row = df.iloc[0]
+            lat = Decimal(str(round(first_row["Latitude"], 6)))
+            lon = Decimal(str(round(first_row["Longitude"], 6)))
+            note_tag = f"[DEMO DATA - SYNTHETIC PANEL] Seeded from {panel_path.name} (Shop: {shops_arg})"
+
+            if not org:
+                org = Organization.objects.create(
+                    name=org_identifier,
+                    org_type=Organization.Type.BUSINESS,
+                    business_segment=first_row.get("Business_Type", "Supermarket"),
+                    latitude=lat,
+                    longitude=lon,
+                    address=f"Shop {shops_arg}, Central Market",
+                    verification_status=Organization.VerificationStatus.VERIFIED,
+                    is_verified=True,
+                    verification_note=note_tag,
+                )
+                self.stdout.write(f"Created demo organization '{org.name}' (ID: {org.id}).")
+            else:
+                org.latitude = lat
+                org.longitude = lon
+                if note_tag not in org.verification_note:
+                    org.verification_note = f"{org.verification_note} {note_tag}".strip()
+                org.save()
+
+            # Guard against accidental overwrite without --force
+            existing_txns = StockTransaction.objects.filter(organization=org).count()
+            existing_batches = Batch.objects.filter(organization=org).count()
+
+            if (existing_txns > 0 or existing_batches > 0) and not force:
+                raise CommandError(
+                    f"Organization '{org.name}' (ID: {org.id}) already has existing inventory data "
+                    f"({existing_batches} batches, {existing_txns} transactions). "
+                    "Refusing to overwrite without --force."
+                )
+
+            if force and (existing_txns > 0 or existing_batches > 0):
+                self.stdout.write(self.style.WARNING(
+                    f"--force provided. Purging existing batches & transactions for '{org.name}'..."
+                ))
+                StockTransaction.objects.filter(organization=org).delete()
+                Batch.objects.filter(organization=org).delete()
+                Product.objects.filter(organization=org).delete()
+                StorageLocation.objects.filter(organization=org).delete()
+
+            # Storage Locations
+            loc_chilled, _ = StorageLocation.objects.get_or_create(
+                organization=org,
+                name="Cold Storage",
+                defaults={"storage_type": Category.Storage.CHILLED, "capacity": Decimal("5000.00")},
+            )
+            loc_ambient, _ = StorageLocation.objects.get_or_create(
+                organization=org,
+                name="Ambient Warehouse",
+                defaults={"storage_type": Category.Storage.AMBIENT, "capacity": Decimal("5000.00")},
+            )
+            loc_map = {"CHILLED": loc_chilled, "AMBIENT": loc_ambient}
+
+            # Categories & Products mapping per (shop_id, food_category)
+            cat_storage_risk = {
+                "Bakery": (Category.Storage.AMBIENT, Category.Risk.CRITICAL, 3),
+                "Dairy": (Category.Storage.CHILLED, Category.Risk.HIGH, 7),
+                "Fruits": (Category.Storage.CHILLED, Category.Risk.HIGH, 5),
+                "Meat": (Category.Storage.CHILLED, Category.Risk.CRITICAL, 4),
+                "Prepared Food": (Category.Storage.CHILLED, Category.Risk.CRITICAL, 2),
+                "Vegetables": (Category.Storage.CHILLED, Category.Risk.HIGH, 5),
+            }
+
+            product_map: Dict[Tuple[str, str], Product] = {}
+            for s_id in target_shops:
+                shop_slice = df[df["Shop_ID"] == s_id]
+                for cat_name in shop_slice["Food_Category"].unique():
+                    storage_t, risk_l, default_sl = cat_storage_risk.get(
+                        cat_name, (Category.Storage.AMBIENT, Category.Risk.MEDIUM, 5)
+                    )
+                    category, _ = Category.objects.get_or_create(
+                        name=cat_name,
+                        defaults={
+                            "perishability_risk": risk_l,
+                            "storage_type": storage_t,
+                            "default_shelf_life_days": default_sl,
+                        },
+                    )
+
+                    cat_rows = shop_slice[shop_slice["Food_Category"] == cat_name]
+                    unit_cost = Decimal(str(round(float(cat_rows["Unit_Cost_INR"].median()), 2)))
+                    sku = f"SKU-{s_id}-{cat_name[:3].upper()}"
+
+                    prod, _ = Product.objects.get_or_create(
+                        organization=org,
+                        sku=sku,
+                        defaults={
+                            "name": f"{s_id} {cat_name}",
+                            "category": category,
+                            "unit": "kg" if cat_name in ["Meat", "Fruits", "Vegetables"] else "pcs",
+                            "unit_cost": unit_cost,
+                            "is_active": True,
+                        },
+                    )
+                    product_map[(s_id, cat_name)] = prod
+
+            # Build Batches and Ledger Rows
+            last_panel_date = max_date
+            recent_expiry_cutoff = last_panel_date - timedelta(days=14)
+
+            batches_to_create: List[Batch] = []
+            txns_data: List[Tuple[Decimal, Decimal, Decimal, Decimal, Decimal, date, str]] = []
+
+            total_received = Decimal("0")
+            total_sold = Decimal("0")
+            total_discarded = Decimal("0")
+            total_donated = Decimal("0")
+            total_adjusted = Decimal("0")
+            total_remaining = Decimal("0")
+
+            for idx, row in df.iterrows():
+                s_id = row["Shop_ID"]
+                cat_name = row["Food_Category"]
+                prod = product_map[(s_id, cat_name)]
+                rec_date = row["Date"]
+                exp_date = row["Expiry_Date"]
+
+                p_qty = Decimal(str(row["Purchase_Quantity"]))
+                s_qty = Decimal(str(row["Units_Sold"]))
+                d_donated = Decimal(str(row["Donated_Units"]))
+                w_qty = Decimal(str(row["Waste_Quantity"]))
+                d_discarded = Decimal(str(w_qty - d_donated))
+                carried_qty = Decimal(str(row["Carried_Forward_Units"]))
+
+                # Carried Forward Units handling:
+                # Keep active if expiry is within last 14 days or in future relative to last panel date
+                if exp_date >= recent_expiry_cutoff:
+                    batch_remaining = carried_qty
+                    adj_qty = Decimal("0")
+                    batch_status = Batch.Status.ACTIVE if batch_remaining > 0 else Batch.Status.DEPLETED
+                else:
+                    batch_remaining = Decimal("0")
+                    adj_qty = carried_qty
+                    batch_status = Batch.Status.EXPIRED if exp_date < last_panel_date else Batch.Status.DEPLETED
+
+                # Invariant Verification: Received == Sold + Discarded + Donated + Adjusted + Remaining
+                reconciled = s_qty + d_discarded + d_donated + adj_qty + batch_remaining
+                if p_qty != reconciled:
+                    raise ValueError(
+                        f"Reconciliation error on row {idx} ({s_id} {cat_name} {rec_date}): "
+                        f"Purchase {p_qty} != {reconciled} "
+                        f"(S={s_qty}, Disc={d_discarded}, Don={d_donated}, Adj={adj_qty}, Rem={batch_remaining})"
+                    )
+
+                total_received += p_qty
+                total_sold += s_qty
+                total_discarded += d_discarded
+                total_donated += d_donated
+                total_adjusted += adj_qty
+                total_remaining += batch_remaining
+
+                loc = loc_map["CHILLED"] if prod.category.storage_type == Category.Storage.CHILLED else loc_map["AMBIENT"]
+
+                batch = Batch(
+                    organization=org,
+                    product=prod,
+                    location=loc,
+                    batch_code=f"BP-{s_id}-{cat_name[:3].upper()}-{rec_date.strftime('%Y%m%d')}",
+                    quantity=batch_remaining,
+                    reserved_quantity=Decimal("0.000"),
+                    received_date=rec_date,
+                    expiry_date=exp_date,
+                    status=batch_status,
+                )
+                batches_to_create.append(batch)
+                txns_data.append((p_qty, s_qty, d_discarded, d_donated, adj_qty, rec_date, str(row.get("Waste_Reason", "Spoilage"))))
+
+            # Bulk create batches
+            created_batches = Batch.objects.bulk_create(batches_to_create, batch_size=1000)
+
+            # Build transactions
+            txns_to_create: List[StockTransaction] = []
+            for b_idx, saved_b in enumerate(created_batches):
+                p_qty, s_qty, d_discarded, d_donated, adj_qty, rec_date, w_reason = txns_data[b_idx]
+
+                # 1. RECEIVED
+                txns_to_create.append(StockTransaction(
+                    organization=org,
+                    batch=saved_b,
+                    txn_type=StockTransaction.Type.RECEIVED,
+                    quantity=p_qty,
+                    reason="Initial batch receipt (synthetic panel)",
+                    source="CSV",
+                ))
+
+                # 2. SOLD
+                if s_qty > 0:
+                    txns_to_create.append(StockTransaction(
+                        organization=org,
+                        batch=saved_b,
+                        txn_type=StockTransaction.Type.SOLD,
+                        quantity=s_qty,
+                        reason="Customer retail sales",
+                        source="POS",
+                    ))
+
+                # 3. DISCARDED
+                if d_discarded > 0:
+                    txns_to_create.append(StockTransaction(
+                        organization=org,
+                        batch=saved_b,
+                        txn_type=StockTransaction.Type.DISCARDED,
+                        quantity=d_discarded,
+                        reason=f"Discarded - {w_reason}",
+                        source="MANUAL",
+                    ))
+
+                # 4. DONATED
+                if d_donated > 0:
+                    txns_to_create.append(StockTransaction(
+                        organization=org,
+                        batch=saved_b,
+                        txn_type=StockTransaction.Type.DONATED,
+                        quantity=d_donated,
+                        reason="Redistributed to community food bank",
+                        source="MANUAL",
+                    ))
+
+                # 5. ADJUSTMENT
+                if adj_qty > 0:
+                    txns_to_create.append(StockTransaction(
+                        organization=org,
+                        batch=saved_b,
+                        txn_type=StockTransaction.Type.ADJUSTMENT,
+                        quantity=adj_qty,
+                        reason="carried forward, not tracked in synthetic data",
+                        source="SYSTEM_ADJUSTMENT",
+                    ))
+
+            StockTransaction.objects.bulk_create(txns_to_create, batch_size=2000)
+
+        # Output summary
+        self.stdout.write(self.style.SUCCESS(
+            f"Successfully seeded {len(created_batches)} batches and {len(txns_to_create)} transactions "
+            f"from panel '{panel_path.name}' for organization '{org.name}' (Shop: {shops_arg}).\n"
+            f"Ledger reconciliation: Received={total_received} == "
+            f"Sold({total_sold}) + Discarded({total_discarded}) + Donated({total_donated}) + "
+            f"Adjusted({total_adjusted}) + Remaining({total_remaining})\n"
+            f"Coordinates set to: Latitude={org.latitude}, Longitude={org.longitude}."
+        ))
+
+
+
+def seed_synthetic_matching_history(
+    donor_org: Optional[Organization] = None,
+    count: int = 300,
+    seed: int = 42,
+    days: int = 90,
+    stdout_write: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """
+    Generates realistic synthetic matching history records (Track B & Task 1).
+    All generated entities are strictly labeled [SYNTHETIC DEMO DATA] everywhere.
+    Produces correlated features (distance, category, quantity, feasibility, NGO reliability,
+    donor rating) with success/failure outcomes to provide ground truth benchmark data
+    for the matching learning layer.
+    """
+    def log(msg: str):
+        if stdout_write:
+            stdout_write(msg)
+
+    rng = random.Random(seed)
+    now = timezone.now()
+
+    # 1. Donors
+    if donor_org is None:
+        donor_org, _ = Organization.objects.get_or_create(
+            name="Fresh Harvest Supermarket",
+            defaults={
+                "org_type": Organization.Type.BUSINESS,
+                "address": "100 MG Road, Indiranagar, Bengaluru",
+                "latitude": Decimal("12.971600"),
+                "longitude": Decimal("77.594600"),
+                "phone": "+91 98765 43210",
+                "verification_status": Organization.VerificationStatus.VERIFIED,
+                "is_verified": True,
+                "timezone": "Asia/Kolkata",
+            },
+        )
+
+    donor_org2, _ = Organization.objects.get_or_create(
+        name="Sunrise Artisan Bakery",
+        defaults={
+            "org_type": Organization.Type.BUSINESS,
+            "address": "45 Brigade Road, Ashok Nagar, Bengaluru",
+            "latitude": Decimal("12.972400"),
+            "longitude": Decimal("77.608000"),
+            "phone": "+91 98765 12345",
+            "verification_status": Organization.VerificationStatus.VERIFIED,
+            "is_verified": True,
+            "timezone": "Asia/Kolkata",
+        },
+    )
+
+    donors = [donor_org, donor_org2]
+
+    # 2. Verified NGOs with realistic coordinates
+    ngo_configs = [
+        {
+            "name": "City Food Bank Trust",
+            "address": "12 Residency Road, Richmond Town, Bengaluru",
+            "latitude": Decimal("12.966700"),
+            "longitude": Decimal("77.601200"),
+            "radius": Decimal("20.00"),
+            "accepts_cooked": True,
+            "base_reliability": 0.90,
+        },
+        {
+            "name": "Hope Community Kitchen",
+            "address": "88 Koramangala 4th Block, Bengaluru",
+            "latitude": Decimal("12.935200"),
+            "longitude": Decimal("77.624500"),
+            "radius": Decimal("15.00"),
+            "accepts_cooked": True,
+            "base_reliability": 0.78,
+        },
+        {
+            "name": "Robin Hood Army - Bengaluru",
+            "address": "55 Cunningham Road, Vasanth Nagar, Bengaluru",
+            "latitude": Decimal("12.984000"),
+            "longitude": Decimal("77.592000"),
+            "radius": Decimal("25.00"),
+            "accepts_cooked": False,
+            "base_reliability": 0.85,
+        },
+        {
+            "name": "Annakshetra Trust - Koramangala",
+            "address": "14 80ft Road, Koramangala 6th Block, Bengaluru",
+            "latitude": Decimal("12.934000"),
+            "longitude": Decimal("77.615000"),
+            "radius": Decimal("12.00"),
+            "accepts_cooked": True,
+            "base_reliability": 0.82,
+        },
+    ]
+
+    ngos = []
+    for cfg in ngo_configs:
+        ngo_obj, _ = Organization.objects.get_or_create(
+            name=cfg["name"],
+            defaults={
+                "org_type": Organization.Type.NGO,
+                "address": cfg["address"],
+                "latitude": cfg["latitude"],
+                "longitude": cfg["longitude"],
+                "phone": "+91 98000 00000",
+                "verification_status": Organization.VerificationStatus.VERIFIED,
+                "is_verified": True,
+                "timezone": "Asia/Kolkata",
+            },
+        )
+        ngos.append((ngo_obj, cfg))
+
+    # 3. Categories
+    cat_dairy, _ = Category.objects.get_or_create(name="Dairy", defaults={"perishability_risk": Category.Risk.HIGH})
+    cat_bakery, _ = Category.objects.get_or_create(name="Bakery", defaults={"perishability_risk": Category.Risk.MEDIUM})
+    cat_produce, _ = Category.objects.get_or_create(name="Produce", defaults={"perishability_risk": Category.Risk.HIGH})
+    cat_meals, _ = Category.objects.get_or_create(name="Prepared Meals", defaults={"perishability_risk": Category.Risk.CRITICAL})
+    categories = [cat_dairy, cat_bakery, cat_produce, cat_meals]
+
+    # 4. Active Requirements for NGOs labeled [SYNTHETIC DEMO DATA]
+    ngo_requirements = []
+    for ngo_obj, cfg in ngos:
+        req, _ = NGORequirement.objects.get_or_create(
+            ngo=ngo_obj,
+            title=f"[SYNTHETIC DEMO DATA] {ngo_obj.name} Daily Relief Feed",
+            defaults={
+                "min_quantity": Decimal("10.000"),
+                "max_quantity": Decimal("60.000"),
+                "unit": "kg",
+                "radius_km": cfg["radius"],
+                "accepts_cooked_food": cfg["accepts_cooked"],
+                "dietary_notes": "[SYNTHETIC DEMO DATA] Balanced nutritious food relief",
+                "is_active": True,
+            },
+        )
+        if not req.categories.exists():
+            req.categories.set(categories)
+        ngo_requirements.append((ngo_obj, req, cfg))
+
+    # 5. Generate historical requests over `days`
+    from marketplace.matching import haversine_distance
+
+    completed_count = 0
+    rejected_count = 0
+    no_show_count = 0
+    expired_count = 0
+
+    log(f"Generating {count} synthetic matching outcomes across past {days} days (seed={seed})...")
+
+    # Clear old synthetic matching requests with this seed prefix if re-running
+    DonationRequest.objects.filter(code__startswith=f"SYNTH-{seed}-").delete()
+
+    for idx in range(count):
+        # Timestamp spaced chronologically across past days
+        day_offset = rng.uniform(1.0, float(days))
+        req_time = now - timedelta(days=day_offset, hours=rng.uniform(0, 12))
+
+        donor = rng.choice(donors)
+        cat = rng.choice(categories)
+        ngo_obj, req, cfg = rng.choice(ngo_requirements)
+
+        # Distance
+        dist_km = haversine_distance(
+            float(donor.latitude or 12.9716),
+            float(donor.longitude or 77.5946),
+            float(ngo_obj.latitude or 12.9667),
+            float(ngo_obj.longitude or 77.6012),
+        )
+
+        qty_offered = Decimal(str(round(rng.uniform(12.0, 75.0), 3)))
+        window_hours = rng.uniform(3.0, 18.0)
+        avail_from = req_time - timedelta(hours=rng.uniform(1.0, 3.0))
+        avail_until = avail_from + timedelta(hours=window_hours)
+        safe_until = avail_until + timedelta(hours=rng.uniform(2.0, 8.0))
+
+        listing = SurplusListing.objects.create(
+            donor=donor,
+            title=f"[SYNTHETIC DEMO DATA] {cat.name} Surplus Batch #{seed}-{idx+1:04d}",
+            description="[SYNTHETIC DEMO DATA] Surplus redistribution offer for matching re-ranker benchmark",
+            category=cat,
+            quantity_offered=qty_offered,
+            quantity_reserved=qty_offered,
+            unit="kg",
+            pickup_address=donor.address or "Indiranagar, Bengaluru",
+            latitude=donor.latitude,
+            longitude=donor.longitude,
+            available_from=avail_from,
+            available_until=avail_until,
+            safe_until=safe_until,
+            status=SurplusListing.Status.COMPLETED,
+        )
+
+        # Correlation logic for ground truth collection probability:
+        # Distance penalty, category reward, quantity fit, feasibility, NGO reliability
+        fit_ratio = min(2.0, max(0.0, float(qty_offered) / float(req.min_quantity)))
+        dist_penalty = 0.08 * dist_km
+        fit_bonus = 0.40 * min(fit_ratio, 1.2)
+        window_bonus = 0.05 * min(12.0, window_hours)
+        ngo_bonus = 0.50 * (cfg["base_reliability"] - 0.80)
+        noise = rng.gauss(0.0, 0.35)
+
+        # Log-odds
+        logit = 1.5 - dist_penalty + fit_bonus + window_bonus + ngo_bonus + noise
+        p_success = 1.0 / (1.0 + math.exp(-logit))
+
+        is_completed = (rng.random() < p_success)
+
+        code_str = f"SYNTH-{seed}-{idx+1:04d}"
+        qty_requested = min(qty_offered, req.max_quantity)
+
+        pickup_start = avail_from + timedelta(hours=1)
+        pickup_end = min(avail_until, pickup_start + timedelta(hours=2))
+        if pickup_end <= pickup_start:
+            pickup_end = pickup_start + timedelta(hours=1)
+
+        if is_completed:
+            status = DonationRequest.Status.COMPLETED
+            completed_count += 1
+            completed_time = req_time + timedelta(hours=rng.uniform(1.5, 3.5))
+            rejection_reason = ""
+        else:
+            roll = rng.random()
+            if roll < 0.60:
+                status = DonationRequest.Status.REJECTED
+                rejected_count += 1
+                rejection_reason = "[SYNTHETIC DEMO DATA] Capacity limit or scheduling mismatch"
+            elif roll < 0.85:
+                status = DonationRequest.Status.NO_SHOW
+                no_show_count += 1
+                rejection_reason = "[SYNTHETIC DEMO DATA] Transport volunteer vehicle breakdown"
+            else:
+                status = DonationRequest.Status.EXPIRED
+                expired_count += 1
+                rejection_reason = "[SYNTHETIC DEMO DATA] Available pickup window elapsed"
+            completed_time = None
+
+        dr = DonationRequest(
+            code=code_str,
+            listing=listing,
+            ngo=ngo_obj,
+            quantity_requested=qty_requested,
+            quantity_approved=qty_requested if is_completed else None,
+            quantity_collected=qty_requested if is_completed else None,
+            status=status,
+            proposed_pickup_start=pickup_start,
+            proposed_pickup_end=pickup_end,
+            confirmed_pickup_start=pickup_start if is_completed else None,
+            confirmed_pickup_end=pickup_end if is_completed else None,
+            note="[SYNTHETIC DEMO DATA] Generated matching history record",
+            rejection_reason=rejection_reason,
+            contact_name="Demo Coordinator",
+            contact_phone="+91 99999 88888",
+        )
+        dr.save()
+
+        # Update timestamps to preserve historical distribution
+        DonationRequest.objects.filter(id=dr.id).update(
+            requested_at=req_time,
+            approved_at=req_time + timedelta(minutes=30) if is_completed else None,
+            completed_at=completed_time,
+            no_show_at=avail_until + timedelta(hours=1) if status == DonationRequest.Status.NO_SHOW else None,
+            rejected_at=req_time + timedelta(hours=1) if status == DonationRequest.Status.REJECTED else None,
+            expired_at=avail_until if status == DonationRequest.Status.EXPIRED else None,
+        )
+
+        # Rating on completed request
+        if is_completed and rng.random() < 0.70:
+            stars = rng.choice([4, 5, 5, 4, 3])
+            Rating.objects.create(
+                request=dr,
+                business=donor,
+                ngo=ngo_obj,
+                stars=stars,
+                comment=f"[SYNTHETIC DEMO DATA] Reliable collection and high quality food ({stars} stars)",
+                is_hidden=False,
+            )
+
+    log(
+        f"Synthetic matching history completed: {count} requests "
+        f"(Completed={completed_count}, Rejected={rejected_count}, NoShow={no_show_count}, Expired={expired_count})"
+    )
+    return {
+        "total": count,
+        "completed": completed_count,
+        "rejected": rejected_count,
+        "no_show": no_show_count,
+        "expired": expired_count,
+    }

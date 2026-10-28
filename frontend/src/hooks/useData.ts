@@ -52,6 +52,8 @@ export const QUERY_KEYS = {
   homePublic: ['home', 'public'] as const,
   homeAuth: ['home', 'auth'] as const,
   predictionsInsights: ['predictions', 'insights'] as const,
+  recentSales: (params?: { days?: number; category?: string; end_date?: string }) => ['recentSales', params],
+  planForecast: (category: string) => ['planForecast', category],
 };
 
 // --- Read Queries ---
@@ -912,10 +914,11 @@ export function usePickupSchedule(filters?: { date?: string; status?: string; ra
 }
 
 // Impact Analytics Hook
-export function useImpactAnalytics(period?: string) {
+export function useImpactAnalytics(filters?: string | { period?: string; startDate?: string; endDate?: string }) {
+  const key = typeof filters === 'string' ? filters : JSON.stringify(filters ?? {});
   return useQuery({
-    queryKey: QUERY_KEYS.impactAnalytics(period),
-    queryFn: () => dataSource.getImpactAnalytics(period),
+    queryKey: QUERY_KEYS.impactAnalytics(key),
+    queryFn: () => dataSource.getImpactAnalytics(filters),
   });
 }
 
@@ -981,11 +984,35 @@ export function usePlanPrediction() {
   });
 }
 
+// Per-category forecast query – re-fetches automatically when category changes
+export function useForecastByCategory(category: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.planForecast(category),
+    queryFn: () =>
+      dataSource.getPlanPrediction({
+        category,
+        planned_quantity: 100,
+        promotion: false,
+        weather: 'Sunny',
+      }),
+    staleTime: 1000 * 60 * 5, // 5-minute cache per category
+    enabled: !!category,
+  });
+}
+
 export function useDatasetInsights() {
   return useQuery({
     queryKey: QUERY_KEYS.predictionsInsights,
     queryFn: () => dataSource.getDatasetInsights(),
     staleTime: 1000 * 60 * 30, // 30 minutes cache
+  });
+}
+
+export function useRecentSales(params?: { days?: number; category?: string; end_date?: string }) {
+  return useQuery({
+    queryKey: QUERY_KEYS.recentSales(params),
+    queryFn: () => dataSource.getRecentSales(params),
+    staleTime: 1000 * 60 * 2, // 2 minutes cache
   });
 }
 

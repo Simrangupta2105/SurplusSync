@@ -1,0 +1,568 @@
+{
+  "autocorrelation": {
+    "lag_1_mean_acf": 0.35965447100804226,
+    "lag_7_mean_acf": 0.4338892145793427,
+    "lag_1_std_acf": 0.05362662662800345,
+    "lag_7_std_acf": 0.1291051787391286
+  },
+  "cv_summary": [
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "wape": 0.13833269253097027,
+      "mae": 14.01320368582554,
+      "rmse": 17.641056668598754,
+      "bias": -5.568315858821017,
+      "coverage": 0.9017857142857143
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "wape": 0.13983251608147937,
+      "mae": 14.152011975166404,
+      "rmse": 17.904985788330894,
+      "bias": -6.132303668715649,
+      "coverage": 0.90625
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "wape": 0.14385113963596982,
+      "mae": 14.660484712284116,
+      "rmse": 18.59144053760267,
+      "bias": -6.49452861873331,
+      "coverage": 0.9099702380952381
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "wape": 0.15143970316734706,
+      "mae": 15.462215317521897,
+      "rmse": 19.43895742175614,
+      "bias": -6.222666556214119,
+      "coverage": 0.9077380952380952
+    }
+  ],
+  "cv_category_summary": [
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Bakery",
+      "wape": 0.129772227058243,
+      "mae": 12.598363148110193,
+      "rmse": 15.928356548613875,
+      "bias": -3.365414663830863,
+      "coverage": 0.9285714285714286
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Dairy",
+      "wape": 0.13719967581431838,
+      "mae": 13.954681037267719,
+      "rmse": 17.833534902238988,
+      "bias": -6.651272465648109,
+      "coverage": 0.9151785714285714
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Fruits",
+      "wape": 0.1488130274331148,
+      "mae": 17.097498833080458,
+      "rmse": 21.172862232343068,
+      "bias": -11.603319076001377,
+      "coverage": 0.8660714285714286
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Meat",
+      "wape": 0.14445095517093753,
+      "mae": 13.803985023139095,
+      "rmse": 17.274150590075838,
+      "bias": -2.3935173518669366,
+      "coverage": 0.8973214285714286
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Prepared Food",
+      "wape": 0.12760765434773685,
+      "mae": 12.50452427185042,
+      "rmse": 15.378470623730992,
+      "bias": -4.237150793570448,
+      "coverage": 0.9196428571428571
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Vegetables",
+      "wape": 0.14215261536147106,
+      "mae": 14.12016980150535,
+      "rmse": 18.258965114589753,
+      "bias": -5.15922080200837,
+      "coverage": 0.8839285714285714
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Bakery",
+      "wape": 0.13257954569182429,
+      "mae": 12.787230211441095,
+      "rmse": 16.3042388195232,
+      "bias": -4.054577326812776,
+      "coverage": 0.9375
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Dairy",
+      "wape": 0.13783142221204184,
+      "mae": 14.188243851016225,
+      "rmse": 18.311596115294755,
+      "bias": -7.268069092471638,
+      "coverage": 0.90625
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Fruits",
+      "wape": 0.14885840633686662,
+      "mae": 17.020564850330125,
+      "rmse": 21.166756280667343,
+      "bias": -11.948903757176682,
+      "coverage": 0.8883928571428571
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Meat",
+      "wape": 0.14371653807440296,
+      "mae": 13.707997695356205,
+      "rmse": 17.36670556302095,
+      "bias": -2.8958505427425987,
+      "coverage": 0.9017857142857143
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Prepared Food",
+      "wape": 0.1310053989246225,
+      "mae": 12.862911559553284,
+      "rmse": 15.865068516607952,
+      "bias": -4.887909062529048,
+      "coverage": 0.9196428571428571
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Vegetables",
+      "wape": 0.14500378524911806,
+      "mae": 14.3451236833015,
+      "rmse": 18.41554943487115,
+      "bias": -5.738512230561157,
+      "coverage": 0.8839285714285714
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Bakery",
+      "wape": 0.13543105323551943,
+      "mae": 13.008421147381474,
+      "rmse": 16.798903665475443,
+      "bias": -4.287312937582466,
+      "coverage": 0.9375
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Dairy",
+      "wape": 0.14026756944937158,
+      "mae": 14.67025431035584,
+      "rmse": 19.11450624708559,
+      "bias": -7.928275276135912,
+      "coverage": 0.8928571428571428
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Fruits",
+      "wape": 0.1526136164256617,
+      "mae": 17.84151714274117,
+      "rmse": 22.06200734957082,
+      "bias": -12.770089152918104,
+      "coverage": 0.8794642857142857
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Meat",
+      "wape": 0.14715990903516654,
+      "mae": 13.93059113790009,
+      "rmse": 17.71649365727039,
+      "bias": -2.54581367193121,
+      "coverage": 0.9241071428571429
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Prepared Food",
+      "wape": 0.1379195114021901,
+      "mae": 13.518309563411536,
+      "rmse": 16.893995596133024,
+      "bias": -5.4621345856006265,
+      "coverage": 0.9330357142857143
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Vegetables",
+      "wape": 0.14971517826790962,
+      "mae": 14.993814971914592,
+      "rmse": 18.962736710080733,
+      "bias": -5.973546088231544,
+      "coverage": 0.8928571428571428
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Bakery",
+      "wape": 0.1452463330393031,
+      "mae": 13.871178529900616,
+      "rmse": 17.687942128387384,
+      "bias": -3.9886839295855783,
+      "coverage": 0.9285714285714286
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Dairy",
+      "wape": 0.14808662956202334,
+      "mae": 15.57570600785319,
+      "rmse": 20.271461761032988,
+      "bias": -7.972233003897879,
+      "coverage": 0.8973214285714286
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Fruits",
+      "wape": 0.15854959029418034,
+      "mae": 18.772265591050687,
+      "rmse": 23.069522851551884,
+      "bias": -12.851035986461913,
+      "coverage": 0.875
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Meat",
+      "wape": 0.15292125172437546,
+      "mae": 14.379456198075093,
+      "rmse": 18.107773910645996,
+      "bias": -1.812355965110675,
+      "coverage": 0.9241071428571428
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Prepared Food",
+      "wape": 0.14790209543676713,
+      "mae": 14.50423846371138,
+      "rmse": 17.96654902024233,
+      "bias": -5.209500020696817,
+      "coverage": 0.9285714285714286
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Vegetables",
+      "wape": 0.15593231894743304,
+      "mae": 15.670447114540417,
+      "rmse": 19.530494858676246,
+      "bias": -5.502190431531851,
+      "coverage": 0.8928571428571428
+    }
+  ],
+  "test_summary": [
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "wape": 0.14880262924742235,
+      "mae": 17.00602496519339,
+      "rmse": 21.196090620842412,
+      "bias": -9.090695034759072,
+      "coverage": 0.8556547619047619
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "wape": 0.1519800341482689,
+      "mae": 17.44439752056062,
+      "rmse": 21.71626951869417,
+      "bias": -9.407567004448033,
+      "coverage": 0.861359126984127
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "wape": 0.16013982186751283,
+      "mae": 18.517593321324487,
+      "rmse": 23.01810341530161,
+      "bias": -10.656431820214479,
+      "coverage": 0.863343253968254
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "wape": 0.16459951427613384,
+      "mae": 19.09177617087853,
+      "rmse": 23.700432237278743,
+      "bias": -10.446899043771825,
+      "coverage": 0.873015873015873
+    }
+  ],
+  "test_category_summary": [
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Bakery",
+      "wape": 0.15912611073937635,
+      "mae": 19.69974421995656,
+      "rmse": 24.81632695520082,
+      "bias": -14.888529456766497,
+      "coverage": 0.8303571428571428
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Dairy",
+      "wape": 0.13171477834258585,
+      "mae": 13.696455723767805,
+      "rmse": 17.203806105950726,
+      "bias": -4.074065721466908,
+      "coverage": 0.9122023809523809
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Fruits",
+      "wape": 0.14812551021419434,
+      "mae": 14.650313601016492,
+      "rmse": 17.726078169663236,
+      "bias": 3.370461791649804,
+      "coverage": 0.8720238095238094
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Meat",
+      "wape": 0.1481064365751224,
+      "mae": 16.51925847912545,
+      "rmse": 20.543550822023192,
+      "bias": -9.283660122411467,
+      "coverage": 0.8645833333333334
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Prepared Food",
+      "wape": 0.14868667719385512,
+      "mae": 18.11497377660532,
+      "rmse": 22.62784004084142,
+      "bias": -13.824950495931143,
+      "coverage": 0.8377976190476191
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "No_Lags",
+      "food_category": "Vegetables",
+      "wape": 0.15705626241940004,
+      "mae": 19.35540399068871,
+      "rmse": 24.258941631375055,
+      "bias": -15.84342620362822,
+      "coverage": 0.8169642857142857
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Bakery",
+      "wape": 0.16228125833157475,
+      "mae": 20.323228092958566,
+      "rmse": 25.644563806629662,
+      "bias": -15.647068116495499,
+      "coverage": 0.8318452380952381
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Dairy",
+      "wape": 0.13099314987207386,
+      "mae": 13.618132542749843,
+      "rmse": 17.027244681363147,
+      "bias": -3.2910264323031035,
+      "coverage": 0.9300595238095238
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Fruits",
+      "wape": 0.15297938599569263,
+      "mae": 15.003714156851542,
+      "rmse": 18.017937307012396,
+      "bias": 4.790222572755984,
+      "coverage": 0.8735119047619048
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Meat",
+      "wape": 0.15089240443293267,
+      "mae": 16.922902934424695,
+      "rmse": 21.088812631091823,
+      "bias": -10.356343901209812,
+      "coverage": 0.8720238095238094
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Prepared Food",
+      "wape": 0.15250701095726046,
+      "mae": 18.721720346493637,
+      "rmse": 23.416025914290383,
+      "bias": -15.004940645105641,
+      "coverage": 0.8392857142857143
+    },
+    {
+      "model": "HistGradientBoosting",
+      "variant": "With_Lags_Direct",
+      "food_category": "Vegetables",
+      "wape": 0.16222699530007909,
+      "mae": 20.076687049885432,
+      "rmse": 25.103032771777603,
+      "bias": -16.936245504330135,
+      "coverage": 0.8214285714285715
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Bakery",
+      "wape": 0.17418360801835342,
+      "mae": 22.113223468818457,
+      "rmse": 27.934952494337434,
+      "bias": -17.820646375645612,
+      "coverage": 0.8333333333333334
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Dairy",
+      "wape": 0.13505163840129777,
+      "mae": 14.075347306706234,
+      "rmse": 17.731950973574392,
+      "bias": -3.9670801780403875,
+      "coverage": 0.9345238095238094
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Fruits",
+      "wape": 0.1598606938116986,
+      "mae": 15.34127127869647,
+      "rmse": 18.207124695248517,
+      "bias": 5.543329797436513,
+      "coverage": 0.8809523809523809
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Meat",
+      "wape": 0.15545620478799707,
+      "mae": 17.684612431002922,
+      "rmse": 22.070495415087382,
+      "bias": -11.553302682579941,
+      "coverage": 0.8839285714285715
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Prepared Food",
+      "wape": 0.16352925540470684,
+      "mae": 20.395363891583578,
+      "rmse": 25.23607277185177,
+      "bias": -17.092161477616635,
+      "coverage": 0.8273809523809524
+    },
+    {
+      "model": "LightGBM",
+      "variant": "No_Lags",
+      "food_category": "Vegetables",
+      "wape": 0.1727575307810233,
+      "mae": 21.49574155113925,
+      "rmse": 26.92802414171018,
+      "bias": -19.04873000484081,
+      "coverage": 0.8199404761904762
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Bakery",
+      "wape": 0.17837094617650276,
+      "mae": 22.943160716532223,
+      "rmse": 28.94405961271967,
+      "bias": -17.887153302531996,
+      "coverage": 0.8363095238095238
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Dairy",
+      "wape": 0.14254722391199584,
+      "mae": 14.865709257732798,
+      "rmse": 18.626994683596543,
+      "bias": -3.8814142455574907,
+      "coverage": 0.9360119047619048
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Fruits",
+      "wape": 0.17375762287816623,
+      "mae": 16.200331572899145,
+      "rmse": 19.05132919382938,
+      "bias": 6.2097817110413525,
+      "coverage": 0.8854166666666666
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Meat",
+      "wape": 0.15463886808750157,
+      "mae": 17.74966003541346,
+      "rmse": 22.267568763266457,
+      "bias": -11.114076915662714,
+      "coverage": 0.8973214285714285
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Prepared Food",
+      "wape": 0.16499569969545894,
+      "mae": 20.85731599794263,
+      "rmse": 25.830646725483664,
+      "bias": -16.934386715852742,
+      "coverage": 0.8422619047619048
+    },
+    {
+      "model": "LightGBM",
+      "variant": "With_Lags_Direct",
+      "food_category": "Vegetables",
+      "wape": 0.17328672490717764,
+      "mae": 21.934479444750917,
+      "rmse": 27.481994444776745,
+      "bias": -19.074144794067358,
+      "coverage": 0.8407738095238094
+    }
+  ]
+}

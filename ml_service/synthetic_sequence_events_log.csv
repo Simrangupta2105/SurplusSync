@@ -1,0 +1,462 @@
+shop_id,category,date,event_type,multiplier,note
+S01,ALL,2023-03-29..2023-04-06,regime_boom,1.12,unobserved demand regime
+S01,ALL,2023-07-24..2023-08-07,regime_boom,1.12,unobserved demand regime
+S01,ALL,2023-08-10..2023-08-27,regime_slump,0.85,unobserved demand regime
+S01,ALL,2023-09-09..2023-11-17,regime_slump,0.85,unobserved demand regime
+S01,ALL,2024-01-11..2024-01-20,regime_boom,1.12,unobserved demand regime
+S01,ALL,2024-04-29..2024-07-09,regime_boom,1.12,unobserved demand regime
+S01,ALL,2024-07-20..2024-08-11,regime_slump,0.85,unobserved demand regime
+S01,ALL,2024-10-01..2024-12-12,regime_boom,1.12,unobserved demand regime
+S01,ALL,2024-12-18..2025-01-01,regime_boom,1.12,unobserved demand regime
+S01,ALL,2025-02-04..2025-02-17,regime_slump,0.85,unobserved demand regime
+S01,ALL,2025-02-26..2025-07-08,regime_slump,0.85,unobserved demand regime
+S01,ALL,2025-10-18..2025-10-19,regime_slump,0.85,unobserved demand regime
+S01,ALL,2025-12-05..2025-12-17,regime_slump,0.85,unobserved demand regime
+S02,ALL,2023-01-09..2023-01-29,regime_slump,0.85,unobserved demand regime
+S02,ALL,2023-02-25..2023-03-20,regime_boom,1.12,unobserved demand regime
+S02,ALL,2023-06-21..2023-06-30,regime_boom,1.12,unobserved demand regime
+S02,ALL,2023-09-08..2023-10-05,regime_boom,1.12,unobserved demand regime
+S02,ALL,2023-11-11..2023-11-21,regime_boom,1.12,unobserved demand regime
+S02,ALL,2023-12-05..2023-12-06,regime_slump,0.85,unobserved demand regime
+S02,ALL,2024-05-02..2024-05-29,regime_slump,0.85,unobserved demand regime
+S02,ALL,2024-06-06..2024-06-16,regime_slump,0.85,unobserved demand regime
+S02,ALL,2024-08-10..2024-08-30,regime_boom,1.12,unobserved demand regime
+S02,ALL,2024-12-10..2024-12-19,regime_boom,1.12,unobserved demand regime
+S02,ALL,2025-01-06..2025-02-02,regime_slump,0.85,unobserved demand regime
+S02,ALL,2025-03-27..2025-03-31,regime_slump,0.85,unobserved demand regime
+S02,ALL,2025-04-10..2025-05-05,regime_boom,1.12,unobserved demand regime
+S02,ALL,2025-05-15..2025-05-21,regime_slump,0.85,unobserved demand regime
+S02,ALL,2025-06-18..2025-06-22,regime_slump,0.85,unobserved demand regime
+S02,ALL,2025-08-31..2025-10-13,regime_slump,0.85,unobserved demand regime
+S09,ALL,2023-03-06..2023-03-11,regime_slump,0.85,unobserved demand regime
+S09,ALL,2023-04-21..2023-05-03,regime_slump,0.85,unobserved demand regime
+S09,ALL,2023-06-16..2023-07-14,regime_boom,1.12,unobserved demand regime
+S09,ALL,2023-09-25..2023-11-03,regime_boom,1.12,unobserved demand regime
+S09,ALL,2024-03-30..2024-04-19,regime_slump,0.85,unobserved demand regime
+S09,ALL,2024-06-06..2024-07-02,regime_boom,1.12,unobserved demand regime
+S09,ALL,2024-07-24..2024-08-24,regime_slump,0.85,unobserved demand regime
+S09,ALL,2024-10-09..2024-10-31,regime_slump,0.85,unobserved demand regime
+S09,ALL,2025-01-19..2025-02-14,regime_slump,0.85,unobserved demand regime
+S09,ALL,2025-05-25..2025-06-17,regime_boom,1.12,unobserved demand regime
+S09,ALL,2025-11-03..2025-11-16,regime_slump,0.85,unobserved demand regime
+S09,ALL,2025-12-21..2025-12-31,regime_boom,1.12,unobserved demand regime
+S03,ALL,2023-02-17..2023-04-17,regime_slump,0.85,unobserved demand regime
+S03,ALL,2024-02-19..2024-03-02,regime_slump,0.85,unobserved demand regime
+S03,ALL,2024-03-12..2024-04-10,regime_slump,0.85,unobserved demand regime
+S03,ALL,2024-04-17..2024-05-04,regime_boom,1.12,unobserved demand regime
+S03,ALL,2024-11-10..2024-11-16,regime_boom,1.12,unobserved demand regime
+S03,ALL,2025-02-26..2025-04-26,regime_slump,0.85,unobserved demand regime
+S03,ALL,2025-05-13..2025-06-07,regime_slump,0.85,unobserved demand regime
+S03,ALL,2025-06-26..2025-06-27,regime_slump,0.85,unobserved demand regime
+S03,ALL,2025-08-29..2025-11-06,regime_slump,0.85,unobserved demand regime
+S03,ALL,2025-12-13..2025-12-20,regime_slump,0.85,unobserved demand regime
+S04,ALL,2023-01-28..2023-03-20,regime_boom,1.12,unobserved demand regime
+S04,ALL,2023-03-22..2023-03-22,regime_boom,1.12,unobserved demand regime
+S04,ALL,2023-03-27..2023-04-17,regime_slump,0.85,unobserved demand regime
+S04,ALL,2023-07-11..2023-07-15,regime_slump,0.85,unobserved demand regime
+S04,ALL,2023-10-25..2023-11-27,regime_boom,1.12,unobserved demand regime
+S04,ALL,2023-12-16..2024-01-26,regime_slump,0.85,unobserved demand regime
+S04,ALL,2024-05-08..2024-05-12,regime_boom,1.12,unobserved demand regime
+S04,ALL,2024-05-30..2024-07-08,regime_slump,0.85,unobserved demand regime
+S04,ALL,2024-07-17..2024-08-25,regime_boom,1.12,unobserved demand regime
+S04,ALL,2024-12-11..2025-01-23,regime_slump,0.85,unobserved demand regime
+S04,ALL,2025-03-22..2025-03-30,regime_boom,1.12,unobserved demand regime
+S04,ALL,2025-10-14..2025-10-16,regime_slump,0.85,unobserved demand regime
+S04,ALL,2025-11-12..2025-11-14,regime_boom,1.12,unobserved demand regime
+S04,ALL,2025-12-09..2025-12-15,regime_slump,0.85,unobserved demand regime
+S04,ALL,2025-12-27..2025-12-28,regime_boom,1.12,unobserved demand regime
+S10,ALL,2023-03-03..2023-03-06,regime_slump,0.85,unobserved demand regime
+S10,ALL,2023-06-11..2023-06-14,regime_slump,0.85,unobserved demand regime
+S10,ALL,2023-07-20..2023-08-15,regime_boom,1.12,unobserved demand regime
+S10,ALL,2023-08-25..2023-08-27,regime_slump,0.85,unobserved demand regime
+S10,ALL,2023-09-16..2023-10-16,regime_slump,0.85,unobserved demand regime
+S10,ALL,2023-11-21..2023-12-02,regime_slump,0.85,unobserved demand regime
+S10,ALL,2023-12-31..2024-02-11,regime_boom,1.12,unobserved demand regime
+S10,ALL,2024-03-11..2024-03-18,regime_slump,0.85,unobserved demand regime
+S10,ALL,2024-06-05..2024-06-07,regime_boom,1.12,unobserved demand regime
+S10,ALL,2024-08-24..2024-09-26,regime_slump,0.85,unobserved demand regime
+S10,ALL,2024-10-03..2024-10-22,regime_slump,0.85,unobserved demand regime
+S10,ALL,2024-12-19..2024-12-19,regime_boom,1.12,unobserved demand regime
+S10,ALL,2025-04-09..2025-04-09,regime_slump,0.85,unobserved demand regime
+S10,ALL,2025-06-04..2025-06-30,regime_slump,0.85,unobserved demand regime
+S10,ALL,2025-08-22..2025-09-13,regime_boom,1.12,unobserved demand regime
+S10,ALL,2025-10-17..2025-11-04,regime_slump,0.85,unobserved demand regime
+S05,ALL,2023-01-24..2023-02-12,regime_boom,1.12,unobserved demand regime
+S05,ALL,2023-06-25..2023-08-10,regime_boom,1.12,unobserved demand regime
+S05,ALL,2023-09-17..2023-10-13,regime_boom,1.12,unobserved demand regime
+S05,ALL,2023-10-25..2023-11-09,regime_slump,0.85,unobserved demand regime
+S05,ALL,2024-03-22..2024-03-22,regime_boom,1.12,unobserved demand regime
+S05,ALL,2024-03-28..2024-05-12,regime_slump,0.85,unobserved demand regime
+S05,ALL,2024-05-21..2024-06-01,regime_boom,1.12,unobserved demand regime
+S05,ALL,2024-09-15..2024-09-20,regime_slump,0.85,unobserved demand regime
+S05,ALL,2024-10-07..2024-10-30,regime_slump,0.85,unobserved demand regime
+S05,ALL,2025-01-06..2025-01-09,regime_slump,0.85,unobserved demand regime
+S05,ALL,2025-01-30..2025-01-31,regime_boom,1.12,unobserved demand regime
+S05,ALL,2025-03-26..2025-04-14,regime_boom,1.12,unobserved demand regime
+S05,ALL,2025-05-22..2025-05-26,regime_slump,0.85,unobserved demand regime
+S05,ALL,2025-08-25..2025-10-01,regime_boom,1.12,unobserved demand regime
+S05,ALL,2025-12-03..2025-12-17,regime_boom,1.12,unobserved demand regime
+S06,ALL,2023-02-04..2023-02-15,regime_slump,0.85,unobserved demand regime
+S06,ALL,2023-02-25..2023-03-12,regime_boom,1.12,unobserved demand regime
+S06,ALL,2023-07-11..2023-07-14,regime_slump,0.85,unobserved demand regime
+S06,ALL,2023-09-08..2023-09-25,regime_slump,0.85,unobserved demand regime
+S06,ALL,2023-11-19..2023-12-03,regime_slump,0.85,unobserved demand regime
+S06,ALL,2024-02-04..2024-02-07,regime_slump,0.85,unobserved demand regime
+S06,ALL,2024-04-19..2024-06-16,regime_boom,1.12,unobserved demand regime
+S06,ALL,2024-11-07..2024-11-16,regime_slump,0.85,unobserved demand regime
+S06,ALL,2025-01-10..2025-01-16,regime_slump,0.85,unobserved demand regime
+S06,ALL,2025-04-26..2025-06-11,regime_slump,0.85,unobserved demand regime
+S06,ALL,2025-09-25..2025-09-28,regime_slump,0.85,unobserved demand regime
+S06,ALL,2025-10-04..2025-10-06,regime_boom,1.12,unobserved demand regime
+S11,ALL,2023-07-17..2023-08-26,regime_boom,1.12,unobserved demand regime
+S11,ALL,2023-09-13..2023-10-26,regime_slump,0.85,unobserved demand regime
+S11,ALL,2024-01-16..2024-02-28,regime_slump,0.85,unobserved demand regime
+S11,ALL,2024-03-21..2024-03-25,regime_slump,0.85,unobserved demand regime
+S11,ALL,2024-06-03..2024-06-10,regime_boom,1.12,unobserved demand regime
+S11,ALL,2024-06-15..2024-07-09,regime_slump,0.85,unobserved demand regime
+S11,ALL,2024-07-18..2024-08-16,regime_boom,1.12,unobserved demand regime
+S11,ALL,2025-01-30..2025-02-19,regime_slump,0.85,unobserved demand regime
+S11,ALL,2025-03-24..2025-04-16,regime_boom,1.12,unobserved demand regime
+S11,ALL,2025-07-15..2025-07-25,regime_boom,1.12,unobserved demand regime
+S11,ALL,2025-09-23..2025-12-31,regime_slump,0.85,unobserved demand regime
+S07,ALL,2023-11-10..2023-11-13,regime_boom,1.12,unobserved demand regime
+S07,ALL,2023-12-02..2023-12-18,regime_slump,0.85,unobserved demand regime
+S07,ALL,2024-02-03..2024-02-15,regime_slump,0.85,unobserved demand regime
+S07,ALL,2024-06-10..2024-06-16,regime_boom,1.12,unobserved demand regime
+S07,ALL,2024-06-20..2024-06-27,regime_slump,0.85,unobserved demand regime
+S07,ALL,2024-07-19..2024-07-30,regime_slump,0.85,unobserved demand regime
+S07,ALL,2024-09-04..2024-09-09,regime_slump,0.85,unobserved demand regime
+S07,ALL,2024-09-29..2024-11-14,regime_boom,1.12,unobserved demand regime
+S07,ALL,2024-12-29..2025-01-07,regime_slump,0.85,unobserved demand regime
+S07,ALL,2025-01-17..2025-01-19,regime_slump,0.85,unobserved demand regime
+S07,ALL,2025-01-28..2025-02-16,regime_slump,0.85,unobserved demand regime
+S07,ALL,2025-05-01..2025-05-06,regime_boom,1.12,unobserved demand regime
+S07,ALL,2025-05-08..2025-05-30,regime_slump,0.85,unobserved demand regime
+S07,ALL,2025-06-18..2025-07-10,regime_boom,1.12,unobserved demand regime
+S07,ALL,2025-08-05..2025-08-16,regime_slump,0.85,unobserved demand regime
+S07,ALL,2025-08-26..2025-10-03,regime_boom,1.12,unobserved demand regime
+S07,ALL,2025-11-20..2025-12-07,regime_boom,1.12,unobserved demand regime
+S08,ALL,2023-01-13..2023-03-01,regime_boom,1.12,unobserved demand regime
+S08,ALL,2023-04-14..2023-04-14,regime_slump,0.85,unobserved demand regime
+S08,ALL,2023-06-19..2023-11-29,regime_slump,0.85,unobserved demand regime
+S08,ALL,2024-01-31..2024-02-18,regime_slump,0.85,unobserved demand regime
+S08,ALL,2024-05-17..2024-05-24,regime_slump,0.85,unobserved demand regime
+S08,ALL,2024-07-09..2024-07-10,regime_slump,0.85,unobserved demand regime
+S08,ALL,2024-07-20..2024-10-06,regime_slump,0.85,unobserved demand regime
+S08,ALL,2024-12-21..2024-12-26,regime_slump,0.85,unobserved demand regime
+S08,ALL,2025-01-24..2025-02-06,regime_slump,0.85,unobserved demand regime
+S08,ALL,2025-04-01..2025-05-31,regime_slump,0.85,unobserved demand regime
+S08,ALL,2025-08-28..2025-09-25,regime_slump,0.85,unobserved demand regime
+S12,ALL,2023-01-12..2023-02-11,regime_boom,1.12,unobserved demand regime
+S12,ALL,2023-05-18..2023-07-05,regime_boom,1.12,unobserved demand regime
+S12,ALL,2023-07-09..2023-08-06,regime_boom,1.12,unobserved demand regime
+S12,ALL,2023-11-12..2023-11-14,regime_boom,1.12,unobserved demand regime
+S12,ALL,2023-12-03..2023-12-03,regime_boom,1.12,unobserved demand regime
+S12,ALL,2024-01-30..2024-04-29,regime_slump,0.85,unobserved demand regime
+S12,ALL,2024-05-27..2024-06-25,regime_slump,0.85,unobserved demand regime
+S12,ALL,2025-01-09..2025-01-11,regime_slump,0.85,unobserved demand regime
+S12,ALL,2025-03-05..2025-03-08,regime_slump,0.85,unobserved demand regime
+S12,ALL,2025-04-16..2025-05-13,regime_boom,1.12,unobserved demand regime
+S12,ALL,2025-06-05..2025-10-07,regime_slump,0.85,unobserved demand regime
+S12,ALL,2025-11-13..2025-11-23,regime_slump,0.85,unobserved demand regime
+S12,ALL,2025-12-15..2025-12-23,regime_slump,0.85,unobserved demand regime
+S04,ALL,2024-06-01,level_shift,1.22,new branch / longer hours (persistent)
+S06,ALL,2024-02-12..2024-02-25,reduced_operations,0.35,refurbishment
+S01,Bakery,2024-10-19,shock,1.71,one-off demand shock
+S01,Bakery,2024-12-23,shock,0.53,one-off demand shock
+S01,Bakery,2025-07-01,shock,0.49,one-off demand shock
+S01,Dairy,2023-03-06,shock,0.66,one-off demand shock
+S01,Dairy,2025-03-03,shock,1.49,one-off demand shock
+S01,Dairy,2025-03-19,shock,1.81,one-off demand shock
+S01,Fruits,2023-03-01,shock,1.75,one-off demand shock
+S01,Fruits,2023-06-19,shock,0.55,one-off demand shock
+S01,Fruits,2023-08-07,shock,0.69,one-off demand shock
+S01,Fruits,2023-10-30,shock,0.68,one-off demand shock
+S01,Fruits,2024-05-17,shock,1.52,one-off demand shock
+S01,Fruits,2024-06-14,shock,0.67,one-off demand shock
+S01,Fruits,2025-03-28,shock,0.53,one-off demand shock
+S01,Meat,2023-02-25,shock,0.67,one-off demand shock
+S01,Meat,2023-04-01,shock,1.58,one-off demand shock
+S01,Meat,2024-07-23,shock,0.48,one-off demand shock
+S01,Prepared Food,2023-02-01,shock,1.51,one-off demand shock
+S01,Prepared Food,2023-08-10,shock,1.47,one-off demand shock
+S01,Prepared Food,2025-05-20,shock,1.67,one-off demand shock
+S01,Prepared Food,2025-12-01,shock,1.88,one-off demand shock
+S01,Vegetables,2023-04-04,shock,0.53,one-off demand shock
+S01,Vegetables,2024-05-27,shock,1.73,one-off demand shock
+S02,Bakery,2023-12-10,shock,0.53,one-off demand shock
+S02,Bakery,2024-03-06,shock,0.49,one-off demand shock
+S02,Bakery,2024-10-15,shock,0.63,one-off demand shock
+S02,Bakery,2025-03-30,shock,0.52,one-off demand shock
+S02,Bakery,2025-05-16,shock,0.69,one-off demand shock
+S02,Bakery,2025-06-07,shock,1.47,one-off demand shock
+S02,Bakery,2025-11-21,shock,0.51,one-off demand shock
+S02,Dairy,2023-10-01,shock,0.51,one-off demand shock
+S02,Dairy,2024-08-06,shock,0.68,one-off demand shock
+S02,Dairy,2024-09-08,shock,0.68,one-off demand shock
+S02,Dairy,2025-06-13,shock,0.53,one-off demand shock
+S02,Fruits,2023-07-01,shock,1.89,one-off demand shock
+S02,Fruits,2024-06-25,shock,1.68,one-off demand shock
+S02,Fruits,2025-05-03,shock,0.55,one-off demand shock
+S02,Fruits,2025-12-02,shock,1.41,one-off demand shock
+S02,Meat,2025-08-27,shock,0.6,one-off demand shock
+S02,Meat,2025-09-21,shock,0.58,one-off demand shock
+S02,Prepared Food,2023-05-22,shock,1.78,one-off demand shock
+S02,Prepared Food,2023-09-23,shock,1.51,one-off demand shock
+S02,Prepared Food,2024-10-02,shock,1.52,one-off demand shock
+S02,Vegetables,2023-09-01,shock,0.64,one-off demand shock
+S02,Vegetables,2024-07-10,shock,1.76,one-off demand shock
+S02,Vegetables,2024-07-24,shock,1.89,one-off demand shock
+S02,Vegetables,2025-04-01,shock,0.53,one-off demand shock
+S02,Vegetables,2025-10-10,shock,1.63,one-off demand shock
+S09,Bakery,2023-04-15,shock,1.44,one-off demand shock
+S09,Bakery,2023-08-21,shock,1.75,one-off demand shock
+S09,Bakery,2023-10-16,shock,1.63,one-off demand shock
+S09,Bakery,2024-03-22,shock,0.57,one-off demand shock
+S09,Bakery,2024-09-03,shock,0.66,one-off demand shock
+S09,Dairy,2024-09-17,shock,0.52,one-off demand shock
+S09,Dairy,2025-03-05,shock,0.51,one-off demand shock
+S09,Dairy,2025-07-09,shock,1.45,one-off demand shock
+S09,Dairy,2025-09-28,shock,1.47,one-off demand shock
+S09,Fruits,2023-08-06,shock,1.42,one-off demand shock
+S09,Fruits,2023-09-18,shock,1.61,one-off demand shock
+S09,Fruits,2024-03-15,shock,0.48,one-off demand shock
+S09,Fruits,2024-06-05,shock,0.49,one-off demand shock
+S09,Fruits,2025-04-21,shock,0.49,one-off demand shock
+S09,Fruits,2025-06-01,shock,0.48,one-off demand shock
+S09,Meat,2024-06-28,shock,1.75,one-off demand shock
+S09,Meat,2025-01-10,shock,1.86,one-off demand shock
+S09,Meat,2025-06-10,shock,1.89,one-off demand shock
+S09,Meat,2025-10-27,shock,1.69,one-off demand shock
+S09,Prepared Food,2023-12-14,shock,1.61,one-off demand shock
+S09,Prepared Food,2025-02-22,shock,0.6,one-off demand shock
+S09,Prepared Food,2025-04-21,shock,1.62,one-off demand shock
+S09,Vegetables,2024-07-04,shock,0.57,one-off demand shock
+S09,Vegetables,2024-12-01,shock,1.45,one-off demand shock
+S09,Vegetables,2025-09-24,shock,0.52,one-off demand shock
+S03,Bakery,2024-07-27,shock,0.56,one-off demand shock
+S03,Bakery,2025-05-18,shock,0.56,one-off demand shock
+S03,Bakery,2025-10-03,shock,0.51,one-off demand shock
+S03,Dairy,2023-03-13,shock,1.86,one-off demand shock
+S03,Dairy,2023-07-17,shock,1.69,one-off demand shock
+S03,Dairy,2024-03-28,shock,1.42,one-off demand shock
+S03,Dairy,2024-06-17,shock,1.86,one-off demand shock
+S03,Dairy,2024-07-08,shock,0.64,one-off demand shock
+S03,Dairy,2024-07-25,shock,1.7,one-off demand shock
+S03,Dairy,2024-10-22,shock,1.52,one-off demand shock
+S03,Fruits,2023-06-06,shock,0.51,one-off demand shock
+S03,Fruits,2023-12-25,shock,0.53,one-off demand shock
+S03,Fruits,2024-05-19,shock,0.52,one-off demand shock
+S03,Fruits,2025-07-07,shock,1.71,one-off demand shock
+S03,Meat,2024-06-16,shock,1.56,one-off demand shock
+S03,Meat,2025-03-09,shock,1.66,one-off demand shock
+S03,Meat,2025-11-21,shock,1.61,one-off demand shock
+S03,Prepared Food,2023-02-11,shock,0.59,one-off demand shock
+S03,Prepared Food,2023-05-10,shock,1.49,one-off demand shock
+S03,Prepared Food,2023-09-17,shock,0.64,one-off demand shock
+S03,Prepared Food,2024-02-10,shock,1.8,one-off demand shock
+S03,Prepared Food,2024-03-30,shock,1.83,one-off demand shock
+S03,Prepared Food,2024-05-17,shock,1.75,one-off demand shock
+S03,Prepared Food,2025-05-05,shock,0.51,one-off demand shock
+S03,Prepared Food,2025-10-28,shock,1.73,one-off demand shock
+S03,Vegetables,2023-01-14,shock,1.85,one-off demand shock
+S03,Vegetables,2023-08-15,shock,1.6,one-off demand shock
+S03,Vegetables,2025-08-18,shock,0.63,one-off demand shock
+S04,Bakery,2023-01-02,shock,0.61,one-off demand shock
+S04,Bakery,2024-02-19,shock,1.56,one-off demand shock
+S04,Dairy,2023-08-16,shock,1.49,one-off demand shock
+S04,Dairy,2024-06-23,shock,0.61,one-off demand shock
+S04,Dairy,2024-12-12,shock,1.73,one-off demand shock
+S04,Dairy,2025-09-18,shock,0.56,one-off demand shock
+S04,Fruits,2024-02-27,shock,1.64,one-off demand shock
+S04,Fruits,2024-07-04,shock,1.7,one-off demand shock
+S04,Fruits,2025-04-20,shock,1.74,one-off demand shock
+S04,Meat,2023-10-20,shock,0.48,one-off demand shock
+S04,Meat,2024-08-19,shock,0.66,one-off demand shock
+S04,Prepared Food,2023-03-05,shock,0.51,one-off demand shock
+S04,Prepared Food,2024-05-07,shock,0.69,one-off demand shock
+S04,Prepared Food,2025-03-26,shock,1.41,one-off demand shock
+S04,Vegetables,2023-10-24,shock,0.57,one-off demand shock
+S04,Vegetables,2025-01-31,shock,1.58,one-off demand shock
+S04,Vegetables,2025-09-23,shock,0.65,one-off demand shock
+S04,Vegetables,2025-11-10,shock,0.63,one-off demand shock
+S04,Vegetables,2025-11-30,shock,0.68,one-off demand shock
+S10,Dairy,2023-11-06,shock,0.6,one-off demand shock
+S10,Dairy,2024-09-12,shock,0.63,one-off demand shock
+S10,Dairy,2024-10-18,shock,0.57,one-off demand shock
+S10,Dairy,2024-11-25,shock,1.76,one-off demand shock
+S10,Dairy,2025-11-22,shock,0.47,one-off demand shock
+S10,Fruits,2023-11-30,shock,1.69,one-off demand shock
+S10,Fruits,2024-09-19,shock,0.47,one-off demand shock
+S10,Fruits,2024-12-29,shock,1.45,one-off demand shock
+S10,Fruits,2025-01-13,shock,0.56,one-off demand shock
+S10,Fruits,2025-02-18,shock,1.57,one-off demand shock
+S10,Fruits,2025-09-06,shock,1.68,one-off demand shock
+S10,Meat,2024-02-21,shock,1.57,one-off demand shock
+S10,Meat,2025-07-25,shock,0.68,one-off demand shock
+S10,Meat,2025-10-06,shock,1.62,one-off demand shock
+S10,Meat,2025-11-09,shock,0.67,one-off demand shock
+S10,Prepared Food,2023-12-16,shock,0.49,one-off demand shock
+S10,Prepared Food,2024-04-05,shock,1.81,one-off demand shock
+S10,Prepared Food,2024-08-31,shock,1.73,one-off demand shock
+S10,Prepared Food,2024-09-22,shock,1.45,one-off demand shock
+S10,Prepared Food,2025-03-23,shock,1.47,one-off demand shock
+S10,Prepared Food,2025-08-21,shock,1.64,one-off demand shock
+S10,Vegetables,2023-01-06,shock,0.55,one-off demand shock
+S10,Vegetables,2023-03-27,shock,0.67,one-off demand shock
+S10,Vegetables,2023-08-10,shock,1.8,one-off demand shock
+S10,Vegetables,2024-06-08,shock,0.46,one-off demand shock
+S10,Vegetables,2024-10-28,shock,0.57,one-off demand shock
+S10,Vegetables,2024-12-24,shock,0.46,one-off demand shock
+S10,Vegetables,2025-05-20,shock,1.82,one-off demand shock
+S10,Vegetables,2025-10-11,shock,1.61,one-off demand shock
+S10,Vegetables,2025-11-17,shock,0.68,one-off demand shock
+S05,Bakery,2023-07-19,shock,1.45,one-off demand shock
+S05,Bakery,2025-09-28,shock,1.69,one-off demand shock
+S05,Dairy,2024-04-20,shock,1.6,one-off demand shock
+S05,Fruits,2023-05-29,shock,0.66,one-off demand shock
+S05,Fruits,2023-08-27,shock,1.44,one-off demand shock
+S05,Fruits,2023-11-23,shock,1.59,one-off demand shock
+S05,Fruits,2024-06-09,shock,0.62,one-off demand shock
+S05,Fruits,2025-02-22,shock,1.66,one-off demand shock
+S05,Fruits,2025-08-23,shock,1.46,one-off demand shock
+S05,Fruits,2025-10-16,shock,1.76,one-off demand shock
+S05,Meat,2023-04-03,shock,1.51,one-off demand shock
+S05,Meat,2024-05-02,shock,1.8,one-off demand shock
+S05,Meat,2024-06-19,shock,0.66,one-off demand shock
+S05,Prepared Food,2023-03-10,shock,1.4,one-off demand shock
+S05,Prepared Food,2023-06-20,shock,0.52,one-off demand shock
+S05,Prepared Food,2023-07-27,shock,0.66,one-off demand shock
+S05,Prepared Food,2025-06-15,shock,1.85,one-off demand shock
+S05,Prepared Food,2025-06-16,shock,0.53,one-off demand shock
+S05,Prepared Food,2025-11-15,shock,0.54,one-off demand shock
+S05,Prepared Food,2025-12-04,shock,1.52,one-off demand shock
+S05,Vegetables,2024-03-14,shock,0.68,one-off demand shock
+S05,Vegetables,2025-10-27,shock,1.8,one-off demand shock
+S06,Bakery,2023-01-17,shock,0.63,one-off demand shock
+S06,Bakery,2025-11-09,shock,1.77,one-off demand shock
+S06,Bakery,2025-11-28,shock,0.48,one-off demand shock
+S06,Dairy,2023-11-14,shock,1.66,one-off demand shock
+S06,Dairy,2024-10-02,shock,0.53,one-off demand shock
+S06,Dairy,2024-12-09,shock,1.78,one-off demand shock
+S06,Dairy,2025-01-29,shock,1.51,one-off demand shock
+S06,Dairy,2025-11-14,shock,1.86,one-off demand shock
+S06,Fruits,2024-06-05,shock,1.46,one-off demand shock
+S06,Fruits,2024-07-14,shock,1.84,one-off demand shock
+S06,Fruits,2024-09-15,shock,1.71,one-off demand shock
+S06,Meat,2023-04-23,shock,0.57,one-off demand shock
+S06,Meat,2024-05-16,shock,0.6,one-off demand shock
+S06,Meat,2025-07-16,shock,1.58,one-off demand shock
+S06,Meat,2025-12-30,shock,0.64,one-off demand shock
+S06,Prepared Food,2025-01-20,shock,1.83,one-off demand shock
+S06,Prepared Food,2025-10-01,shock,1.52,one-off demand shock
+S06,Vegetables,2024-08-07,shock,0.57,one-off demand shock
+S06,Vegetables,2024-10-23,shock,0.57,one-off demand shock
+S06,Vegetables,2024-12-03,shock,0.66,one-off demand shock
+S06,Vegetables,2025-02-13,shock,1.83,one-off demand shock
+S06,Vegetables,2025-03-24,shock,1.42,one-off demand shock
+S06,Vegetables,2025-05-21,shock,1.5,one-off demand shock
+S11,Bakery,2023-06-07,shock,0.61,one-off demand shock
+S11,Bakery,2023-09-18,shock,1.62,one-off demand shock
+S11,Bakery,2024-08-27,shock,1.61,one-off demand shock
+S11,Bakery,2024-09-03,shock,0.56,one-off demand shock
+S11,Bakery,2024-09-19,shock,1.75,one-off demand shock
+S11,Bakery,2025-01-14,shock,1.43,one-off demand shock
+S11,Bakery,2025-08-06,shock,0.58,one-off demand shock
+S11,Dairy,2023-02-01,shock,0.7,one-off demand shock
+S11,Dairy,2023-07-17,shock,0.65,one-off demand shock
+S11,Dairy,2024-04-02,shock,1.74,one-off demand shock
+S11,Dairy,2025-04-30,shock,1.77,one-off demand shock
+S11,Dairy,2025-07-20,shock,0.55,one-off demand shock
+S11,Dairy,2025-11-17,shock,0.51,one-off demand shock
+S11,Fruits,2023-01-29,shock,0.55,one-off demand shock
+S11,Fruits,2023-07-17,shock,1.54,one-off demand shock
+S11,Fruits,2024-06-23,shock,0.47,one-off demand shock
+S11,Fruits,2025-04-12,shock,1.77,one-off demand shock
+S11,Meat,2023-02-16,shock,1.7,one-off demand shock
+S11,Meat,2023-03-17,shock,0.46,one-off demand shock
+S11,Meat,2023-04-20,shock,0.52,one-off demand shock
+S11,Meat,2023-05-12,shock,0.64,one-off demand shock
+S11,Meat,2023-12-27,shock,1.81,one-off demand shock
+S11,Meat,2025-03-24,shock,1.4,one-off demand shock
+S11,Prepared Food,2024-09-23,shock,0.49,one-off demand shock
+S11,Prepared Food,2024-12-27,shock,0.69,one-off demand shock
+S11,Prepared Food,2025-11-28,shock,1.67,one-off demand shock
+S11,Vegetables,2023-02-06,shock,0.63,one-off demand shock
+S11,Vegetables,2025-08-04,shock,0.52,one-off demand shock
+S11,Vegetables,2025-08-17,shock,0.68,one-off demand shock
+S07,Bakery,2023-02-18,shock,0.68,one-off demand shock
+S07,Bakery,2024-07-04,shock,0.56,one-off demand shock
+S07,Bakery,2025-12-21,shock,0.6,one-off demand shock
+S07,Dairy,2023-09-19,shock,0.65,one-off demand shock
+S07,Dairy,2023-11-20,shock,0.52,one-off demand shock
+S07,Dairy,2024-02-08,shock,1.73,one-off demand shock
+S07,Dairy,2024-03-15,shock,1.83,one-off demand shock
+S07,Dairy,2024-04-21,shock,0.54,one-off demand shock
+S07,Dairy,2024-10-09,shock,1.42,one-off demand shock
+S07,Dairy,2025-08-31,shock,1.71,one-off demand shock
+S07,Fruits,2023-09-23,shock,0.69,one-off demand shock
+S07,Fruits,2023-11-22,shock,1.77,one-off demand shock
+S07,Fruits,2024-01-04,shock,1.46,one-off demand shock
+S07,Fruits,2025-08-01,shock,1.64,one-off demand shock
+S07,Fruits,2025-09-03,shock,1.8,one-off demand shock
+S07,Fruits,2025-10-20,shock,0.6,one-off demand shock
+S07,Fruits,2025-12-22,shock,1.59,one-off demand shock
+S07,Meat,2023-04-02,shock,1.68,one-off demand shock
+S07,Meat,2024-03-21,shock,1.72,one-off demand shock
+S07,Meat,2025-02-22,shock,0.68,one-off demand shock
+S07,Meat,2025-04-01,shock,1.5,one-off demand shock
+S07,Meat,2025-06-12,shock,0.47,one-off demand shock
+S07,Prepared Food,2023-02-10,shock,0.6,one-off demand shock
+S07,Prepared Food,2023-03-16,shock,0.47,one-off demand shock
+S07,Prepared Food,2023-11-01,shock,0.61,one-off demand shock
+S07,Prepared Food,2024-03-13,shock,0.59,one-off demand shock
+S07,Prepared Food,2025-04-25,shock,1.43,one-off demand shock
+S07,Prepared Food,2025-05-21,shock,1.62,one-off demand shock
+S07,Vegetables,2023-05-15,shock,1.89,one-off demand shock
+S07,Vegetables,2025-01-31,shock,0.49,one-off demand shock
+S08,Bakery,2023-04-19,shock,1.63,one-off demand shock
+S08,Bakery,2025-04-03,shock,1.52,one-off demand shock
+S08,Bakery,2025-10-10,shock,1.51,one-off demand shock
+S08,Dairy,2023-06-18,shock,0.63,one-off demand shock
+S08,Dairy,2023-12-16,shock,0.64,one-off demand shock
+S08,Fruits,2023-05-30,shock,0.6,one-off demand shock
+S08,Fruits,2023-11-03,shock,0.62,one-off demand shock
+S08,Fruits,2024-08-11,shock,0.57,one-off demand shock
+S08,Fruits,2024-08-29,shock,0.47,one-off demand shock
+S08,Fruits,2025-06-27,shock,0.59,one-off demand shock
+S08,Fruits,2025-07-03,shock,0.65,one-off demand shock
+S08,Meat,2023-05-31,shock,1.45,one-off demand shock
+S08,Meat,2024-07-24,shock,1.45,one-off demand shock
+S08,Prepared Food,2025-08-01,shock,1.9,one-off demand shock
+S08,Prepared Food,2025-09-10,shock,1.5,one-off demand shock
+S08,Vegetables,2023-06-28,shock,1.65,one-off demand shock
+S08,Vegetables,2023-08-17,shock,0.59,one-off demand shock
+S08,Vegetables,2023-12-14,shock,0.51,one-off demand shock
+S08,Vegetables,2024-03-30,shock,1.81,one-off demand shock
+S08,Vegetables,2024-06-24,shock,1.53,one-off demand shock
+S08,Vegetables,2024-12-27,shock,1.82,one-off demand shock
+S12,Bakery,2023-06-14,shock,1.64,one-off demand shock
+S12,Bakery,2024-09-01,shock,0.64,one-off demand shock
+S12,Bakery,2025-02-20,shock,1.64,one-off demand shock
+S12,Bakery,2025-05-30,shock,1.75,one-off demand shock
+S12,Dairy,2023-02-03,shock,1.52,one-off demand shock
+S12,Dairy,2023-07-07,shock,1.65,one-off demand shock
+S12,Dairy,2023-11-02,shock,1.87,one-off demand shock
+S12,Dairy,2024-07-06,shock,0.47,one-off demand shock
+S12,Fruits,2023-03-13,shock,1.89,one-off demand shock
+S12,Fruits,2023-03-29,shock,0.62,one-off demand shock
+S12,Fruits,2023-06-16,shock,1.61,one-off demand shock
+S12,Fruits,2024-11-28,shock,1.57,one-off demand shock
+S12,Fruits,2025-07-08,shock,0.63,one-off demand shock
+S12,Meat,2023-06-29,shock,1.76,one-off demand shock
+S12,Meat,2023-12-18,shock,1.5,one-off demand shock
+S12,Meat,2024-04-12,shock,0.49,one-off demand shock
+S12,Meat,2025-04-13,shock,0.61,one-off demand shock
+S12,Prepared Food,2023-04-28,shock,1.52,one-off demand shock
+S12,Prepared Food,2023-11-08,shock,0.67,one-off demand shock
+S12,Prepared Food,2025-02-28,shock,1.49,one-off demand shock
+S12,Prepared Food,2025-08-03,shock,0.51,one-off demand shock
+S12,Vegetables,2025-02-02,shock,0.45,one-off demand shock
+S12,Vegetables,2025-05-22,shock,0.64,one-off demand shock
+S12,Vegetables,2025-09-17,shock,0.48,one-off demand shock

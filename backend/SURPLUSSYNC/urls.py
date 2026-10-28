@@ -7,6 +7,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
 from accounts.models import User
+from core.views import health_check, version
 
 
 def api_users_view(request):
@@ -33,6 +34,8 @@ urlpatterns = [
     path('api/v1/admin/', include('administration.urls')),
     path('api/v1/home/', include('core.home_urls')),
     path('api/v1/predictions/', include('predictions.urls')),
+    path('api/v1/health/', health_check, name='health-check'),
+    path('api/v1/version/', version, name='version'),
 ]
 
 if settings.DEBUG:

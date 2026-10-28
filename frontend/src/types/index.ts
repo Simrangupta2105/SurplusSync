@@ -745,6 +745,7 @@ export interface PickupScheduleItem {
   vehicle_plate: string;
   countdown_minutes: number | null;
   is_overdue: boolean;
+  overdue_minutes?: number | null;
 }
 
 export interface ImpactCategoryBreakdown {
@@ -762,7 +763,38 @@ export interface ImpactMonthlyTrend {
   donations_count: number;
 }
 
+export interface ImpactCalculationConstants {
+  meal_kg_factor: number;
+  meal_citation?: string;
+  co2e_kg_factor: number;
+  co2e_citation?: string;
+  water_l_factor?: number;
+  water_citation?: string;
+  financial_value_per_kg?: number;
+  caveat?: string;
+}
+
+export interface ActivityHeatmapCell {
+  day: number;
+  day_name: string;
+  slot: string;
+  count: number;
+  quantity_kg: number;
+}
+
+export interface GeoDensityPoint {
+  request_id: number;
+  request_code: string;
+  title: string;
+  category: string;
+  quantity_kg: number;
+  latitude: number;
+  longitude: number;
+  completed_at?: string | null;
+}
+
 export interface ImpactAnalytics {
+  period?: string;
   rescued_food_kg: number;
   meals_provided: number;
   co2_avoided_kg: number;
@@ -772,6 +804,9 @@ export interface ImpactAnalytics {
   active_partners_count: number;
   category_breakdown: ImpactCategoryBreakdown[];
   monthly_trend: ImpactMonthlyTrend[];
+  calculation_constants?: ImpactCalculationConstants;
+  activity_heatmap?: ActivityHeatmapCell[];
+  geo_density?: GeoDensityPoint[];
 }
 
 export interface PublicImpactMetrics {
@@ -796,8 +831,13 @@ export interface MarketplaceNotification {
 
 export interface MatchingResultItem {
   match_score: number;
-  listing?: SurplusListingItem;
-  requirement?: NGORequirementItem;
+  base_score?: number;
+  learned_probability?: number | null;
+  is_fallback?: boolean;
+  fallback_reason?: string | null;
+  reasons?: string[];
+  listing?: SurplusListingItem | Partial<SurplusListingItem>;
+  requirement?: NGORequirementItem | Partial<NGORequirementItem>;
   distance_km?: number;
   factor_breakdowns?: Record<string, number>;
 }
@@ -946,8 +986,12 @@ export interface PlanPredictionResponse {
   };
   recommended_quantity: number;
   explanation: string;
+  model_name?: string;
   model_version: string;
   confidence_note: string;
+  data_origin?: string;
+  training_data_note?: string;
+  generated_at?: string;
   original_category?: string;
   mapped_category?: string;
   status?: string;
@@ -994,6 +1038,25 @@ export interface DatasetInsightsResponse {
     limitations: string;
     accounting_invariants: string;
   };
+}
+
+// Recent Sales & Unified Forecast (Task 2 & 3)
+export interface RecentSaleItem {
+  date: string;
+  category: string;
+  units_sold: number;
+  revenue: number;
+}
+
+export interface UnifiedSalesForecastPoint {
+  date: string;
+  displayDate: string;
+  actual: number | null;
+  actualRevenue: number | null;
+  forecast: number | null;
+  forecastLower: number | null;
+  forecastUpper: number | null;
+  type: 'actual' | 'forecast' | 'transition';
 }
 
 

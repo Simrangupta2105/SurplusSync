@@ -93,6 +93,12 @@ describe('AI Waste Predictions & Benchmark Insights (Task 3)', () => {
       // Visible confidence note
       expect(screen.getByText(/deterministic sample response generated/i)).toBeInTheDocument();
 
+      // Synthetic data badge & note
+      expect(screen.getByTestId('synthetic-badge')).toBeInTheDocument();
+      expect(screen.getByText(/\[SYNTHETIC DEMO DATA\]/i)).toBeInTheDocument();
+      expect(screen.getByTestId('synthetic-data-note')).toBeInTheDocument();
+      expect(screen.getByText(/trained on synthetic demonstration data/i)).toBeInTheDocument();
+
       // Toast triggered
       expect(handleToast).toHaveBeenCalledWith('Purchase plan evaluated successfully.');
     });

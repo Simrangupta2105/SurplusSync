@@ -366,4 +366,28 @@ flowchart TD
 
 ---
 
+## 10. Time-Series Track B Serving Selection & Benchmark-Only Architecture Note
+
+### 10.1 Empirical Model Selection Summary
+Across 4-fold rolling-origin cross-validation (pre-cutoff training pool) and the untouched final 90-day test set (2025-10-03 to 2025-12-31, 4,320 rows across all 48 series), **`HistGradientBoostingDemandModel`** achieved the top empirical performance across **all 6 food categories**:
+
+| Category | Winning Model | Test WAPE | Runner-Up Model (WAPE) | Prophet (WAPE) | PyTorch LSTM (WAPE) |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **Bakery** | `HistGradientBoostingDemandModel` | **0.1749** | LightGBM (0.1949) | 0.2304 | 0.3130 |
+| **Dairy** | `HistGradientBoostingDemandModel` | **0.1311** | LightGBM (0.1408) | 0.2078 | 0.2290 |
+| **Fruits** | `HistGradientBoostingDemandModel` | **0.1490** | LightGBM (0.1634) | 0.2299 | 0.2927 |
+| **Meat** | `HistGradientBoostingDemandModel` | **0.1521** | LightGBM (0.1617) | 0.2150 | 0.3092 |
+| **Prepared Food** | `HistGradientBoostingDemandModel` | **0.1611** | LightGBM (0.1799) | 0.2242 | 0.2700 |
+| **Vegetables** | `HistGradientBoostingDemandModel` | **0.1693** | LightGBM (0.1854) | 0.2074 | 0.3107 |
+
+### 10.2 Benchmark-Only Designation for Prophet and PyTorch LSTM
+Because `HistGradientBoostingDemandModel` won across every single category, **neither Prophet nor PyTorch LSTM was selected for production serving**. Per protocol, they are maintained as **Benchmark-Only Models** for the following architectural and empirical reasons:
+1. **Inferior Accuracy at Shop-Category Level:** While Prophet achieved the best-centered network-wide bias (-1.69 units/day), its test WAPE (21.91%) and the PyTorch LSTM shop projection WAPE (28.83%) lagged significantly behind the panel gradient-boosted trees (15.71% WAPE).
+2. **Shop Proportion Distribution Error:** Prophet and LSTM were trained at the network aggregate category level and projected down to individual shop locations via historical share. This compounded multi-step rolling error compared to panel models that directly condition on shop entity encodings.
+3. **Serving Overhead vs. Accuracy Tradeoff:** Prophet requires a C++ Stan compiler backend (`cmdstanpy`), and PyTorch introduces heavy memory graphs. Serving them without any category-level accuracy advantage would introduce operational latency without performance gain.
+4. **Production Serving Route:** Production serving is routed exclusively through `ModelRegistry` using `HistGradientBoostingDemandModel` (`best_synthetic_demand_model.joblib`), with graceful fallback to `Poisson_Regression` (`best_demand_model.joblib`). Every forecast payload carries `model_name`, `model_version`, `data_origin`, and `generated_at`.
+
+---
+
 *Report generated and validated for SurplusSync Module 2 Foundations. All model checkpoints, evaluation CSV logs, and high-resolution figures are archived in `ml_service/reports/` and `ml_service/models/saved/`.*
+

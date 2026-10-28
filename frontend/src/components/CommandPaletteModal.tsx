@@ -27,6 +27,7 @@ import {
   ClipboardList,
   Bell,
   Sparkles,
+  TrendingUp,
 } from 'lucide-react';
 
 import { cn } from '../lib/utils';
@@ -242,6 +243,15 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           icon: Sparkles,
           onSelect: () => onNavigate('business/ai/planner'),
           keywords: ['planner', 'ai', 'demand', 'forecast', 'purchase', 'waste'],
+        },
+        {
+          id: 'nav-forecast',
+          title: 'Sales & Demand Forecast (AI)',
+          subtitle: '14-day unified past actuals and gradient boosting forecast',
+          category: 'Navigation',
+          icon: TrendingUp,
+          onSelect: () => onNavigate('business/ai/forecast'),
+          keywords: ['forecast', 'sales', 'demand', 'time series', 'actuals', 'pos'],
         },
         {
           id: 'nav-insights',

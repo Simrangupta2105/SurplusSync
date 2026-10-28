@@ -55,6 +55,7 @@ import type {
   PlanPredictionRequest,
   PlanPredictionResponse,
   DatasetInsightsResponse,
+  RecentSaleItem,
 } from '../types';
 
 // Deterministic PRNG (Mulberry32)
@@ -3497,8 +3498,19 @@ export class DemoSource implements DataSource {
         if (req.food_category === listing.food_category) score += 30;
         if (req.is_urgent) score += 15;
         if (Number(listing.available_quantity) >= Number(req.min_quantity_kg)) score += 5;
+        const baseScore = Math.min(95, score);
+        const learnedProb = 0.88;
+        const finalScore = Math.round(0.65 * baseScore + 0.35 * (learnedProb * 100));
         return {
-          match_score: Math.min(98, score),
+          match_score: finalScore,
+          base_score: baseScore,
+          learned_probability: learnedProb,
+          is_fallback: false,
+          reasons: [
+            `Rule-based base score (65%): ${baseScore}/100 based on proximity, urgency, and category match.`,
+            `Learned re-ranker (35%): ${(learnedProb * 100).toFixed(1)}/100 estimated collection probability (${(learnedProb * 100).toFixed(0)}%).`,
+            'Trained on historical redistribution outcomes.',
+          ],
           requirement: req,
           listing,
           distance_km: 2.3,
@@ -3584,8 +3596,19 @@ export class DemoSource implements DataSource {
         let score = 55;
         if (listing.food_category === req.food_category) score += 30;
         if (Number(listing.available_quantity) >= Number(req.min_quantity_kg)) score += 10;
+        const baseScore = Math.min(95, score);
+        const learnedProb = 0.91;
+        const finalScore = Math.round(0.65 * baseScore + 0.35 * (learnedProb * 100));
         return {
-          match_score: Math.min(99, score),
+          match_score: finalScore,
+          base_score: baseScore,
+          learned_probability: learnedProb,
+          is_fallback: false,
+          reasons: [
+            `Rule-based base score (65%): ${baseScore}/100 based on proximity, urgency, and category match.`,
+            `Learned re-ranker (35%): ${(learnedProb * 100).toFixed(1)}/100 estimated collection probability (${(learnedProb * 100).toFixed(0)}%).`,
+            'Trained on historical redistribution outcomes.',
+          ],
           listing,
           requirement: req,
           distance_km: listing.distance_km || 2.1,
@@ -3613,6 +3636,7 @@ export class DemoSource implements DataSource {
       const pickupTime = new Date(r.scheduled_pickup_time || r.requested_pickup_time).getTime();
       const diffMinutes = Math.round((pickupTime - now) / 60000);
       const isOverdue = diffMinutes < 0 && r.status !== 'COLLECTED' && r.status !== 'COMPLETED';
+      const overdueMinutes = isOverdue ? Math.abs(diffMinutes) : null;
 
       return {
         id: r.id,
@@ -3634,10 +3658,14 @@ export class DemoSource implements DataSource {
         vehicle_plate: r.vehicle_plate || 'KA-01-AB-1234',
         countdown_minutes: diffMinutes,
         is_overdue: isOverdue,
+        overdue_minutes: overdueMinutes,
       };
     });
 
     if (filters?.status) {
+      if (filters.status.toUpperCase() === 'OVERDUE') {
+        return scheduleItems.filter((s) => s.is_overdue);
+      }
       return scheduleItems.filter((s) => s.status === filters.status);
     }
     return scheduleItems.sort(
@@ -3645,26 +3673,73 @@ export class DemoSource implements DataSource {
     );
   }
 
+  getScheduleIcsUrl(requestId?: number): string {
+    return requestId ? `/demo/schedule/${requestId}.ics` : '/demo/schedule.ics';
+  }
+
+  async exportScheduleIcs(requestId?: number): Promise<Blob> {
+    await this.sleep(50, 150);
+    const requests = requestId
+      ? this.donationRequests.filter((r) => r.id === requestId)
+      : this.donationRequests.filter((r) => ['APPROVED', 'SCHEDULED', 'IN_TRANSIT'].includes(r.status));
+
+    const lines: string[] = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//SurplusSync//Demo Logistics//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:SurplusSync Demo Pickups',
+      'X-WR-TIMEZONE:UTC',
+    ];
+
+    const formatUtc = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const nowUtc = formatUtc(new Date());
+
+    for (const r of requests) {
+      const dt = new Date(r.scheduled_pickup_time || r.requested_pickup_time || Date.now());
+      const dtEnd = new Date(dt.getTime() + 2 * 3600 * 1000);
+      lines.push('BEGIN:VEVENT');
+      lines.push(`UID:demo-pickup-${r.id}-${r.request_code}@surplussync.org`);
+      lines.push(`DTSTAMP:${nowUtc}`);
+      lines.push(`DTSTART:${formatUtc(dt)}`);
+      lines.push(`DTEND:${formatUtc(dtEnd)}`);
+      lines.push(`SUMMARY:Surplus Food Pickup: ${r.item_name} (${r.requested_quantity} ${r.unit})`);
+      lines.push(`DESCRIPTION:Donation Request: ${r.request_code}\\nItem: ${r.item_name}\\nDonor: ${r.donor_name}\\nRecipient: ${r.recipient_name}\\nStatus: ${r.status}`);
+      lines.push(`LOCATION:${r.donor_address || 'Redistribution Hub'}`);
+      lines.push('STATUS:CONFIRMED');
+      lines.push('END:VEVENT');
+    }
+    lines.push('END:VCALENDAR');
+    return new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/calendar;charset=utf-8' });
+  }
+
   // --- Impact Analytics Methods ---
 
-  async getImpactAnalytics(_period?: string): Promise<ImpactAnalytics> {
+  async getImpactAnalytics(_filters?: string | { period?: string; startDate?: string; endDate?: string }): Promise<ImpactAnalytics> {
     await this.sleep(200, 350);
     const completedReqs = this.donationRequests.filter((r) => r.status === 'COMPLETED' || r.status === 'COLLECTED');
     const dynamicRescuedKg = completedReqs.reduce((acc, r) => acc + (Number(r.requested_quantity) || 0), 0);
     const totalKg = 3450 + dynamicRescuedKg;
     const meals = Math.round(totalKg * 2.38);
     const co2 = Math.round(totalKg * 2.5 * 10) / 10;
-    const water = Math.round(totalKg * 180);
     const savings = Math.round(totalKg * 125);
 
     return {
       rescued_food_kg: totalKg,
       meals_provided: meals,
       co2_avoided_kg: co2,
-      water_saved_liters: water,
+      water_saved_liters: 0, // not shown per spec — no cited factor provided
       financial_savings_estimate: savings,
       total_donations_count: 142 + completedReqs.length,
       active_partners_count: 28,
+      calculation_constants: {
+        meal_kg_factor: 0.42,
+        meal_citation: 'WRAP (2020)',
+        co2e_kg_factor: 2.5,
+        co2e_citation: 'FAO (2013)',
+        caveat: 'These are estimates based on population-level averages. Actual figures may vary by food type and supply chain.',
+      },
       category_breakdown: [
         { category: 'Prepared Meals', rescued_kg: Math.round(totalKg * 0.42), meals: Math.round(meals * 0.42), percentage: 42 },
         { category: 'Dairy & Milk', rescued_kg: Math.round(totalKg * 0.26), meals: Math.round(meals * 0.26), percentage: 26 },
@@ -3691,6 +3766,30 @@ export class DemoSource implements DataSource {
       total_donors: 14,
       total_ngos: 28,
     };
+  }
+
+  async exportImpactCsv(_filters?: string | { period?: string; startDate?: string; endDate?: string }): Promise<Blob> {
+    await this.sleep(200, 400);
+    const csv = [
+      'Metric,Value',
+      'kg_diverted,1380',
+      'meals_provided,3285',
+      'co2_avoided_kg,3450',
+      'completed_donations,46',
+      'period,30d',
+      '',
+      'Constants',
+      'meal_kg,0.42',
+      'co2_per_kg,2.5',
+      'Sources: WRAP and FAO – estimates only',
+    ].join('\n');
+    return new Blob([csv], { type: 'text/csv' });
+  }
+
+  async exportImpactPdf(_filters?: string | { period?: string; startDate?: string; endDate?: string }): Promise<Blob> {
+    await this.sleep(300, 600);
+    // Demo mode: return a minimal 1-byte placeholder blob (PDF generation is server-side only)
+    return new Blob(['%PDF-1.4 demo'], { type: 'application/pdf' });
   }
 
   // --- Notifications Center Methods ---
@@ -4107,9 +4206,13 @@ export class DemoSource implements DataSource {
       waste_probabilities: { Low: pLow, Medium: pMed, High: pHigh },
       recommended_quantity,
       explanation,
-      model_version: '1.0.0-demo-poisson-lightgbm',
+      model_name: 'HistGradientBoostingDemandModel',
+      model_version: '1.0.0-synthetic-track-b',
       confidence_note:
         'Demo data: Deterministic sample response generated from benchmark distribution parameters for evaluation.',
+      data_origin: 'synthetic',
+      training_data_note: 'Trained on synthetic demonstration data',
+      generated_at: new Date().toISOString(),
       mapped_category: category,
     };
   }
@@ -4164,6 +4267,48 @@ export class DemoSource implements DataSource {
         accounting_invariants: 'All 5 accounting invariants verified with 0 discrepancies across 8,000 records.',
       },
     };
+  }
+
+  // Recent Sales & Unified Forecast (Task 2 & 3)
+  async getRecentSales(params?: { days?: number; category?: string; end_date?: string }): Promise<RecentSaleItem[]> {
+    const days = Math.min(30, Math.max(1, params?.days || 7));
+    const cat = params?.category && params.category !== 'All' ? params.category : 'All';
+    const endDate = params?.end_date ? new Date(params.end_date) : new Date();
+
+    const categoryBaseSales: Record<string, { units: number; price: number }> = {
+      Bakery: { units: 108, price: 50 },
+      Dairy: { units: 95, price: 65 },
+      Fruits: { units: 102, price: 80 },
+      Meat: { units: 85, price: 320 },
+      'Prepared Food': { units: 120, price: 120 },
+      Vegetables: { units: 110, price: 35 },
+      All: { units: 480, price: 75 },
+    };
+
+    const targetProps = categoryBaseSales[cat] || categoryBaseSales['All'];
+    const results: RecentSaleItem[] = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(endDate);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayOfWeek = d.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const dayFactor = isWeekend ? 1.14 : (dayOfWeek === 5 ? 1.08 : 0.96);
+      const hash = dateStr.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+      const jitter = ((hash % 15) - 7) / 100;
+      const units = Math.max(0, Math.round(targetProps.units * (dayFactor + jitter) * 10) / 10);
+      const revenue = Math.round(units * targetProps.price * 100) / 100;
+
+      results.push({
+        date: dateStr,
+        category: cat,
+        units_sold: units,
+        revenue,
+      });
+    }
+
+    return results;
   }
 }
 

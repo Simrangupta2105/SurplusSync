@@ -14,16 +14,21 @@ Implements TASK 2: Endpoints under /api/v1/marketplace/
 - 403 for non-NGO users and unverified NGOs; 404 (not 403) when the claim belongs
   to another organization.
 """
-from datetime import timedelta
+import csv
+import io
+from datetime import datetime, time, timedelta
 from decimal import Decimal
+from django.conf import settings
 from django.core.cache import cache
 from django.db import IntegrityError
 from django.db.models import Avg, Count, FloatField, IntegerField, OuterRef, Q, Subquery, Sum
 from django.db.models.functions import Coalesce
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import permissions, status
+from rest_framework import exceptions, permissions, status
+from .ics_calendar import generate_ics_calendar
+from .impact_reports import generate_impact_pdf
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -781,12 +786,18 @@ class DonationRequestConfirmReceiptView(APIView):
     """
     POST /api/v1/marketplace/requests/<code_or_id>/confirm-receipt/
     NGO confirms receipt of donation, completing the request.
+    Supports optional beneficiaries_served (int, >= 0).
     """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, code_or_id):
+        beneficiaries_served = request.data.get("beneficiaries_served")
         try:
-            req = confirm_receipt(user=request.user, request_id_or_code=code_or_id)
+            req = confirm_receipt(
+                user=request.user,
+                request_id_or_code=code_or_id,
+                beneficiaries_served=beneficiaries_served,
+            )
             return Response(DonationRequestSerializer(req).data, status=status.HTTP_200_OK)
         except LifecycleError as e:
             return Response({"detail": e.message, "error": e.message}, status=e.status_code)
@@ -1042,10 +1053,23 @@ class PickupScheduleView(APIView):
         else:
             qs = DonationRequest.objects.filter(ngo=user_org)
 
+        now = timezone.now()
+
         # Status filtering
         status_param = request.query_params.get("status")
         if status_param:
-            if status_param.upper() != "ALL":
+            if status_param.upper() == "OVERDUE":
+                qs = qs.filter(
+                    status__in=[
+                        DonationRequest.Status.APPROVED,
+                        DonationRequest.Status.SCHEDULED,
+                        DonationRequest.Status.IN_TRANSIT,
+                    ]
+                ).filter(
+                    Q(confirmed_pickup_end__lt=now)
+                    | Q(confirmed_pickup_end__isnull=True, proposed_pickup_end__lt=now)
+                )
+            elif status_param.upper() != "ALL":
                 statuses = [s.strip().upper() for s in status_param.split(",") if s.strip()]
                 qs = qs.filter(status__in=statuses)
         else:
@@ -1077,7 +1101,6 @@ class PickupScheduleView(APIView):
             "confirmed_pickup_start", "proposed_pickup_start"
         )
 
-        now = timezone.now()
         items = []
         for r in qs:
             start = r.confirmed_pickup_start or r.proposed_pickup_start
@@ -1093,6 +1116,7 @@ class PickupScheduleView(APIView):
                     DonationRequest.Status.EXPIRED,
                 ]
             )
+            overdue_minutes = int((now - end).total_seconds() / 60) if (is_overdue and end) else None
             is_today = bool(start and start.date() == now.date())
             time_until = int((start - now).total_seconds() / 60) if start else None
 
@@ -1117,6 +1141,7 @@ class PickupScheduleView(APIView):
                 "contact_phone": r.contact_phone,
                 "note": r.note,
                 "is_overdue": is_overdue,
+                "overdue_minutes": overdue_minutes,
                 "is_today": is_today,
                 "time_until_pickup_minutes": time_until,
             })
@@ -1128,10 +1153,10 @@ class PickupScheduleView(APIView):
         })
 
 
-class ImpactAnalyticsView(APIView):
+class PickupScheduleIcsExportView(APIView):
     """
-    GET /api/v1/marketplace/impact/
-    Returns cumulative and monthly breakdown metrics for food rescued and redistributed.
+    GET /api/v1/marketplace/schedule/export-ics/
+    Returns an RFC 5545 .ics calendar containing all scheduled pickups for the authenticated organization.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -1140,81 +1165,488 @@ class ImpactAnalyticsView(APIView):
         if not user_org and not request.user.is_platform_admin:
             raise Http404("Organization context required.")
 
-        completed_statuses = [
-            DonationRequest.Status.COLLECTED,
-            DonationRequest.Status.COMPLETED,
-        ]
-
         if request.user.is_platform_admin:
-            qs = DonationRequest.objects.filter(status__in=completed_statuses)
+            qs = DonationRequest.objects.all()
         elif user_org.org_type == Organization.Type.BUSINESS:
-            qs = DonationRequest.objects.filter(listing__donor=user_org, status__in=completed_statuses)
+            qs = DonationRequest.objects.filter(listing__donor=user_org)
         else:
-            qs = DonationRequest.objects.filter(ngo=user_org, status__in=completed_statuses)
+            qs = DonationRequest.objects.filter(ngo=user_org)
 
-        qs = qs.select_related("listing", "listing__category")
-
-        total_completed = qs.count()
-        total_quantity_kg = sum(
-            float(r.quantity_approved or r.quantity_requested)
-            for r in qs
-        )
-        total_quantity_kg = round(total_quantity_kg, 2)
-
-        # Standard food redistribution multipliers
-        meals_provided = int(round(total_quantity_kg * 2.4))
-        co2_diverted_kg = round(total_quantity_kg * 2.5, 2)
-        water_saved_liters = int(round(total_quantity_kg * 1000.0))
-        financial_value_saved = round(total_quantity_kg * 150.0, 2)  # Benchmark ~₹150/kg
-
-        # Category breakdown
-        category_map = {}
-        for r in qs:
-            cat_name = r.listing.category.name if (r.listing and r.listing.category) else "Uncategorized"
-            qty = float(r.quantity_approved or r.quantity_requested)
-            category_map[cat_name] = category_map.get(cat_name, 0.0) + qty
-
-        category_breakdown = []
-        for cat_name, cat_qty in sorted(category_map.items(), key=lambda x: -x[1]):
-            percentage = round((cat_qty / max(0.001, total_quantity_kg)) * 100.0, 1) if total_quantity_kg > 0 else 0.0
-            category_breakdown.append({
-                "category_name": cat_name,
-                "quantity_kg": round(cat_qty, 2),
-                "percentage": percentage,
-            })
-
-        # Monthly trend (last 6 months chronological)
         now = timezone.now()
-        monthly_trend = []
-        for i in range(5, -1, -1):
-            target_date = now - timedelta(days=i * 30)
-            month_str = target_date.strftime("%Y-%m")
-            # Filter requests in this calendar month
-            month_qs = [
-                r for r in qs
-                if (r.confirmed_pickup_end or r.requested_at).strftime("%Y-%m") == month_str
-            ]
-            month_qty = sum(float(r.quantity_approved or r.quantity_requested) for r in month_qs)
-            monthly_trend.append({
-                "month": month_str,
-                "quantity_kg": round(month_qty, 2),
-                "meals": int(round(month_qty * 2.4)),
-                "donations_count": len(month_qs),
+
+        # Optional single request filter
+        req_id = request.query_params.get("request_id")
+        if req_id:
+            qs = qs.filter(id=req_id)
+
+        # Status filtering
+        status_param = request.query_params.get("status")
+        if status_param:
+            if status_param.upper() == "OVERDUE":
+                qs = qs.filter(
+                    status__in=[
+                        DonationRequest.Status.APPROVED,
+                        DonationRequest.Status.SCHEDULED,
+                        DonationRequest.Status.IN_TRANSIT,
+                    ]
+                ).filter(
+                    Q(confirmed_pickup_end__lt=now)
+                    | Q(confirmed_pickup_end__isnull=True, proposed_pickup_end__lt=now)
+                )
+            elif status_param.upper() != "ALL":
+                statuses = [s.strip().upper() for s in status_param.split(",") if s.strip()]
+                qs = qs.filter(status__in=statuses)
+        else:
+            # Default active scheduled pickups
+            qs = qs.filter(
+                status__in=[
+                    DonationRequest.Status.APPROVED,
+                    DonationRequest.Status.SCHEDULED,
+                    DonationRequest.Status.IN_TRANSIT,
+                ]
+            )
+
+        # Date filtering
+        start_date = request.query_params.get("start_date")
+        if start_date:
+            qs = qs.filter(
+                Q(confirmed_pickup_start__date__gte=start_date)
+                | Q(proposed_pickup_start__date__gte=start_date)
+            )
+
+        end_date = request.query_params.get("end_date")
+        if end_date:
+            qs = qs.filter(
+                Q(confirmed_pickup_end__date__lte=end_date)
+                | Q(proposed_pickup_end__date__lte=end_date)
+            )
+
+        qs = qs.select_related("listing", "listing__donor", "listing__category", "ngo").order_by(
+            "confirmed_pickup_start", "proposed_pickup_start"
+        )
+
+        cal_name = f"SurplusSync Pickups - {user_org.name}" if user_org else "SurplusSync Pickups"
+        ics_data = generate_ics_calendar(qs, calendar_name=cal_name)
+
+        filename = f"pickup_schedule_{user_org.id if user_org else 'all'}_{timezone.now().strftime('%Y%m%d')}.ics"
+        response = HttpResponse(ics_data, content_type="text/calendar; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+
+class PickupScheduleSingleIcsExportView(APIView):
+    """
+    GET /api/v1/marketplace/schedule/<code_or_id>/export-ics/
+    or GET /api/v1/marketplace/requests/<code_or_id>/export-ics/
+    Returns an RFC 5545 .ics calendar for a single pickup event.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, code_or_id):
+        user_org = getattr(request.user, "organization", None)
+        if not user_org and not request.user.is_platform_admin:
+            raise Http404("Organization context required.")
+
+        qs = DonationRequest.objects.select_related("listing", "listing__donor", "ngo")
+        try:
+            req_id = int(code_or_id)
+            donation_req = qs.filter(id=req_id).first()
+        except ValueError:
+            donation_req = qs.filter(code=code_or_id).first()
+
+        if not donation_req:
+            raise Http404("Donation request not found.")
+
+        # Tenant isolation
+        if not request.user.is_platform_admin:
+            donor_id = donation_req.listing.donor_id if donation_req.listing else None
+            ngo_id = donation_req.ngo_id
+            if user_org.id not in [donor_id, ngo_id]:
+                raise exceptions.PermissionDenied("You do not have permission to view this pickup event.")
+
+        cal_name = f"SurplusSync Pickup - {donation_req.code}"
+        ics_data = generate_ics_calendar([donation_req], calendar_name=cal_name)
+
+        filename = f"pickup_{donation_req.code}.ics"
+        response = HttpResponse(ics_data, content_type="text/calendar; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+
+def format_period_label(range_param: str, start_date_str: str = None, end_date_str: str = None) -> str:
+    r = (range_param or "all").lower()
+    if r == "30d":
+        return "Last 30 Days"
+    elif r == "90d":
+        return "Last 90 Days"
+    elif r == "12m":
+        return "Last 12 Months"
+    elif r == "custom":
+        if start_date_str and end_date_str:
+            return f"{start_date_str} to {end_date_str}"
+        elif start_date_str:
+            return f"Since {start_date_str}"
+        elif end_date_str:
+            return f"Until {end_date_str}"
+        return "Custom Range"
+    return "All-Time Records"
+
+
+def get_impact_data_for_organization(
+    user_org,
+    is_platform_admin=False,
+    range_param="all",
+    start_date_str=None,
+    end_date_str=None,
+):
+    """
+    Computes tenant-scoped impact analytics strictly from COMPLETED donation requests.
+    Supports range filtering (30d, 90d, 12m, custom, all) and pulls constants from settings.
+    """
+    completed_status = DonationRequest.Status.COMPLETED
+
+    if is_platform_admin:
+        qs = DonationRequest.objects.filter(status=completed_status)
+    elif user_org.org_type == Organization.Type.BUSINESS:
+        qs = DonationRequest.objects.filter(listing__donor=user_org, status=completed_status)
+    else:
+        qs = DonationRequest.objects.filter(ngo=user_org, status=completed_status)
+
+    qs = qs.select_related("listing", "listing__category", "listing__donor", "ngo")
+    date_expr = Coalesce("completed_at", "confirmed_pickup_end", "updated_at", "requested_at")
+    qs = qs.annotate(effective_date=date_expr)
+
+    now = timezone.now()
+    range_clean = (range_param or "all").lower()
+    start_dt = None
+    end_dt = None
+
+    if range_clean == "30d":
+        start_dt = now - timedelta(days=30)
+    elif range_clean == "90d":
+        start_dt = now - timedelta(days=90)
+    elif range_clean == "12m":
+        start_dt = now - timedelta(days=365)
+    elif range_clean == "custom":
+        if start_date_str:
+            try:
+                d = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+                start_dt = timezone.make_aware(datetime.combine(d, time.min))
+            except ValueError:
+                pass
+        if end_date_str:
+            try:
+                d = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+                end_dt = timezone.make_aware(datetime.combine(d, time.max))
+            except ValueError:
+                pass
+
+    if start_dt:
+        qs = qs.filter(effective_date__gte=start_dt)
+    if end_dt:
+        qs = qs.filter(effective_date__lte=end_dt)
+
+    total_completed = qs.count()
+    total_quantity_kg = sum(
+        float(r.quantity_collected or r.quantity_approved or r.quantity_requested)
+        for r in qs
+    )
+    total_quantity_kg = round(total_quantity_kg, 2)
+
+    meal_kg_factor = float(getattr(settings, "IMPACT_MEAL_KG_FACTOR", 0.42))
+    co2e_kg_factor = float(getattr(settings, "IMPACT_CO2E_KG_FACTOR", 2.5))
+    water_l_factor = float(getattr(settings, "IMPACT_WATER_L_FACTOR", 1000.0))
+    financial_val_factor = float(getattr(settings, "IMPACT_FINANCIAL_VALUE_PER_KG", 150.0))
+
+    meals_provided = int(round(total_quantity_kg / meal_kg_factor)) if meal_kg_factor > 0 else 0
+    co2_diverted_kg = round(total_quantity_kg * co2e_kg_factor, 2)
+    water_saved_liters = int(round(total_quantity_kg * water_l_factor))
+    financial_value_saved = round(total_quantity_kg * financial_val_factor, 2)
+
+    # Category breakdown
+    category_map = {}
+    for r in qs:
+        cat_name = r.listing.category.name if (r.listing and r.listing.category) else "Uncategorized"
+        qty = float(r.quantity_collected or r.quantity_approved or r.quantity_requested)
+        category_map[cat_name] = category_map.get(cat_name, 0.0) + qty
+
+    category_breakdown = []
+    for cat_name, cat_qty in sorted(category_map.items(), key=lambda x: -x[1]):
+        percentage = round((cat_qty / max(0.001, total_quantity_kg)) * 100.0, 1) if total_quantity_kg > 0 else 0.0
+        category_breakdown.append({
+            "category_name": cat_name,
+            "quantity_kg": round(cat_qty, 2),
+            "percentage": percentage,
+        })
+
+    # Monthly trend (last 6 months chronological)
+    monthly_trend = []
+    for i in range(5, -1, -1):
+        target_date = now - timedelta(days=i * 30)
+        month_str = target_date.strftime("%Y-%m")
+        month_qs = [
+            r for r in qs
+            if (getattr(r, "effective_date", None) or r.completed_at or r.requested_at).strftime("%Y-%m") == month_str
+        ]
+        month_qty = sum(float(r.quantity_collected or r.quantity_approved or r.quantity_requested) for r in month_qs)
+        monthly_trend.append({
+            "month": month_str,
+            "quantity_kg": round(month_qty, 2),
+            "meals": int(round(month_qty / meal_kg_factor)) if meal_kg_factor > 0 else 0,
+            "donations_count": len(month_qs),
+        })
+
+    # Activity Heatmap (Day of Week vs 4-hour slots)
+    time_slots = ["00-04", "04-08", "08-12", "12-16", "16-20", "20-24"]
+    day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    matrix = {(d, s): {"count": 0, "quantity_kg": 0.0} for d in range(7) for s in time_slots}
+
+    for r in qs:
+        dt = getattr(r, "effective_date", None) or r.completed_at or r.requested_at
+        if dt:
+            d_idx = dt.weekday()
+            h = dt.hour
+            slot_idx = min(5, h // 4)
+            s_name = time_slots[slot_idx]
+            qty = float(r.quantity_collected or r.quantity_approved or r.quantity_requested)
+            matrix[(d_idx, s_name)]["count"] += 1
+            matrix[(d_idx, s_name)]["quantity_kg"] += qty
+
+    activity_heatmap = [
+        {
+            "day": d,
+            "day_name": day_names[d],
+            "slot": s,
+            "count": matrix[(d, s)]["count"],
+            "quantity_kg": round(matrix[(d, s)]["quantity_kg"], 2),
+        }
+        for d in range(7)
+        for s in time_slots
+    ]
+
+    # Geographic Density Points for Map Heatmap
+    geo_density = []
+    for r in qs:
+        lat = None
+        lng = None
+        if r.listing:
+            lat = r.listing.latitude
+            lng = r.listing.longitude
+            if (lat is None or lng is None) and r.listing.donor:
+                lat = r.listing.donor.latitude
+                lng = r.listing.donor.longitude
+        if (lat is None or lng is None) and r.ngo:
+            lat = r.ngo.latitude
+            lng = r.ngo.longitude
+
+        if lat is not None and lng is not None:
+            qty = float(r.quantity_collected or r.quantity_approved or r.quantity_requested)
+            cat_name = r.listing.category.name if (r.listing and r.listing.category) else "Uncategorized"
+            dt = getattr(r, "effective_date", None) or r.completed_at or r.requested_at
+            geo_density.append({
+                "request_id": r.id,
+                "request_code": r.code,
+                "title": r.listing.title if r.listing else "Food Donation",
+                "category": cat_name,
+                "quantity_kg": round(qty, 2),
+                "latitude": float(lat),
+                "longitude": float(lng),
+                "completed_at": dt.isoformat() if dt else None,
             })
 
-        data = {
-            "total_donations_completed": total_completed,
-            "total_quantity_donated_kg": total_quantity_kg,
-            "meals_provided": meals_provided,
-            "co2_diverted_kg": co2_diverted_kg,
-            "water_saved_liters": water_saved_liters,
-            "financial_value_saved": financial_value_saved,
-            "category_breakdown": category_breakdown,
-            "monthly_trend": monthly_trend,
-        }
+    calculation_constants = {
+        "meal_kg_factor": meal_kg_factor,
+        "meal_citation": "WRAP UK & FAO Guidelines for Food Waste Prevention",
+        "co2e_kg_factor": co2e_kg_factor,
+        "co2e_citation": "FAO Food Wastage Footprint: Impacts on Natural Resources",
+        "water_l_factor": water_l_factor,
+        "water_citation": "Mekonnen & Hoekstra (2011) / FAO Agricultural Benchmark",
+        "financial_value_per_kg": financial_val_factor,
+        "caveat": "All impact figures are empirical mathematical estimations based on verified completed donation logs and international scientific factors. Figures represent estimates.",
+    }
+
+    data = {
+        "period": range_clean,
+        "total_donations_completed": total_completed,
+        "total_quantity_donated_kg": total_quantity_kg,
+        "meals_provided": meals_provided,
+        "co2_diverted_kg": co2_diverted_kg,
+        "water_saved_liters": water_saved_liters,
+        "financial_value_saved": financial_value_saved,
+        "category_breakdown": category_breakdown,
+        "monthly_trend": monthly_trend,
+        "calculation_constants": calculation_constants,
+        "activity_heatmap": activity_heatmap,
+        "geo_density": geo_density,
+    }
+
+    return data, qs, calculation_constants
+
+
+def generate_impact_csv(
+    org_name: str,
+    org_type: str,
+    period_label: str,
+    metrics: dict,
+    category_breakdown: list,
+    qs,
+) -> str:
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow(["SurplusSync Sustainability Impact & ESG Audit Report"])
+    writer.writerow(["Organization", org_name])
+    writer.writerow(["Organization Type", org_type])
+    writer.writerow(["Reporting Period", period_label])
+    writer.writerow(["Generated At", timezone.now().strftime("%Y-%m-%d %H:%M:%S UTC")])
+    writer.writerow([])
+    writer.writerow(["Summary Metrics"])
+    writer.writerow(["Metric", "Value", "Unit / Standard"])
+    writer.writerow(["Total Food Rescued", f"{metrics['total_quantity_donated_kg']:.2f}", "kg"])
+    writer.writerow(["Nutritious Meals Provided", metrics["meals_provided"], f"meals ({metrics.get('calculation_constants', {}).get('meal_kg_factor', 0.42)} kg/meal)"])
+    writer.writerow(["CO2e Emissions Abated", f"{metrics['co2_diverted_kg']:.2f}", f"kg CO2e ({metrics.get('calculation_constants', {}).get('co2e_kg_factor', 2.5)} kg/kg)"])
+    writer.writerow(["Agricultural Water Conserved", metrics["water_saved_liters"], "Liters (1,000 L/kg)"])
+    writer.writerow(["Estimated Financial Value", f"{metrics['financial_value_saved']:.2f}", "INR (~150 INR/kg)"])
+    writer.writerow(["Completed Donations", metrics["total_donations_completed"], "transfers"])
+    writer.writerow([])
+    writer.writerow(["Category Breakdown"])
+    writer.writerow(["Category", "Quantity (kg)", "Share (%)"])
+    for cat in category_breakdown:
+        writer.writerow([cat["category_name"], f"{cat['quantity_kg']:.2f}", f"{cat['percentage']:.1f}%"])
+    writer.writerow([])
+    writer.writerow(["Verified Completed Transfers"])
+    writer.writerow(["Request Code", "Listing Title", "Category", "Quantity (kg)", "Unit", "Completed Date"])
+    for r in qs:
+        cat_name = r.listing.category.name if (r.listing and r.listing.category) else "Uncategorized"
+        qty = float(r.quantity_collected or r.quantity_approved or r.quantity_requested)
+        dt = getattr(r, "effective_date", None) or r.completed_at or r.updated_at
+        dt_str = dt.strftime("%Y-%m-%d %H:%M") if dt else "N/A"
+        writer.writerow([
+            r.code,
+            r.listing.title if r.listing else "N/A",
+            cat_name,
+            f"{qty:.2f}",
+            r.listing.unit if r.listing else "kg",
+            dt_str,
+        ])
+    return out.getvalue()
+
+
+class ImpactAnalyticsView(APIView):
+    """
+    GET /api/v1/marketplace/impact/
+    Returns cumulative, range-filtered metrics, category breakdown, monthly trend,
+    scientific calculation constants, activity heatmap, and geo-density points.
+    Strictly counts COMPLETED donations and enforces tenant isolation.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user_org = getattr(request.user, "organization", None)
+        if not user_org and not request.user.is_platform_admin:
+            raise Http404("Organization context required.")
+
+        range_param = request.query_params.get("range", "all")
+        start_date_str = request.query_params.get("start_date")
+        end_date_str = request.query_params.get("end_date")
+
+        data, qs, constants = get_impact_data_for_organization(
+            user_org=user_org,
+            is_platform_admin=request.user.is_platform_admin,
+            range_param=range_param,
+            start_date_str=start_date_str,
+            end_date_str=end_date_str,
+        )
 
         serializer = ImpactAnalyticsSerializer(data)
         return Response(serializer.data)
+
+
+class ImpactAnalyticsPdfExportView(APIView):
+    """
+    GET /api/v1/marketplace/impact/export-pdf/
+    Generates and downloads a printable PDF summary report built with ReportLab.
+    Tenant-scoped to the authenticated organization.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user_org = getattr(request.user, "organization", None)
+        if not user_org and not request.user.is_platform_admin:
+            raise Http404("Organization context required.")
+
+        range_param = request.query_params.get("range", "all")
+        start_date_str = request.query_params.get("start_date")
+        end_date_str = request.query_params.get("end_date")
+
+        data, qs, constants = get_impact_data_for_organization(
+            user_org=user_org,
+            is_platform_admin=request.user.is_platform_admin,
+            range_param=range_param,
+            start_date_str=start_date_str,
+            end_date_str=end_date_str,
+        )
+
+        org_name = user_org.name if user_org else "Platform Platform Audit"
+        org_type = user_org.org_type if user_org else "ADMIN"
+        period_label = format_period_label(range_param, start_date_str, end_date_str)
+
+        pdf_bytes = generate_impact_pdf(
+            org_name=org_name,
+            org_type=org_type,
+            period_label=period_label,
+            metrics=data,
+            category_breakdown=data.get("category_breakdown", []),
+            constants=constants,
+        )
+
+        filename = f"surplussync_esg_report_{range_param}.pdf"
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+
+class ImpactAnalyticsCsvExportView(APIView):
+    """
+    GET /api/v1/marketplace/impact/export-csv/
+    Generates and downloads a detailed CSV audit report.
+    Tenant-scoped to the authenticated organization.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user_org = getattr(request.user, "organization", None)
+        if not user_org and not request.user.is_platform_admin:
+            raise Http404("Organization context required.")
+
+        range_param = request.query_params.get("range", "all")
+        start_date_str = request.query_params.get("start_date")
+        end_date_str = request.query_params.get("end_date")
+
+        data, qs, constants = get_impact_data_for_organization(
+            user_org=user_org,
+            is_platform_admin=request.user.is_platform_admin,
+            range_param=range_param,
+            start_date_str=start_date_str,
+            end_date_str=end_date_str,
+        )
+
+        org_name = user_org.name if user_org else "Platform Platform Audit"
+        org_type = user_org.org_type if user_org else "ADMIN"
+        period_label = format_period_label(range_param, start_date_str, end_date_str)
+
+        csv_content = generate_impact_csv(
+            org_name=org_name,
+            org_type=org_type,
+            period_label=period_label,
+            metrics=data,
+            category_breakdown=data.get("category_breakdown", []),
+            qs=qs,
+        )
+
+        filename = f"surplussync_impact_{range_param}.csv"
+        response = HttpResponse(csv_content, content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
 
 
 class PublicImpactAnalyticsView(APIView):
@@ -1222,6 +1654,7 @@ class PublicImpactAnalyticsView(APIView):
     GET /api/v1/marketplace/impact/public/
     Platform-wide aggregate totals (kg, meals, CO2e, donors, NGOs) cached for 10 minutes.
     No authentication required, zero organization or personal details leaked.
+    Counts only COMPLETED donations and uses settings constants.
     """
     permission_classes = [permissions.AllowAny]
 
@@ -1231,19 +1664,18 @@ class PublicImpactAnalyticsView(APIView):
         if cached_data is not None:
             return Response(cached_data)
 
-        completed_statuses = [
-            DonationRequest.Status.COLLECTED,
-            DonationRequest.Status.COMPLETED,
-        ]
-        qs = DonationRequest.objects.filter(status__in=completed_statuses)
+        completed_status = DonationRequest.Status.COMPLETED
+        qs = DonationRequest.objects.filter(status=completed_status)
         total_quantity_kg = sum(
-            float(r.quantity_approved or r.quantity_requested)
+            float(r.quantity_collected or r.quantity_approved or r.quantity_requested)
             for r in qs
         )
         total_quantity_kg = round(total_quantity_kg, 2)
-        # Standard benchmark: 1 meal = 0.42 kg (WRAP / FAO)
-        meals_provided = int(round(total_quantity_kg / 0.42)) if total_quantity_kg > 0 else 0
-        co2_diverted_kg = round(total_quantity_kg * 2.5, 2)
+        meal_kg_factor = float(getattr(settings, "IMPACT_MEAL_KG_FACTOR", 0.42))
+        co2e_kg_factor = float(getattr(settings, "IMPACT_CO2E_KG_FACTOR", 2.5))
+
+        meals_provided = int(round(total_quantity_kg / meal_kg_factor)) if meal_kg_factor > 0 and total_quantity_kg > 0 else 0
+        co2_diverted_kg = round(total_quantity_kg * co2e_kg_factor, 2)
 
         donors_count = Organization.objects.filter(org_type=Organization.Type.BUSINESS).count()
         ngos_count = Organization.objects.filter(org_type=Organization.Type.NGO, is_verified=True).count()

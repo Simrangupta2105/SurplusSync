@@ -1,0 +1,138 @@
+{
+  "series_level_evaluation": [
+    {
+      "Model": "Seasonal Naive-1 (y_T)",
+      "Model_Type": "Classic Baseline",
+      "Horizon": "1d",
+      "WAPE": 0.31316750499552126,
+      "MAE": 31.5625,
+      "RMSE": 42.48602711480564,
+      "Bias": -6.5,
+      "90% Coverage": 0.875,
+      "Time (s)": 0.1
+    },
+    {
+      "Model": "Seasonal Naive-7 (y_{T+h-7})",
+      "Model_Type": "Classic Baseline",
+      "Horizon": "1d",
+      "WAPE": 0.29973127540825467,
+      "MAE": 30.208333333333332,
+      "RMSE": 41.90009612823765,
+      "Bias": -4.854166666666667,
+      "90% Coverage": 0.875,
+      "Time (s)": 0.1
+    },
+    {
+      "Model": "28-Day Rolling Mean",
+      "Model_Type": "Classic Baseline",
+      "Horizon": "1d",
+      "WAPE": 0.25323601363077,
+      "MAE": 25.52232129044003,
+      "RMSE": 34.204189222728516,
+      "Bias": -3.333333558506436,
+      "90% Coverage": 0.90625,
+      "Time (s)": 0.1
+    },
+    {
+      "Model": "Historical Weekday Profile",
+      "Model_Type": "Classic Baseline",
+      "Horizon": "1d",
+      "WAPE": 0.2424865125468061,
+      "MAE": 24.438935809665256,
+      "RMSE": 32.6420643668561,
+      "Bias": -2.0876305103302,
+      "90% Coverage": 0.9236111111111112,
+      "Time (s)": 0.1
+    },
+    {
+      "Model": "Seasonal Naive-1 (y_T)",
+      "Model_Type": "Classic Baseline",
+      "Horizon": "7d",
+      "WAPE": 0.29973127540825467,
+      "MAE": 30.208333333333332,
+      "RMSE": 41.90009612823765,
+      "Bias": -4.854166666666667,
+      "90% Coverage": 0.875,
+      "Time (s)": 0.1
+    },
+    {
+      "Model": "Seasonal Naive-7 (y_{T+h-7})",
+      "Model_Type": "Classic Baseline",
+      "Horizon": "7d",
+      "WAPE": 0.29973127540825467,
+      "MAE": 30.208333333333332,
+      "RMSE": 41.90009612823765,
+      "Bias": -4.854166666666667,
+      "90% Coverage": 0.875,
+      "Time (s)": 0.1
+    },
+    {
+      "Model": "28-Day Rolling Mean",
+      "Model_Type": "Classic Baseline",
+      "Horizon": "7d",
+      "WAPE": 0.25703064529438924,
+      "MAE": 25.904762188593548,
+      "RMSE": 34.65151542153564,
+      "Bias": -4.153025547663371,
+      "90% Coverage": 0.9131944444444444,
+      "Time (s)": 0.1
+    },
+    {
+      "Model": "Historical Weekday Profile",
+      "Model_Type": "Classic Baseline",
+      "Horizon": "7d",
+      "WAPE": 0.2424865125468061,
+      "MAE": 24.438935809665256,
+      "RMSE": 32.6420643668561,
+      "Bias": -2.0876305103302,
+      "90% Coverage": 0.9270833333333334,
+      "Time (s)": 0.1
+    },
+    {
+      "Model": "Prophet (Regressors + Festivals)",
+      "Model_Type": "Prophet",
+      "Horizon": "1d",
+      "WAPE": 0.23478496640618776,
+      "MAE": 23.66273762120141,
+      "RMSE": 31.47681430297627,
+      "Bias": -3.6003121932347617,
+      "90% Coverage": 0.3541666666666667,
+      "Time (s)": 28.0
+    },
+    {
+      "Model": "Prophet (Regressors + Festivals)",
+      "Model_Type": "Prophet",
+      "Horizon": "7d",
+      "WAPE": 0.2344476512813522,
+      "MAE": 23.628741410043503,
+      "RMSE": 31.88573909267579,
+      "Bias": -5.406932287746006,
+      "90% Coverage": 0.375,
+      "Time (s)": 21.2
+    }
+  ],
+  "category_level_evaluation": [
+    {
+      "Model": "Prophet (Regressors + Festivals)",
+      "Level": "Category Aggregate (6 Categories)",
+      "Horizon": "1d",
+      "WAPE": 0.06021702675081485,
+      "MAE": 72.82747576954799,
+      "RMSE": 83.71546581865094,
+      "Bias": -43.203739673919614,
+      "90% Coverage": 1.0,
+      "Time (s)": 28.0
+    },
+    {
+      "Model": "Prophet (Regressors + Festivals)",
+      "Level": "Category Aggregate (6 Categories)",
+      "Horizon": "7d",
+      "WAPE": 0.06650586631515876,
+      "MAE": 80.43330315265824,
+      "RMSE": 96.6865299259843,
+      "Bias": -64.8831931681736,
+      "90% Coverage": 0.9583333333333334,
+      "Time (s)": 21.2
+    }
+  ]
+}

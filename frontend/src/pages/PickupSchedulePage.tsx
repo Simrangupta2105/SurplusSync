@@ -29,13 +29,14 @@ import type {
   PickupScheduleItem,
   DonationRequestStatus,
 } from '../types';
+import { dataSource } from '../services';
 
 interface PickupSchedulePageProps {
   onTriggerToast?: (msg: string) => void;
   onNavigate?: (path: string) => void;
 }
 
-type ScheduleTab = 'ALL' | 'TODAY' | 'TOMORROW' | 'UPCOMING' | 'COMPLETED';
+type ScheduleTab = 'ALL' | 'TODAY' | 'TOMORROW' | 'UPCOMING' | 'OVERDUE' | 'COMPLETED';
 
 export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
   onTriggerToast,
@@ -45,6 +46,7 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
   // State
   const [activeTab, setActiveTab] = useState<ScheduleTab>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
 
   // Modals state
   const [dispatchItem, setDispatchItem] = useState<PickupScheduleItem | null>(null);
@@ -76,6 +78,7 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
       TODAY: schedule.filter((i) => i.scheduled_pickup_time.startsWith(todayStr)).length,
       TOMORROW: schedule.filter((i) => i.scheduled_pickup_time.startsWith(tomorrowStr)).length,
       UPCOMING: schedule.filter((i) => ['APPROVED', 'SCHEDULED', 'IN_TRANSIT'].includes(i.status)).length,
+      OVERDUE: schedule.filter((i) => i.is_overdue).length,
       COMPLETED: schedule.filter((i) => ['COLLECTED', 'COMPLETED'].includes(i.status)).length,
     };
   }, [schedule, todayStr, tomorrowStr]);
@@ -106,6 +109,9 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
       if (activeTab === 'UPCOMING') {
         return ['APPROVED', 'SCHEDULED', 'IN_TRANSIT'].includes(item.status);
       }
+      if (activeTab === 'OVERDUE') {
+        return item.is_overdue;
+      }
       if (activeTab === 'COMPLETED') {
         return ['COLLECTED', 'COMPLETED'].includes(item.status);
       }
@@ -113,6 +119,28 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
       return true;
     });
   }, [schedule, searchQuery, activeTab, todayStr, tomorrowStr]);
+
+  // Calendar .ics export handler
+  const handleExportIcs = async (requestId?: number) => {
+    try {
+      setIsExporting(true);
+      const blob = await dataSource.exportScheduleIcs(requestId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = requestId ? `pickup_${requestId}.ics` : `pickup_schedule.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      onTriggerToast?.(requestId ? 'Pickup event exported (.ics calendar).' : 'Pickup schedule exported (.ics calendar).');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to export calendar';
+      onTriggerToast?.(msg);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Dispatch driver submit
   const handleDispatchSubmit = (e: React.FormEvent) => {
@@ -197,10 +225,13 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
     }
 
     if (item.is_overdue) {
+      const elapsed = item.overdue_minutes
+        ? `${Math.floor(item.overdue_minutes / 60)}h ${item.overdue_minutes % 60}m`
+        : '';
       return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--color-danger)] bg-[var(--color-danger-subtle)] px-2.5 py-0.5 rounded-[4px] border border-[var(--color-danger-border)] animate-pulse">
+        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/15 px-2.5 py-0.5 rounded-[4px] border border-rose-500/30 animate-pulse">
           <AlertTriangle className="w-3 h-3" />
-          Pickup Overdue
+          Overdue {elapsed ? `(${elapsed})` : ''}
         </span>
       );
     }
@@ -234,7 +265,18 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
         title="Pickup & Logistics Schedule"
         subtitle="Coordinate timely volunteer arrival, driver dispatch, and secure chain-of-custody transfer."
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleExportIcs()}
+              disabled={isExporting}
+              className="text-xs font-semibold gap-1.5 border-[var(--primary)]/30 hover:border-[var(--primary)] text-[var(--primary)]"
+              title="Export schedule as RFC 5545 .ics calendar"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{isExporting ? 'Exporting...' : 'Export Calendar (.ics)'}</span>
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -265,6 +307,7 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
               { id: 'TODAY', label: "Today's Agenda", count: tabCounts.TODAY },
               { id: 'TOMORROW', label: 'Tomorrow', count: tabCounts.TOMORROW },
               { id: 'UPCOMING', label: 'Active Transit', count: tabCounts.UPCOMING },
+              { id: 'OVERDUE', label: 'Overdue Pickups', count: tabCounts.OVERDUE, isDanger: tabCounts.OVERDUE > 0 },
               { id: 'COMPLETED', label: 'Completed', count: tabCounts.COMPLETED },
             ].map((tab) => (
               <button
@@ -274,11 +317,15 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   activeTab === tab.id
                     ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-2xs'
+                    : tab.isDanger
+                    ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 hover:bg-rose-500/25'
                     : 'bg-[var(--surface-2)] text-[var(--muted)] hover:text-[var(--text)]'
                 }`}
               >
                 <span>{tab.label}</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/10 dark:bg-white/10 tabular-nums">
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] tabular-nums ${
+                  tab.isDanger ? 'bg-rose-500/30 text-rose-700 dark:text-rose-300 font-bold' : 'bg-black/10 dark:bg-white/10'
+                }`}>
                   {tab.count}
                 </span>
               </button>
@@ -348,6 +395,16 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
                     <StatusBadge variant={badge.variant}>{badge.label}</StatusBadge>
                   </div>
                 </div>
+
+                {/* Overdue alert banner if applicable */}
+                {item.is_overdue && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-[8px] bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 text-xs font-medium">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
+                    <span>
+                      Pickup window has passed{item.overdue_minutes ? ` (${Math.floor(item.overdue_minutes / 60)}h ${item.overdue_minutes % 60}m ago)` : ''}. Please dispatch driver, complete handoff, or report no-show.
+                    </span>
+                  </div>
+                )}
 
                 {/* Middle Grid: Logistics & Partner Details */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
@@ -505,6 +562,17 @@ export const PickupSchedulePage: React.FC<PickupSchedulePageProps> = ({
                         Report No-Show
                       </Button>
                     )}
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExportIcs(item.id)}
+                      className="text-xs font-medium gap-1 text-[var(--muted)] hover:text-[var(--text)]"
+                      title="Download .ics calendar event for this pickup"
+                    >
+                      <Calendar className="w-3.5 h-3.5 text-[var(--primary)]" />
+                      <span>Add to Calendar (.ics)</span>
+                    </Button>
                   </div>
                 </div>
               </div>

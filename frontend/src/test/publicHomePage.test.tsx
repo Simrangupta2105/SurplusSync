@@ -93,9 +93,9 @@ describe('Public Home Page at "/" (Task B2)', () => {
     expect(screen.getByText('Pickup Scheduling')).toBeInTheDocument();
     expect(screen.getByText('Impact Tracking')).toBeInTheDocument();
 
-    // AI Waste Prediction marked as Coming soon
-    expect(screen.getByText('AI Waste Prediction')).toBeInTheDocument();
-    expect(screen.getByText('Coming soon')).toBeInTheDocument();
+    // AI Waste Prediction marked as Live ML
+    expect(screen.getByText(/AI Waste Prediction/i)).toBeInTheDocument();
+    expect(screen.getByText('Live ML')).toBeInTheDocument();
   });
 
   it('displays impact counters when public totals exist, with Sample data label in demo mode', async () => {

@@ -226,7 +226,7 @@ def compute_match_score(
         else:
             fairness_score = 25.0
 
-    # Composite Weighted Total
+    # Composite Weighted Total (Rule-Based Base Score)
     composite = round(
         (0.30 * distance_score)
         + (0.25 * urgency_score)
@@ -236,8 +236,23 @@ def compute_match_score(
         1,
     )
 
+    from marketplace.learning_layer import evaluate_learned_match_score
+
+    learned_eval = evaluate_learned_match_score(
+        listing=listing,
+        requirement=requirement,
+        distance_km=distance_km,
+        base_score=composite,
+    )
+
     return {
-        "score": composite,
+        "score": learned_eval["final_score"],
+        "base_score": learned_eval["base_score"],
+        "learned_probability": learned_eval["learned_probability"],
+        "is_fallback": learned_eval["is_fallback"],
+        "fallback_reason": learned_eval["fallback_reason"],
+        "reasons": learned_eval["reasons"],
+        "features": learned_eval.get("features", {}),
         "distance_km": distance_km,
         "breakdown": {
             "distance_score": distance_score,
@@ -305,6 +320,11 @@ def find_matching_requirements_for_listing(
             "is_compatible": is_compat,
             "incompatibility_reasons": incompat_reasons,
             "score": score_info["score"],
+            "base_score": score_info.get("base_score"),
+            "learned_probability": score_info.get("learned_probability"),
+            "is_fallback": score_info.get("is_fallback", True),
+            "fallback_reason": score_info.get("fallback_reason"),
+            "reasons": score_info.get("reasons", []),
             "breakdown": score_info["breakdown"],
         })
 
@@ -372,6 +392,11 @@ def find_matching_listings_for_requirement(
             "is_compatible": is_compat,
             "incompatibility_reasons": incompat_reasons,
             "score": score_info["score"],
+            "base_score": score_info.get("base_score"),
+            "learned_probability": score_info.get("learned_probability"),
+            "is_fallback": score_info.get("is_fallback", True),
+            "fallback_reason": score_info.get("fallback_reason"),
+            "reasons": score_info.get("reasons", []),
             "breakdown": score_info["breakdown"],
         })
 

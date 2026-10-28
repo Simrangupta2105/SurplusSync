@@ -1,0 +1,90 @@
+[
+  {
+    "Model":"HistGradientBoosting",
+    "Features":"Covariates Only",
+    "Horizon":"1d",
+    "WAPE":0.1730304404,
+    "MAE":17.4388248726,
+    "RMSE":24.3247641069,
+    "Bias":-2.7106439662,
+    "90% Coverage":0.8645833333,
+    "Time (s)":9.6
+  },
+  {
+    "Model":"HistGradientBoosting",
+    "Features":"Covariates Only",
+    "Horizon":"7d",
+    "WAPE":0.1634938539,
+    "MAE":16.4776826538,
+    "RMSE":23.5323750508,
+    "Bias":-7.9831453064,
+    "90% Coverage":0.8993055556,
+    "Time (s)":10.3
+  },
+  {
+    "Model":"HistGradientBoosting",
+    "Features":"Covariates + Demand History",
+    "Horizon":"1d",
+    "WAPE":0.150173407,
+    "MAE":15.1351851088,
+    "RMSE":21.817470967,
+    "Bias":2.6491133137,
+    "90% Coverage":0.8611111111,
+    "Time (s)":23.1
+  },
+  {
+    "Model":"HistGradientBoosting",
+    "Features":"Covariates + Demand History",
+    "Horizon":"7d",
+    "WAPE":0.1622312387,
+    "MAE":16.3504303231,
+    "RMSE":21.8748147464,
+    "Bias":-3.966712023,
+    "90% Coverage":0.8784722222,
+    "Time (s)":22.3
+  },
+  {
+    "Model":"LightGBM",
+    "Features":"Covariates Only",
+    "Horizon":"1d",
+    "WAPE":0.1726552055,
+    "MAE":17.4010069263,
+    "RMSE":24.3394571879,
+    "Bias":-4.5941378171,
+    "90% Coverage":0.8993055556,
+    "Time (s)":5.7
+  },
+  {
+    "Model":"LightGBM",
+    "Features":"Covariates Only",
+    "Horizon":"7d",
+    "WAPE":0.1685276412,
+    "MAE":16.9850115031,
+    "RMSE":24.1703162999,
+    "Bias":-7.469788969,
+    "90% Coverage":0.9236111111,
+    "Time (s)":4.7
+  },
+  {
+    "Model":"LightGBM",
+    "Features":"Covariates + Demand History",
+    "Horizon":"1d",
+    "WAPE":0.1532969237,
+    "MAE":15.4499878722,
+    "RMSE":22.0891059618,
+    "Bias":0.591912667,
+    "90% Coverage":0.8611111111,
+    "Time (s)":11.0
+  },
+  {
+    "Model":"LightGBM",
+    "Features":"Covariates + Demand History",
+    "Horizon":"7d",
+    "WAPE":0.1723937264,
+    "MAE":17.3746538257,
+    "RMSE":23.5067432651,
+    "Bias":-4.3686489807,
+    "90% Coverage":0.875,
+    "Time (s)":14.8
+  }
+]

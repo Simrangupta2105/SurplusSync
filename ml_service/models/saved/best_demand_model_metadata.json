@@ -1,5 +1,7 @@
 {
   "model_name": "Poisson_Regression",
+  "data_origin": "synthetic",
+  "version": "1.0.0-poisson-lightgbm",
   "model_type": "<class 'sklearn.pipeline.Pipeline'>",
   "target": "Daily_Demand",
   "features": [

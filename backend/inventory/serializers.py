@@ -189,3 +189,10 @@ class POSApiKeySerializer(serializers.ModelSerializer):
             prefix = "sps_test" if "test" in (obj.label or "").lower() else "sps_live"
             return f"{prefix}_{h[:2]}...{h[12:16]}" if len(h) >= 16 else f"{prefix}_{h[:6]}..."
         return "sps_live_******"
+
+
+class RecentSaleSerializer(serializers.Serializer):
+    date = serializers.CharField(help_text="Date in YYYY-MM-DD format")
+    category = serializers.CharField(help_text="Food category or 'All'")
+    units_sold = serializers.FloatField(help_text="Total units sold on this date")
+    revenue = serializers.FloatField(help_text="Estimated revenue from units sold")

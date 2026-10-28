@@ -32,6 +32,7 @@ import {
   useCurrentUser,
 } from '../../hooks/useData';
 import { BusinessRatingCard } from '../../components/business/BusinessRatingCard';
+import { SalesForecastCard } from '../../components/business/SalesForecastCard';
 import type { BatchWithProduct, Alert } from '../../types';
 
 interface BusinessDashboardPageProps {
@@ -318,6 +319,9 @@ export const BusinessDashboardPage: React.FC<BusinessDashboardPageProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Sales & AI Demand Forecast Trajectory (Task 3) */}
+      <SalesForecastCard onNavigate={onNavigate} />
 
       {/* Secondary Bento Row: Recent Alerts Triage */}
       <div className="rounded-[12px] border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6">

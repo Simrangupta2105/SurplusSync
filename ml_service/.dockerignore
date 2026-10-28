@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment files
+.env
+.env.*
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Models: include trained models/saved
+models/*
+!models/saved/
+!models/saved/*
+models_registry/
+
+# Tests
+tests/
+*.test.py
+
+# Logs
+*.log
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Data files (large)
+data/
+reports/

@@ -11,6 +11,7 @@ from .views import (
     ImportJobViewSet,
     POSApiKeyViewSet,
     DashboardSummaryView,
+    RecentSalesView,
 )
 
 router = DefaultRouter()
@@ -26,6 +27,7 @@ router.register(r'import-jobs', ImportJobViewSet)
 router.register(r'pos-keys', POSApiKeyViewSet)
 
 urlpatterns = [
+    path('sales/recent/', RecentSalesView.as_view(), name='recent-sales'),
     path('dashboard/summary/', DashboardSummaryView.as_view(), name='dashboard-summary'),
     path('', include(router.urls)),
 ]

@@ -1142,6 +1142,17 @@ export const SurplusMarketplacePage: React.FC<SurplusMarketplacePageProps> = ({
                           )}
                         </div>
                       </div>
+
+                      {m.reasons && m.reasons.length > 0 && (
+                        <div className="pt-2 border-t border-[var(--border)] space-y-1 text-[10px] text-[var(--muted)]">
+                          {m.reasons.map((reason, rIdx) => (
+                            <div key={rIdx} className="flex items-start gap-1 leading-snug">
+                              <span className="text-[var(--primary)] font-bold shrink-0">•</span>
+                              <span>{reason}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))
                 )}

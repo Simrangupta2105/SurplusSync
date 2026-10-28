@@ -26,6 +26,7 @@ import {
   ClipboardList,
   Bell,
   Sparkles,
+  TrendingUp,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import type { OrganizationType } from '../types';
@@ -102,10 +103,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ...(aiPredictionAvailable !== false
       ? [
           {
+            id: 'business/ai/forecast',
+            label: 'Sales & Forecast',
+            icon: TrendingUp,
+            section: 'AI Waste Prediction',
+          },
+          {
             id: 'business/ai/planner',
             label: 'Purchase Planner',
             icon: Sparkles,
-            section: 'AI Waste Prediction',
           },
           {
             id: 'business/ai/insights',
@@ -216,6 +222,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   (activePath === 'pos-simulator' || activePath === 'business/pos-simulator')) ||
                 (item.id === 'business/ai/planner' &&
                   (activePath === 'business/ai/planner' || activePath === 'ai/planner' || activePath === 'planner')) ||
+                (item.id === 'business/ai/forecast' &&
+                  (activePath === 'business/ai/forecast' || activePath === 'ai/forecast' || activePath === 'forecast')) ||
                 (item.id === 'business/ai/insights' &&
                   (activePath === 'business/ai/insights' || activePath === 'ai/insights' || activePath === 'insights'));
               const Icon = item.icon;

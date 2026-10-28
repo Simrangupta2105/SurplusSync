@@ -70,6 +70,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   }
 
   const isLongValue = typeof displayValue === 'string' && displayValue.length > 7;
+  const isVeryLongValue = typeof displayValue === 'string' && displayValue.length > 14;
 
   return (
     <div
@@ -78,8 +79,8 @@ export const StatCard: React.FC<StatCardProps> = ({
         className
       )}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="metric-label tracking-normal truncate" title={displayTitle}>
+      <div className="flex items-start justify-between gap-2">
+        <span className="metric-label tracking-normal leading-tight line-clamp-2" title={displayTitle}>
           {displayTitle}
         </span>
         <div
@@ -97,8 +98,11 @@ export const StatCard: React.FC<StatCardProps> = ({
           <span
             className={cn(
               'metric-number text-[var(--text)] tracking-tight',
-              isLongValue && '!text-xl sm:!text-2xl'
+              isVeryLongValue
+                ? '!text-sm !font-semibold !leading-snug truncate block w-full'
+                : isLongValue && '!text-xl sm:!text-2xl'
             )}
+            title={isVeryLongValue && typeof displayValue === 'string' ? displayValue : undefined}
           >
             {displayValue}
           </span>

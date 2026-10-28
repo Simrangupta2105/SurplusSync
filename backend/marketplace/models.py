@@ -326,6 +326,11 @@ class DonationRequest(models.Model):
     rejection_reason = models.TextField(blank=True, default="")
     contact_name = models.CharField(max_length=100, blank=True, default="")
     contact_phone = models.CharField(max_length=30, blank=True, default="")
+    beneficiaries_served = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Optional count of individuals/beneficiaries served from this donation.",
+    )
 
     # Status timestamps
     requested_at = models.DateTimeField(auto_now_add=True)
@@ -370,6 +375,10 @@ class DonationRequest(models.Model):
                     | models.Q(confirmed_pickup_end__gt=models.F("confirmed_pickup_start"))
                 ),
                 name="check_req_conf_end_gt_start",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(beneficiaries_served__isnull=True) | models.Q(beneficiaries_served__gte=0),
+                name="check_request_beneficiaries_served_gte_0",
             ),
             models.UniqueConstraint(
                 fields=["listing", "ngo"],

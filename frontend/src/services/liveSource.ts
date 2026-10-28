@@ -56,7 +56,42 @@ import type {
   PlanPredictionRequest,
   PlanPredictionResponse,
   DatasetInsightsResponse,
+  RecentSaleItem,
 } from '../types';
+
+interface RawScheduleItem {
+  request_id?: number;
+  id?: number;
+  request_code?: string;
+  code?: string;
+  item_title?: string;
+  item_name?: string;
+  donor_name?: string;
+  donor_address?: string;
+  donor_phone?: string;
+  donor_latitude?: number | null;
+  donor_longitude?: number | null;
+  ngo_name?: string;
+  recipient_name?: string;
+  contact_phone?: string;
+  recipient_phone?: string;
+  quantity?: string | number;
+  unit?: string;
+  pickup_window_start?: string;
+  scheduled_pickup_time?: string;
+  status: DonationRequest['status'];
+  driver_name?: string;
+  driver_phone?: string;
+  vehicle_plate?: string;
+  time_until_pickup_minutes?: number | null;
+  countdown_minutes?: number | null;
+  is_overdue?: boolean;
+  overdue_minutes?: number | null;
+}
+
+interface RawScheduleResponse {
+  results?: RawScheduleItem[];
+}
 import {
   getAccessToken,
   setAccessToken,
@@ -110,6 +145,38 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+interface RawMatchPayload {
+  score?: number;
+  match_score?: number;
+  base_score?: number;
+  learned_probability?: number | null;
+  is_fallback?: boolean;
+  fallback_reason?: string | null;
+  reasons?: string[];
+  distance_km?: number;
+  breakdown?: Record<string, number>;
+  factor_breakdowns?: Record<string, number>;
+  requirement_id?: number;
+  requirement_title?: string;
+  ngo_id?: number;
+  ngo_name?: string;
+  min_quantity?: string | number;
+  max_quantity?: string | number;
+  radius_km?: string | number;
+  accepts_cooked_food?: boolean;
+  listing_id?: number;
+  listing_title?: string;
+  donor_id?: number;
+  donor_name?: string;
+  remaining_quantity?: string | number;
+  quantity_offered?: string | number;
+  unit?: string;
+  safe_until?: string | null;
+  available_until?: string;
+  listing?: SurplusListingItem;
+  requirement?: NGORequirementItem;
+}
 
 interface RawMarketplaceListing {
   id?: number | string;
@@ -866,10 +933,31 @@ export class LiveSource implements DataSource {
   }
 
   async getListingMatches(listingId: number): Promise<{ count: number; matches: MatchingResultItem[] }> {
-    const res = await apiClient.get<{ count: number; matches: MatchingResultItem[] }>(
+    const res = await apiClient.get<{ count?: number; matches_count?: number; matches: RawMatchPayload[] }>(
       `/marketplace/listings/${listingId}/matches/`
     );
-    return res.data;
+    const rawMatches = res.data.matches || [];
+    const matches: MatchingResultItem[] = rawMatches.map((m: RawMatchPayload) => ({
+      match_score: typeof m.score === 'number' ? m.score : (m.match_score ?? 0),
+      base_score: m.base_score,
+      learned_probability: m.learned_probability,
+      is_fallback: m.is_fallback,
+      fallback_reason: m.fallback_reason,
+      reasons: m.reasons || [],
+      distance_km: m.distance_km,
+      factor_breakdowns: m.breakdown || m.factor_breakdowns,
+      requirement: (m.requirement || {
+        id: m.requirement_id,
+        ngo_name: m.ngo_name,
+        title: m.requirement_title,
+        min_quantity_kg: m.min_quantity,
+        max_quantity_kg: m.max_quantity,
+        target_beneficiaries: Math.round(Number(m.max_quantity || 10) * 3),
+        radius_km: m.radius_km,
+        accepts_cooked_food: m.accepts_cooked_food,
+      }) as NGORequirementItem,
+    }));
+    return { count: res.data.matches_count ?? res.data.count ?? matches.length, matches };
   }
 
   async notifyListingMatches(listingId: number, requirementIds?: number[]): Promise<{ notified: number }> {
@@ -907,31 +995,166 @@ export class LiveSource implements DataSource {
   }
 
   async getRequirementMatches(requirementId: number): Promise<{ count: number; matches: MatchingResultItem[] }> {
-    const res = await apiClient.get<{ count: number; matches: MatchingResultItem[] }>(
+    const res = await apiClient.get<{ count?: number; matches_count?: number; matches: RawMatchPayload[] }>(
       `/marketplace/requirements/${requirementId}/matches/`
     );
-    return res.data;
+    const rawMatches = res.data.matches || [];
+    const matches: MatchingResultItem[] = rawMatches.map((m: RawMatchPayload) => ({
+      match_score: typeof m.score === 'number' ? m.score : (m.match_score ?? 0),
+      base_score: m.base_score,
+      learned_probability: m.learned_probability,
+      is_fallback: m.is_fallback,
+      fallback_reason: m.fallback_reason,
+      reasons: m.reasons || [],
+      distance_km: m.distance_km,
+      factor_breakdowns: m.breakdown || m.factor_breakdowns,
+      listing: (m.listing || {
+        id: m.listing_id,
+        title: m.listing_title,
+        donor_name: m.donor_name,
+        available_quantity: m.remaining_quantity ?? m.quantity_offered,
+        unit: m.unit,
+        expiry_date: m.safe_until || m.available_until,
+      }) as SurplusListingItem,
+    }));
+    return { count: res.data.matches_count ?? res.data.count ?? matches.length, matches };
   }
 
   // 12. Redistribution: Pickup Schedule
   async getPickupSchedule(filters?: { date?: string; status?: string; range?: string }): Promise<PickupScheduleItem[]> {
-    const res = await apiClient.get<PickupScheduleItem[] | { results: PickupScheduleItem[] }>('/marketplace/schedule/', {
+    const res = await apiClient.get<RawScheduleItem[] | RawScheduleResponse>('/marketplace/schedule/', {
       params: filters,
     });
-    return Array.isArray(res.data) ? res.data : res.data.results || [];
+    const items: RawScheduleItem[] = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+    return items.map((r: RawScheduleItem) => ({
+      id: r.request_id ?? r.id ?? 0,
+      request_code: r.request_code ?? r.code ?? '',
+      item_name: r.item_title ?? r.item_name ?? '',
+      donor_name: r.donor_name ?? '',
+      donor_address: r.donor_address ?? '',
+      donor_phone: r.donor_phone ?? '',
+      donor_latitude: r.donor_latitude ?? null,
+      donor_longitude: r.donor_longitude ?? null,
+      recipient_name: r.ngo_name ?? r.recipient_name ?? '',
+      recipient_phone: r.contact_phone ?? r.recipient_phone ?? '',
+      quantity: r.quantity ?? 0,
+      unit: r.unit ?? 'kg',
+      scheduled_pickup_time: r.pickup_window_start ?? r.scheduled_pickup_time ?? '',
+      status: r.status,
+      driver_name: r.driver_name ?? '',
+      driver_phone: r.driver_phone ?? '',
+      vehicle_plate: r.vehicle_plate ?? '',
+      countdown_minutes: r.time_until_pickup_minutes ?? r.countdown_minutes ?? null,
+      is_overdue: Boolean(r.is_overdue),
+      overdue_minutes: r.overdue_minutes ?? null,
+    }));
+  }
+
+  getScheduleIcsUrl(requestId?: number): string {
+    const base = '/marketplace/schedule';
+    return requestId ? `${base}/${requestId}/export-ics/` : `${base}/export-ics/`;
+  }
+
+  async exportScheduleIcs(requestId?: number): Promise<Blob> {
+    const url = this.getScheduleIcsUrl(requestId);
+    const res = await apiClient.get(url, { responseType: 'blob' });
+    return res.data;
   }
 
   // 13. Redistribution: Impact Analytics & ESG Scorecard
-  async getImpactAnalytics(period?: string): Promise<ImpactAnalytics> {
-    const res = await apiClient.get<ImpactAnalytics>('/marketplace/impact/', {
-      params: period ? { period } : undefined,
+  async getImpactAnalytics(filters?: string | { period?: string; startDate?: string; endDate?: string }): Promise<ImpactAnalytics> {
+    let params: Record<string, string> = {};
+    if (typeof filters === 'string') {
+      params = { period: filters };
+    } else if (filters) {
+      if (filters.period) params['period'] = filters.period;
+      if (filters.startDate) params['start_date'] = filters.startDate;
+      if (filters.endDate) params['end_date'] = filters.endDate;
+    }
+    const res = await apiClient.get<Record<string, unknown>>('/marketplace/impact/', {
+      params: Object.keys(params).length > 0 ? params : undefined,
     });
-    return res.data;
+    const d = res.data || {};
+    const total_quantity_donated_kg = Number(d.total_quantity_donated_kg ?? d.rescued_food_kg ?? 0);
+    const meals_provided = Number(d.meals_provided ?? Math.round(total_quantity_donated_kg / 0.42));
+    const co2_avoided_kg = Number(d.co2_avoided_kg ?? d.co2_diverted_kg ?? Math.round(total_quantity_donated_kg * 2.5 * 10) / 10);
+    const water_saved_liters = Number(d.water_saved_liters ?? 0);
+    const financial_savings_estimate = Number(d.financial_savings_estimate ?? d.financial_value_saved ?? Math.round(total_quantity_donated_kg * 150));
+    const total_donations_count = Number(d.total_donations_count ?? d.total_donations_completed ?? 0);
+    const active_partners_count = Number(d.active_partners_count ?? 1);
+
+    const rawCategory = Array.isArray(d.category_breakdown) ? d.category_breakdown : [];
+    const category_breakdown = rawCategory.map((c: Record<string, unknown>) => ({
+      category: String(c.category || c.category_name || 'General'),
+      rescued_kg: Number(c.rescued_kg ?? c.quantity_kg ?? 0),
+      meals: Number(c.meals ?? Math.round(Number(c.quantity_kg ?? 0) / 0.42)),
+      percentage: Number(c.percentage ?? 0),
+    }));
+
+    const rawTrend = Array.isArray(d.monthly_trend) ? d.monthly_trend : [];
+    const monthly_trend = rawTrend.map((m: Record<string, unknown>) => {
+      const rescued = Number(m.rescued_kg ?? m.quantity_kg ?? 0);
+      return {
+        month: String(m.month || ''),
+        rescued_kg: rescued,
+        meals: Number(m.meals ?? Math.round(rescued / 0.42)),
+        co2_avoided_kg: Number(m.co2_avoided_kg ?? Math.round(rescued * 2.5 * 10) / 10),
+        donations_count: Number(m.donations_count ?? 0),
+      };
+    });
+
+    return {
+      period: (d.period as string) || 'all',
+      rescued_food_kg: total_quantity_donated_kg,
+      meals_provided,
+      co2_avoided_kg,
+      water_saved_liters,
+      financial_savings_estimate,
+      total_donations_count,
+      active_partners_count,
+      category_breakdown,
+      monthly_trend,
+      calculation_constants: d.calculation_constants as ImpactAnalytics['calculation_constants'],
+      activity_heatmap: d.activity_heatmap as ImpactAnalytics['activity_heatmap'],
+      geo_density: d.geo_density as ImpactAnalytics['geo_density'],
+    };
   }
 
   async getPublicImpactMetrics(): Promise<PublicImpactMetrics> {
     const res = await apiClient.get<PublicImpactMetrics>('/marketplace/impact/public/');
     return res.data;
+  }
+
+  async exportImpactCsv(filters?: string | { period?: string; startDate?: string; endDate?: string }): Promise<Blob> {
+    let params: Record<string, string> = {};
+    if (typeof filters === 'string') {
+      params = { period: filters };
+    } else if (filters) {
+      if (filters.period) params['period'] = filters.period;
+      if (filters.startDate) params['start_date'] = filters.startDate;
+      if (filters.endDate) params['end_date'] = filters.endDate;
+    }
+    const res = await apiClient.get('/marketplace/impact/export-csv/', {
+      params,
+      responseType: 'blob',
+    });
+    return res.data as Blob;
+  }
+
+  async exportImpactPdf(filters?: string | { period?: string; startDate?: string; endDate?: string }): Promise<Blob> {
+    let params: Record<string, string> = {};
+    if (typeof filters === 'string') {
+      params = { period: filters };
+    } else if (filters) {
+      if (filters.period) params['period'] = filters.period;
+      if (filters.startDate) params['start_date'] = filters.startDate;
+      if (filters.endDate) params['end_date'] = filters.endDate;
+    }
+    const res = await apiClient.get('/marketplace/impact/export-pdf/', {
+      params,
+      responseType: 'blob',
+    });
+    return res.data as Blob;
   }
 
   // 15. Redistribution: Notifications
@@ -972,6 +1195,12 @@ export class LiveSource implements DataSource {
 
   async getDatasetInsights(): Promise<DatasetInsightsResponse> {
     const res = await apiClient.get<DatasetInsightsResponse>('/predictions/insights/');
+    return res.data;
+  }
+
+  // Recent Sales & Unified Forecast (Task 2 & 3)
+  async getRecentSales(params?: { days?: number; category?: string; end_date?: string }): Promise<RecentSaleItem[]> {
+    const res = await apiClient.get<RecentSaleItem[]>('/inventory/sales/recent/', { params });
     return res.data;
   }
 }

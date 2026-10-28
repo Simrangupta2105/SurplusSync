@@ -148,15 +148,15 @@ describe('Redistribution Frontend Pages Suite', () => {
   });
 
   describe('ImpactAnalyticsPage', () => {
-    it('renders ESG scorecards and UN SDG alignment', async () => {
+    it('renders sustainability impact dashboard and UN SDG alignment', async () => {
       renderWithClient(<ImpactAnalyticsPage />);
 
-      expect(screen.getByText('Environmental & Social Impact (ESG)')).toBeInTheDocument();
+      expect(screen.getByText('Sustainability Impact Dashboard')).toBeInTheDocument();
 
       await waitFor(() => {
-        expect(screen.getByText('Total Rescued Food')).toBeInTheDocument();
-        expect(screen.getByText('Nutritious Meals Served')).toBeInTheDocument();
-        expect(screen.getByText('CO₂e Emissions Abated')).toBeInTheDocument();
+        expect(screen.getByText('Food Diverted')).toBeInTheDocument();
+        expect(screen.getByText('Estimated Meals')).toBeInTheDocument();
+        expect(screen.getByText('CO₂e Avoided')).toBeInTheDocument();
         expect(screen.getByText('SDG 2: Zero Hunger')).toBeInTheDocument();
       });
     });

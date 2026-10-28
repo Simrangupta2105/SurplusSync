@@ -1,0 +1,5 @@
+policy,service_level_target,total_purchase_units,over_purchase_units,stockout_rows,stockout_rate,lost_sales_units,counterfactual_waste_estimate,service_level_achieved
+Actual Operator,N/A,867080.0,180486.0,2269,0.3502,57329.0,41255.0,0.9229
+AI Reorder (80% SL),80%,789059.0,97548.0,2002,0.309,52412.0,21658.8,0.9295
+AI Reorder (90% SL),90%,831730.0,134002.0,1630,0.2515,46195.0,29704.7,0.9379
+AI Reorder (95% SL),95%,866727.0,165648.0,1456,0.2247,42844.0,36677.9,0.9424

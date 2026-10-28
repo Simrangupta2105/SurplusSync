@@ -695,13 +695,23 @@ def mark_collected(user, request_id_or_code, quantity_collected):
 # 8. Confirm Receipt (NGO only, COLLECTED to COMPLETED)
 # ---------------------------------------------------------------------------
 
-def confirm_receipt(user, request_id_or_code):
+def confirm_receipt(user, request_id_or_code, beneficiaries_served=None):
     """
     NGO confirms receipt of goods, completing the donation request.
+    Optionally records beneficiaries_served count (CHECK >= 0).
     """
     user_org = getattr(user, "organization", None)
     if not user_org or user_org.org_type != Organization.Type.NGO:
         raise PermissionDeniedLifecycleError("Only NGO organizations can confirm receipt.")
+
+    parsed_beneficiaries = None
+    if beneficiaries_served is not None and beneficiaries_served != "":
+        try:
+            parsed_beneficiaries = int(beneficiaries_served)
+        except (ValueError, TypeError):
+            raise ValidationLifecycleError("beneficiaries_served must be a valid non-negative integer.")
+        if parsed_beneficiaries < 0:
+            raise ValidationLifecycleError("beneficiaries_served must be greater than or equal to 0.")
 
     with transaction.atomic():
         req = _get_request_for_update(request_id_or_code)
@@ -716,9 +726,17 @@ def confirm_receipt(user, request_id_or_code):
         now = timezone.now()
         req.status = DonationRequest.Status.COMPLETED
         req.completed_at = now
-        req.save(update_fields=["status", "completed_at", "updated_at"])
+        update_fields = ["status", "completed_at", "updated_at"]
+        if parsed_beneficiaries is not None:
+            req.beneficiaries_served = parsed_beneficiaries
+            update_fields.append("beneficiaries_served")
+        req.save(update_fields=update_fields)
 
-        _record_history(req, DonationRequest.Status.COLLECTED, DonationRequest.Status.COMPLETED, actor=user, note="NGO confirmed receipt")
+        history_note = "NGO confirmed receipt"
+        if parsed_beneficiaries is not None:
+            history_note += f" ({parsed_beneficiaries} beneficiaries served)"
+
+        _record_history(req, DonationRequest.Status.COLLECTED, DonationRequest.Status.COMPLETED, actor=user, note=history_note)
 
         _create_notification(
             organization=req.listing.donor,
@@ -729,6 +747,7 @@ def confirm_receipt(user, request_id_or_code):
         )
 
         return req
+
 
 
 # ---------------------------------------------------------------------------

@@ -70,6 +70,7 @@ export const BusinessSettingsPage: React.FC<BusinessSettingsPageProps> = ({
   const handleToggleMode = (mode: 'live' | 'demo') => {
     setDataMode(mode);
     setDataSourceMode(mode);
+    queryClient.clear();
     onTriggerToast(
       mode === 'live'
         ? 'Switched to Live Backend Mode (Django DB on http://127.0.0.1:8000)'

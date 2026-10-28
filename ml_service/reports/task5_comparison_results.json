@@ -1,0 +1,1939 @@
+{
+  "dataset_info": {
+    "n_series": 72,
+    "n_dates": 1096,
+    "cutoff_date": "2025-10-03",
+    "test_days": 90,
+    "test_samples": 6480
+  },
+  "cv_selection": {
+    "h1": {
+      "overall": {
+        "HistGradientBoosting_History": {
+          "wape": 0.12669114638844733,
+          "mae": 13.505364184971256,
+          "rmse": 19.900351588703362,
+          "bias": -3.9164273178271944
+        },
+        "LightGBM_History": {
+          "wape": 0.13133329359816487,
+          "mae": 14.000220301240486,
+          "rmse": 20.691328751286203,
+          "bias": -4.952446122863478
+        },
+        "HistGradientBoosting_Covariates": {
+          "wape": 0.1693621439347318,
+          "mae": 18.054122156042368,
+          "rmse": 26.238879297466376,
+          "bias": -5.4950192911678135
+        },
+        "LightGBM_Covariates": {
+          "wape": 0.1653443604041508,
+          "mae": 17.625823641554977,
+          "rmse": 25.925863178603183,
+          "bias": -7.246461521641519
+        },
+        "Global_LSTM": {
+          "wape": 0.25202738628733495,
+          "mae": 26.86629439724816,
+          "rmse": 40.03740400086107,
+          "bias": -19.155503153800964
+        },
+        "Prophet": {
+          "wape": 0.2258807322997689,
+          "mae": 24.079042924775017,
+          "rmse": 34.30439318951319,
+          "bias": -4.438590698772007
+        },
+        "Weekday_Profile": {
+          "wape": 0.245424200737462,
+          "mae": 26.16239023208618,
+          "rmse": 36.60451618253393,
+          "bias": 0.46146639188130695
+        },
+        "Rolling_Mean_28": {
+          "wape": 0.23693737493369452,
+          "mae": 25.25768870777554,
+          "rmse": 35.72765180807404,
+          "bias": -9.968997769885593
+        },
+        "Seasonal_Naive_7": {
+          "wape": 0.2745187453177421,
+          "mae": 29.26388888888889,
+          "rmse": 40.65983549182439,
+          "bias": 3.5972222222222223
+        },
+        "Seasonal_Naive_1": {
+          "wape": 0.268623171883652,
+          "mae": 28.635416666666668,
+          "rmse": 41.193437651591495,
+          "bias": -10.67013888888889
+        }
+      },
+      "by_business_type": {
+        "Cafeteria": {
+          "HistGradientBoosting_History": {
+            "wape": 0.11725128208584458,
+            "mae": 7.714157267231191
+          },
+          "LightGBM_History": {
+            "wape": 0.11288971592050323,
+            "mae": 7.427202559936442
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.15706937801606813,
+            "mae": 10.333856161973817
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.14861772226935757,
+            "mae": 9.777807644304817
+          },
+          "Global_LSTM": {
+            "wape": 0.1879384196053735,
+            "mae": 12.364781856536865
+          },
+          "Prophet": {
+            "wape": 0.20759047721039778,
+            "mae": 13.657723479800755
+          },
+          "Weekday_Profile": {
+            "wape": 0.21031570676159753,
+            "mae": 13.837020874023438
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.2081259996648929,
+            "mae": 13.692956394619411
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.2609246358454718,
+            "mae": 17.166666666666668
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.3156005910914081,
+            "mae": 20.76388888888889
+          }
+        },
+        "Cloud Kitchen": {
+          "HistGradientBoosting_History": {
+            "wape": 0.14822212764370366,
+            "mae": 16.325020447424585
+          },
+          "LightGBM_History": {
+            "wape": 0.1527305453219308,
+            "mae": 16.821572561151545
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.19535594750691046,
+            "mae": 21.51628699624722
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.1913388379366035,
+            "mae": 21.073847011628693
+          },
+          "Global_LSTM": {
+            "wape": 0.24376748170407694,
+            "mae": 26.848279582129585
+          },
+          "Prophet": {
+            "wape": 0.22590496164252147,
+            "mae": 24.88092146979438
+          },
+          "Weekday_Profile": {
+            "wape": 0.2460320952560983,
+            "mae": 27.097701602511936
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.26775355778005056,
+            "mae": 29.490079349941677
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.30353089533417404,
+            "mae": 33.43055555555556
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.2778058007566204,
+            "mae": 30.59722222222222
+          }
+        },
+        "Restaurant": {
+          "HistGradientBoosting_History": {
+            "wape": 0.12655413165644852,
+            "mae": 10.569027689586457
+          },
+          "LightGBM_History": {
+            "wape": 0.1345532925180925,
+            "mae": 11.237068720990143
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.14743024043640496,
+            "mae": 12.312472718668097
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.14021446800837514,
+            "mae": 11.709855501866109
+          },
+          "Global_LSTM": {
+            "wape": 0.20512715778512605,
+            "mae": 17.130966663360596
+          },
+          "Prophet": {
+            "wape": 0.26186374782940997,
+            "mae": 21.869259940253365
+          },
+          "Weekday_Profile": {
+            "wape": 0.2881247099992659,
+            "mae": 24.062415017022026
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.22152597543782093,
+            "mae": 18.500495698716904
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.26409446199900216,
+            "mae": 22.055555555555557
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.2504573424247464,
+            "mae": 20.916666666666668
+          }
+        },
+        "Supermarket": {
+          "HistGradientBoosting_History": {
+            "wape": 0.11627602497015897,
+            "mae": 19.41325133564279
+          },
+          "LightGBM_History": {
+            "wape": 0.12287519259026991,
+            "mae": 20.515037362883813
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.16802918540921583,
+            "mae": 28.053872747280327
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.16735783024758846,
+            "mae": 27.94178440842029
+          },
+          "Global_LSTM": {
+            "wape": 0.3061910625623096,
+            "mae": 51.12114948696561
+          },
+          "Prophet": {
+            "wape": 0.21507322271575688,
+            "mae": 35.90826680925157
+          },
+          "Weekday_Profile": {
+            "wape": 0.23749891750309354,
+            "mae": 39.65242343478732
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.23567091622355377,
+            "mae": 39.347223387824165
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.2659512519757092,
+            "mae": 44.40277777777778
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.25314033774228434,
+            "mae": 42.263888888888886
+          }
+        }
+      },
+      "by_category": {
+        "Bakery": {
+          "HistGradientBoosting_History": {
+            "wape": 0.13252803972508162,
+            "mae": 13.758067123960037
+          },
+          "LightGBM_History": {
+            "wape": 0.12901889472027037,
+            "mae": 13.393774008148066
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.16575917915888166,
+            "mae": 17.207874786431404
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.15755087194652226,
+            "mae": 16.355749893948342
+          },
+          "Global_LSTM": {
+            "wape": 0.2430438654695006,
+            "mae": 25.230991284052532
+          },
+          "Prophet": {
+            "wape": 0.24335664002358998,
+            "mae": 25.263461192448933
+          },
+          "Weekday_Profile": {
+            "wape": 0.26961807474514915,
+            "mae": 27.989726384480793
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.24099796899178888,
+            "mae": 25.018601655960083
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.26690748545053183,
+            "mae": 27.708333333333332
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.27092113184828415,
+            "mae": 28.125
+          }
+        },
+        "Dairy": {
+          "HistGradientBoosting_History": {
+            "wape": 0.13140628993900438,
+            "mae": 14.575147659067902
+          },
+          "LightGBM_History": {
+            "wape": 0.14170684496890754,
+            "mae": 15.717650887801327
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.18957102203864235,
+            "mae": 21.026585861119415
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.17992919973673835,
+            "mae": 19.957147070799895
+          },
+          "Global_LSTM": {
+            "wape": 0.26029346689615457,
+            "mae": 28.87088370323181
+          },
+          "Prophet": {
+            "wape": 0.23990221116705823,
+            "mae": 26.609153588612873
+          },
+          "Weekday_Profile": {
+            "wape": 0.25226538276242455,
+            "mae": 27.980435371398926
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.2647311327423394,
+            "mae": 29.363094806671143
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.30221637866265966,
+            "mae": 33.520833333333336
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.2932006010518407,
+            "mae": 32.520833333333336
+          }
+        },
+        "Fruits": {
+          "HistGradientBoosting_History": {
+            "wape": 0.12116175779977177,
+            "mae": 13.673609208361745
+          },
+          "LightGBM_History": {
+            "wape": 0.13135612697439997,
+            "mae": 14.824086246256762
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.16564611471999255,
+            "mae": 18.693854238295824
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.15937100732757226,
+            "mae": 17.985682222780394
+          },
+          "Global_LSTM": {
+            "wape": 0.26839874476023834,
+            "mae": 30.289916674296062
+          },
+          "Prophet": {
+            "wape": 0.20797242320770043,
+            "mae": 23.47055451075236
+          },
+          "Weekday_Profile": {
+            "wape": 0.21221709678330192,
+            "mae": 23.949583609898884
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.22066114995011726,
+            "mae": 24.902530193328857
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.27764445264906773,
+            "mae": 31.333333333333332
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.24275429204356655,
+            "mae": 27.395833333333332
+          }
+        },
+        "Meat": {
+          "HistGradientBoosting_History": {
+            "wape": 0.11006788305071703,
+            "mae": 10.915065069196105
+          },
+          "LightGBM_History": {
+            "wape": 0.10877199765370008,
+            "mae": 10.786556433991924
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.13562145196389574,
+            "mae": 13.449127319752995
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.13612971245130434,
+            "mae": 13.49952981808768
+          },
+          "Global_LSTM": {
+            "wape": 0.2145553757162655,
+            "mae": 21.27674142519633
+          },
+          "Prophet": {
+            "wape": 0.2048858081593233,
+            "mae": 20.31784264246623
+          },
+          "Weekday_Profile": {
+            "wape": 0.21620045429518242,
+            "mae": 21.43987838427226
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.20465936901188697,
+            "mae": 20.295387427012127
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.2699579831932773,
+            "mae": 26.770833333333332
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.27058823529411763,
+            "mae": 26.833333333333332
+          }
+        },
+        "Prepared Food": {
+          "HistGradientBoosting_History": {
+            "wape": 0.1334679649915288,
+            "mae": 14.37839264523324
+          },
+          "LightGBM_History": {
+            "wape": 0.13758298018788215,
+            "mae": 14.821699803157054
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.185344500412601,
+            "mae": 19.96700857569916
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.18618756642099388,
+            "mae": 20.057831374228318
+          },
+          "Global_LSTM": {
+            "wape": 0.2684260523081794,
+            "mae": 28.917314926783245
+          },
+          "Prophet": {
+            "wape": 0.25406944541953286,
+            "mae": 27.370689630508423
+          },
+          "Weekday_Profile": {
+            "wape": 0.2753118375956355,
+            "mae": 29.659114837646484
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.25787358089425627,
+            "mae": 27.780505975087483
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.2993618255656546,
+            "mae": 32.25
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.28447108876426225,
+            "mae": 30.645833333333332
+          }
+        },
+        "Vegetables": {
+          "HistGradientBoosting_History": {
+            "wape": 0.13062452702980748,
+            "mae": 13.731903404008511
+          },
+          "LightGBM_History": {
+            "wape": 0.13752727161082312,
+            "mae": 14.45755442808778
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.17103716675344013,
+            "mae": 17.980282154955393
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.17026398544100102,
+            "mae": 17.89900146948523
+          },
+          "Global_LSTM": {
+            "wape": 0.2531454779541403,
+            "mae": 26.611918369928997
+          },
+          "Prophet": {
+            "wape": 0.20397199509023817,
+            "mae": 21.442555983861286
+          },
+          "Weekday_Profile": {
+            "wape": 0.24690228589602609,
+            "mae": 25.955602804819744
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.23006908146105634,
+            "mae": 24.186012188593548
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.22829964328180738,
+            "mae": 24.0
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.2500990883868411,
+            "mae": 26.291666666666668
+          }
+        }
+      },
+      "best_per_category": {
+        "Bakery": "LightGBM_History",
+        "Dairy": "HistGradientBoosting_History",
+        "Fruits": "HistGradientBoosting_History",
+        "Meat": "LightGBM_History",
+        "Prepared Food": "HistGradientBoosting_History",
+        "Vegetables": "HistGradientBoosting_History"
+      }
+    },
+    "h7": {
+      "overall": {
+        "HistGradientBoosting_History": {
+          "wape": 0.16223123865033934,
+          "mae": 16.35043032314149,
+          "rmse": 21.87481474637247,
+          "bias": -3.9667120229589434
+        },
+        "LightGBM_History": {
+          "wape": 0.17239372637665124,
+          "mae": 17.37465382572458,
+          "rmse": 23.506743265145566,
+          "bias": -4.368648980672443
+        },
+        "HistGradientBoosting_Covariates": {
+          "wape": 0.16349385393454374,
+          "mae": 16.477682653833565,
+          "rmse": 23.53237505076865,
+          "bias": -7.983145306446842
+        },
+        "LightGBM_Covariates": {
+          "wape": 0.16852764118006555,
+          "mae": 16.985011503099244,
+          "rmse": 24.170316299899003,
+          "bias": -7.469788969024609
+        },
+        "Global_LSTM": {
+          "wape": 0.23413949849595211,
+          "mae": 23.59768431716495,
+          "rmse": 30.387801252924415,
+          "bias": 6.3359065718120995
+        },
+        "Prophet": {
+          "wape": 0.2344476512813522,
+          "mae": 23.628741410043503,
+          "rmse": 31.88573909267579,
+          "bias": -5.406932287746006
+        },
+        "Weekday_Profile": {
+          "wape": 0.2424865125468061,
+          "mae": 24.438935809665256,
+          "rmse": 32.6420643668561,
+          "bias": -2.0876305103302
+        },
+        "Rolling_Mean_28": {
+          "wape": 0.25703064529438924,
+          "mae": 25.904762188593548,
+          "rmse": 34.65151542153564,
+          "bias": -4.153025547663371
+        },
+        "Seasonal_Naive_7": {
+          "wape": 0.29973127540825467,
+          "mae": 30.208333333333332,
+          "rmse": 41.90009612823765,
+          "bias": -4.854166666666667
+        },
+        "Seasonal_Naive_1": {
+          "wape": 0.29973127540825467,
+          "mae": 30.208333333333332,
+          "rmse": 41.90009612823765,
+          "bias": -4.854166666666667
+        }
+      },
+      "by_business_type": {
+        "Cafeteria": {
+          "HistGradientBoosting_History": {
+            "wape": 0.20943024788848058,
+            "mae": 14.148176746244022
+          },
+          "LightGBM_History": {
+            "wape": 0.25989644441831716,
+            "mae": 17.557448689592984
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.17836277798152064,
+            "mae": 12.04939655697384
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.20727226223492448,
+            "mae": 14.002392826537122
+          },
+          "Global_LSTM": {
+            "wape": 0.343874844281297,
+            "mae": 23.230656147003174
+          },
+          "Prophet": {
+            "wape": 0.2849987713914168,
+            "mae": 19.25325033399794
+          },
+          "Weekday_Profile": {
+            "wape": 0.31012328204355744,
+            "mae": 20.950550609164768
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.3491614790339219,
+            "mae": 23.587797694736057
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.3684210526315789,
+            "mae": 24.88888888888889
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.3684210526315789,
+            "mae": 24.88888888888889
+          }
+        },
+        "Cloud Kitchen": {
+          "HistGradientBoosting_History": {
+            "wape": 0.18333404104771234,
+            "mae": 19.441047269434495
+          },
+          "LightGBM_History": {
+            "wape": 0.19123089169346855,
+            "mae": 20.278442473328226
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.19095468716610042,
+            "mae": 20.249153284905233
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.19266100213275217,
+            "mae": 20.430093767827262
+          },
+          "Global_LSTM": {
+            "wape": 0.218841480787236,
+            "mae": 23.206315358479817
+          },
+          "Prophet": {
+            "wape": 0.23213346789846565,
+            "mae": 24.61581982506646
+          },
+          "Weekday_Profile": {
+            "wape": 0.23658115509372954,
+            "mae": 25.087459988064236
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.25895780751965913,
+            "mae": 27.460317505730522
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.2834315651604453,
+            "mae": 30.055555555555557
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.2834315651604453,
+            "mae": 30.055555555555557
+          }
+        },
+        "Restaurant": {
+          "HistGradientBoosting_History": {
+            "wape": 0.14377770769448817,
+            "mae": 10.695463922384427
+          },
+          "LightGBM_History": {
+            "wape": 0.14920214569755758,
+            "mae": 11.098981838279421
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.12519261592382516,
+            "mae": 9.312939595666771
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.13067476868860708,
+            "mae": 9.720750848558048
+          },
+          "Global_LSTM": {
+            "wape": 0.27039525471488607,
+            "mae": 20.114402559068466
+          },
+          "Prophet": {
+            "wape": 0.24640504738748564,
+            "mae": 18.32979769176907
+          },
+          "Weekday_Profile": {
+            "wape": 0.23416754627868788,
+            "mae": 17.41946358150906
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.235590261697235,
+            "mae": 17.52529780069987
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.2828603435399552,
+            "mae": 21.041666666666668
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.2828603435399552,
+            "mae": 21.041666666666668
+          }
+        },
+        "Supermarket": {
+          "HistGradientBoosting_History": {
+            "wape": 0.13610477141922997,
+            "mae": 21.117033354503025
+          },
+          "LightGBM_History": {
+            "wape": 0.1325386667014801,
+            "mae": 20.563742301697697
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.15661492836816449,
+            "mae": 24.29924117778841
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.15331216695033276,
+            "mae": 23.786808569474545
+          },
+          "Global_LSTM": {
+            "wape": 0.17943193543065086,
+            "mae": 27.839363204108345
+          },
+          "Prophet": {
+            "wape": 0.20828565399986748,
+            "mae": 32.316097789340546
+          },
+          "Weekday_Profile": {
+            "wape": 0.22106126329911854,
+            "mae": 34.29826905992296
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.22587823598880646,
+            "mae": 35.04563575320773
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.2890520096678901,
+            "mae": 44.84722222222222
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.2890520096678901,
+            "mae": 44.84722222222222
+          }
+        }
+      },
+      "by_category": {
+        "Bakery": {
+          "HistGradientBoosting_History": {
+            "wape": 0.15491540767202625,
+            "mae": 15.691639835445658
+          },
+          "LightGBM_History": {
+            "wape": 0.16286109120579823,
+            "mae": 16.49647136338731
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.16314558307504975,
+            "mae": 16.525288018976912
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.1697541541126801,
+            "mae": 17.194681193663556
+          },
+          "Global_LSTM": {
+            "wape": 0.2099735726058753,
+            "mae": 21.26857312520345
+          },
+          "Prophet": {
+            "wape": 0.23731460869434878,
+            "mae": 24.037992238998413
+          },
+          "Weekday_Profile": {
+            "wape": 0.26339324361156996,
+            "mae": 26.679540634155273
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.2533569375167213,
+            "mae": 25.662946462631226
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.30296174413821475,
+            "mae": 30.6875
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.30296174413821475,
+            "mae": 30.6875
+          }
+        },
+        "Dairy": {
+          "HistGradientBoosting_History": {
+            "wape": 0.15648285364971767,
+            "mae": 16.134034223176098
+          },
+          "LightGBM_History": {
+            "wape": 0.1685693201638806,
+            "mae": 17.380199281063437
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.17188035803133686,
+            "mae": 17.721581081189296
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.1776362070133901,
+            "mae": 18.315033093943075
+          },
+          "Global_LSTM": {
+            "wape": 0.22921788001161653,
+            "mae": 23.633318503697712
+          },
+          "Prophet": {
+            "wape": 0.23361353277798783,
+            "mae": 24.08652861913045
+          },
+          "Weekday_Profile": {
+            "wape": 0.22833309300766252,
+            "mae": 23.54209327697754
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.23473717810337316,
+            "mae": 24.202381134033203
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.2638916952919782,
+            "mae": 27.208333333333332
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.2638916952919782,
+            "mae": 27.208333333333332
+          }
+        },
+        "Fruits": {
+          "HistGradientBoosting_History": {
+            "wape": 0.17301008182416294,
+            "mae": 17.492040147763806
+          },
+          "LightGBM_History": {
+            "wape": 0.18507887674890278,
+            "mae": 18.712245601300523
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.1470752715025774,
+            "mae": 14.869922762541835
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.1546981280387039,
+            "mae": 15.640625320246457
+          },
+          "Global_LSTM": {
+            "wape": 0.28294570878832803,
+            "mae": 28.606990098953247
+          },
+          "Prophet": {
+            "wape": 0.24692703850756176,
+            "mae": 24.965352455774944
+          },
+          "Weekday_Profile": {
+            "wape": 0.2574801332012737,
+            "mae": 26.03231430053711
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.30694563413879783,
+            "mae": 31.033482551574707
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.334432309911395,
+            "mae": 33.8125
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.334432309911395,
+            "mae": 33.8125
+          }
+        },
+        "Meat": {
+          "HistGradientBoosting_History": {
+            "wape": 0.15882947935113167,
+            "mae": 15.284028440059942
+          },
+          "LightGBM_History": {
+            "wape": 0.16515946025630474,
+            "mae": 15.893157227580659
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.16953216363399684,
+            "mae": 16.313938829696486
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.16932801526985589,
+            "mae": 16.29429380273884
+          },
+          "Global_LSTM": {
+            "wape": 0.2273127003959,
+            "mae": 21.874111731847126
+          },
+          "Prophet": {
+            "wape": 0.2049399568136958,
+            "mae": 19.7212012608846
+          },
+          "Weekday_Profile": {
+            "wape": 0.2101255748457247,
+            "mae": 20.22020896275838
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.23319055590698745,
+            "mae": 22.439732869466145
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.3024464169733709,
+            "mae": 29.104166666666668
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.3024464169733709,
+            "mae": 29.104166666666668
+          }
+        },
+        "Prepared Food": {
+          "HistGradientBoosting_History": {
+            "wape": 0.1583967332368817,
+            "mae": 16.377562230305077
+          },
+          "LightGBM_History": {
+            "wape": 0.17561641455857374,
+            "mae": 18.158005530295863
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.17515830754189798,
+            "mae": 18.110639173550826
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.18275357381801255,
+            "mae": 18.895958059558257
+          },
+          "Global_LSTM": {
+            "wape": 0.22140260350913163,
+            "mae": 22.892106691996258
+          },
+          "Prophet": {
+            "wape": 0.24207475697972614,
+            "mae": 25.029521226882935
+          },
+          "Weekday_Profile": {
+            "wape": 0.25832329357484646,
+            "mae": 26.70955220858256
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.25214443940826176,
+            "mae": 26.0706844329834
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.28551279468063673,
+            "mae": 29.520833333333332
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.28551279468063673,
+            "mae": 29.520833333333332
+          }
+        },
+        "Vegetables": {
+          "HistGradientBoosting_History": {
+            "wape": 0.17194922572818444,
+            "mae": 17.123277062098367
+          },
+          "LightGBM_History": {
+            "wape": 0.176815169379612,
+            "mae": 17.607843950719694
+          },
+          "HistGradientBoosting_Covariates": {
+            "wape": 0.15388846249753332,
+            "mae": 15.324726057046027
+          },
+          "LightGBM_Covariates": {
+            "wape": 0.15634621805970156,
+            "mae": 15.56947754844528
+          },
+          "Global_LSTM": {
+            "wape": 0.2340854134020945,
+            "mae": 23.311005751291912
+          },
+          "Prophet": {
+            "wape": 0.24031985933311814,
+            "mae": 23.93185265858968
+          },
+          "Weekday_Profile": {
+            "wape": 0.23548022234290214,
+            "mae": 23.44990547498067
+          },
+          "Rolling_Mean_28": {
+            "wape": 0.26128213236022696,
+            "mae": 26.0193456808726
+          },
+          "Seasonal_Naive_7": {
+            "wape": 0.3104602510460251,
+            "mae": 30.916666666666668
+          },
+          "Seasonal_Naive_1": {
+            "wape": 0.3104602510460251,
+            "mae": 30.916666666666668
+          }
+        }
+      },
+      "best_per_category": {
+        "Bakery": "HistGradientBoosting_History",
+        "Dairy": "HistGradientBoosting_History",
+        "Fruits": "HistGradientBoosting_Covariates",
+        "Meat": "HistGradientBoosting_History",
+        "Prepared Food": "HistGradientBoosting_History",
+        "Vegetables": "HistGradientBoosting_Covariates"
+      }
+    }
+  },
+  "test_evaluation": {
+    "h1": {
+      "Best-Per-Category Ensemble": {
+        "wape": 0.13406047396605972,
+        "mae": 15.390535489853866,
+        "rmse": 21.960498928136847,
+        "bias": -0.6059349185385292,
+        "coverage_90": 0.8487654320987654
+      },
+      "HistGradientBoosting (Covariates + History)": {
+        "wape": 0.13335629154558054,
+        "mae": 15.309693283250448,
+        "rmse": 21.83679057610463,
+        "bias": -0.43176842997171644,
+        "coverage_90": 0.8435185185185186
+      },
+      "LightGBM (Covariates + History)": {
+        "wape": 0.13647665301164683,
+        "mae": 15.667919928762862,
+        "rmse": 22.242177070483713,
+        "bias": -0.6666940684622576,
+        "coverage_90": 0.8577160493827161
+      },
+      "HistGradientBoosting (Covariates Only)": {
+        "wape": 0.18528042965286615,
+        "mae": 21.27073658466808,
+        "rmse": 31.248643460972126,
+        "bias": -11.61770522133427,
+        "coverage_90": 0.845679012345679
+      },
+      "LightGBM (Covariates Only)": {
+        "wape": 0.18974969496134433,
+        "mae": 21.783821346408665,
+        "rmse": 32.247781493615484,
+        "bias": -12.071235203710625,
+        "coverage_90": 0.8618827160493827
+      },
+      "Global PyTorch LSTM (Covariates)": {
+        "wape": 0.2541615911970063,
+        "mae": 29.178495896304096,
+        "rmse": 41.446740308816736,
+        "bias": -14.097616398776019,
+        "coverage_90": 0.7628086419753086
+      },
+      "Prophet (Regressors + Festivals)": {
+        "wape": 0.24689959359267888,
+        "mae": 28.344797278433095,
+        "rmse": 40.502006470296855,
+        "bias": -12.725241558946335,
+        "coverage_90": 0.35401234567901235
+      },
+      "Historical Weekday Profile": {
+        "wape": 0.23214217190162262,
+        "mae": 26.650601998081914,
+        "rmse": 40.112242100115324,
+        "bias": -13.920113355730786,
+        "coverage_90": 0.8998456790123457
+      },
+      "28-Day Rolling Mean": {
+        "wape": 0.2419666706338483,
+        "mae": 27.77848325894203,
+        "rmse": 38.13191172690503,
+        "bias": -2.074757398205039,
+        "coverage_90": 0.8862654320987654
+      },
+      "Seasonal Naive-7": {
+        "wape": 0.25496859217956697,
+        "mae": 29.27114197530864,
+        "rmse": 42.54513398646108,
+        "bias": -0.6933641975308642,
+        "coverage_90": 0.8824074074074074
+      },
+      "Seasonal Naive-1": {
+        "wape": 0.2593144720622968,
+        "mae": 29.770061728395063,
+        "rmse": 41.93181561170261,
+        "bias": -0.3135802469135803,
+        "coverage_90": 0.8882716049382716
+      }
+    },
+    "h7": {
+      "Best-Per-Category Ensemble": {
+        "wape": 0.16363069014674098,
+        "mae": 18.785283010190433,
+        "rmse": 27.16342487964207,
+        "bias": -4.970247146582349,
+        "coverage_90": 0.8405864197530865
+      },
+      "HistGradientBoosting (Covariates + History)": {
+        "wape": 0.15393973727176047,
+        "mae": 17.672733205311705,
+        "rmse": 25.110963932935803,
+        "bias": -2.236570901733692,
+        "coverage_90": 0.8385802469135802
+      },
+      "LightGBM (Covariates + History)": {
+        "wape": 0.15533463322691968,
+        "mae": 17.832871350936692,
+        "rmse": 25.29001491578211,
+        "bias": -1.8861074757227734,
+        "coverage_90": 0.850925925925926
+      },
+      "HistGradientBoosting (Covariates Only)": {
+        "wape": 0.18364254734121097,
+        "mae": 21.08270289285736,
+        "rmse": 30.957396224682235,
+        "bias": -10.979706040269553,
+        "coverage_90": 0.8462962962962963
+      },
+      "LightGBM (Covariates Only)": {
+        "wape": 0.18894850287559822,
+        "mae": 21.691842145790687,
+        "rmse": 32.103574194855504,
+        "bias": -11.839055230299236,
+        "coverage_90": 0.8654320987654321
+      },
+      "Global PyTorch LSTM (Covariates)": {
+        "wape": 0.22821732522489072,
+        "mae": 26.200018091554995,
+        "rmse": 34.99720439115582,
+        "bias": 6.687677375181222,
+        "coverage_90": 0.7554012345679012
+      },
+      "Prophet (Regressors + Festivals)": {
+        "wape": 0.24689959359267888,
+        "mae": 28.344797278433095,
+        "rmse": 40.502006470296855,
+        "bias": -12.725241558946335,
+        "coverage_90": 0.35401234567901235
+      },
+      "Historical Weekday Profile": {
+        "wape": 0.23214217190162262,
+        "mae": 26.650601998081914,
+        "rmse": 40.112242100115324,
+        "bias": -13.920113355730786,
+        "coverage_90": 0.8998456790123457
+      },
+      "28-Day Rolling Mean": {
+        "wape": 0.2524744784425157,
+        "mae": 28.984810405307346,
+        "rmse": 39.918305115921086,
+        "bias": -2.7961088098125693,
+        "coverage_90": 0.8885802469135803
+      },
+      "Seasonal Naive-7": {
+        "wape": 0.25496859217956697,
+        "mae": 29.27114197530864,
+        "rmse": 42.54513398646108,
+        "bias": -0.6933641975308642,
+        "coverage_90": 0.8824074074074074
+      },
+      "Seasonal Naive-1": {
+        "wape": 0.25496859217956697,
+        "mae": 29.27114197530864,
+        "rmse": 42.54513398646108,
+        "bias": -0.6933641975308642,
+        "coverage_90": 0.8824074074074074
+      }
+    }
+  },
+  "significance_tests": {
+    "h1": [
+      {
+        "Competitor": "LightGBM (Covariates + History)",
+        "Competitor_Col": "LightGBM_History",
+        "Horizon": "1d",
+        "WAPE_Best": 0.13335629154558054,
+        "WAPE_Comp": 0.13647665301164683,
+        "Delta_WAPE": -0.003120361466066285,
+        "CI_95_Low": -0.004050834261860524,
+        "CI_95_High": -0.0022061822842259827,
+        "Bootstrap_p_value": 0.0,
+        "DM_Statistic": -6.592342671124024,
+        "DM_p_value": 4.329403502367768e-11,
+        "Significant_0.05": true
+      },
+      {
+        "Competitor": "Global PyTorch LSTM",
+        "Competitor_Col": "Global_LSTM",
+        "Horizon": "1d",
+        "WAPE_Best": 0.13335629154558054,
+        "WAPE_Comp": 0.2541615911970063,
+        "Delta_WAPE": -0.12080529965142578,
+        "CI_95_Low": -0.1256982238141286,
+        "CI_95_High": -0.11569247981576511,
+        "Bootstrap_p_value": 0.0,
+        "DM_Statistic": -43.70374700241021,
+        "DM_p_value": 0.0,
+        "Significant_0.05": true
+      },
+      {
+        "Competitor": "Prophet (Regressors + Festivals)",
+        "Competitor_Col": "Prophet",
+        "Horizon": "1d",
+        "WAPE_Best": 0.13335629154558054,
+        "WAPE_Comp": 0.24689959359267888,
+        "Delta_WAPE": -0.11354330204709834,
+        "CI_95_Low": -0.11832609077088814,
+        "CI_95_High": -0.10848752659771475,
+        "Bootstrap_p_value": 0.0,
+        "DM_Statistic": -41.94943192170047,
+        "DM_p_value": 0.0,
+        "Significant_0.05": true
+      },
+      {
+        "Competitor": "Historical Weekday Profile",
+        "Competitor_Col": "Weekday_Profile",
+        "Horizon": "1d",
+        "WAPE_Best": 0.13335629154558054,
+        "WAPE_Comp": 0.23214217190162262,
+        "Delta_WAPE": -0.09878588035604208,
+        "CI_95_Low": -0.10305846923017818,
+        "CI_95_High": -0.09414895013894052,
+        "Bootstrap_p_value": 0.0,
+        "DM_Statistic": -36.78405592067315,
+        "DM_p_value": 0.0,
+        "Significant_0.05": true
+      }
+    ],
+    "h7": [
+      {
+        "Competitor": "LightGBM (Covariates + History)",
+        "Competitor_Col": "LightGBM_History",
+        "Horizon": "7d",
+        "WAPE_Best": 0.15393973727176047,
+        "WAPE_Comp": 0.15533463322691968,
+        "Delta_WAPE": -0.0013948959551592088,
+        "CI_95_Low": -0.0023046194794133167,
+        "CI_95_High": -0.0005075921147373362,
+        "Bootstrap_p_value": 0.001,
+        "DM_Statistic": -2.658973713856411,
+        "DM_p_value": 0.007837907790842813,
+        "Significant_0.05": true
+      },
+      {
+        "Competitor": "Global PyTorch LSTM",
+        "Competitor_Col": "Global_LSTM",
+        "Horizon": "7d",
+        "WAPE_Best": 0.15393973727176047,
+        "WAPE_Comp": 0.22821732522489072,
+        "Delta_WAPE": -0.07427758795313025,
+        "CI_95_Low": -0.07871348427656359,
+        "CI_95_High": -0.06993432402313546,
+        "Bootstrap_p_value": 0.0,
+        "DM_Statistic": -18.730010364283523,
+        "DM_p_value": 0.0,
+        "Significant_0.05": true
+      },
+      {
+        "Competitor": "Prophet (Regressors + Festivals)",
+        "Competitor_Col": "Prophet",
+        "Horizon": "7d",
+        "WAPE_Best": 0.15393973727176047,
+        "WAPE_Comp": 0.24689959359267888,
+        "Delta_WAPE": -0.09295985632091841,
+        "CI_95_Low": -0.09774422816468978,
+        "CI_95_High": -0.08818436744033156,
+        "Bootstrap_p_value": 0.0,
+        "DM_Statistic": -19.64053121568692,
+        "DM_p_value": 0.0,
+        "Significant_0.05": true
+      },
+      {
+        "Competitor": "Historical Weekday Profile",
+        "Competitor_Col": "Weekday_Profile",
+        "Horizon": "7d",
+        "WAPE_Best": 0.15393973727176047,
+        "WAPE_Comp": 0.23214217190162262,
+        "Delta_WAPE": -0.07820243462986215,
+        "CI_95_Low": -0.08268984377094551,
+        "CI_95_High": -0.07365173826792655,
+        "Bootstrap_p_value": 0.0,
+        "DM_Statistic": -20.48997988860181,
+        "DM_p_value": 0.0,
+        "Significant_0.05": true
+      }
+    ]
+  },
+  "event_adaptation": {
+    "h1": {
+      "by_event_type": [
+        {
+          "Event_Type": "Normal",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 4777,
+          "WAPE": 0.13047266588957424,
+          "MAE": 15.543945856621619,
+          "RMSE": 21.994616853718604
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 4777,
+          "WAPE": 0.1298236416882797,
+          "MAE": 15.466623936541458,
+          "RMSE": 21.869889749998332
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "LightGBM_History",
+          "Samples": 4777,
+          "WAPE": 0.13266695086436212,
+          "MAE": 15.80536342335524,
+          "RMSE": 22.268615959901016
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "Global_LSTM",
+          "Samples": 4777,
+          "WAPE": 0.24713906348474798,
+          "MAE": 29.443072966059955,
+          "RMSE": 42.40040504620957
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "Prophet",
+          "Samples": 4777,
+          "WAPE": 0.24488847570255837,
+          "MAE": 29.17494772777029,
+          "RMSE": 42.13016662255843
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "Weekday_Profile",
+          "Samples": 4777,
+          "WAPE": 0.23294984548078243,
+          "MAE": 27.752631256314334,
+          "RMSE": 41.89097595898047
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 4777,
+          "WAPE": 0.25415428624644404,
+          "MAE": 30.27883608959598,
+          "RMSE": 43.61586078139356
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 29,
+          "WAPE": 0.4804650348300412,
+          "MAE": 66.35387808601087,
+          "RMSE": 78.27442895592138
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 29,
+          "WAPE": 0.4785220172032211,
+          "MAE": 66.08554065168622,
+          "RMSE": 77.61936010769513
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "LightGBM_History",
+          "Samples": 29,
+          "WAPE": 0.47724197864617446,
+          "MAE": 65.90876291303202,
+          "RMSE": 78.03355063389733
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Global_LSTM",
+          "Samples": 29,
+          "WAPE": 0.4444581021083875,
+          "MAE": 61.38119651531351,
+          "RMSE": 90.89298225844054
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Prophet",
+          "Samples": 29,
+          "WAPE": 0.4546291331647693,
+          "MAE": 62.785850976720724,
+          "RMSE": 88.61767994819934
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Weekday_Profile",
+          "Samples": 29,
+          "WAPE": 0.478757108671686,
+          "MAE": 66.11800759414146,
+          "RMSE": 92.61602982236774
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 29,
+          "WAPE": 0.6384519350811486,
+          "MAE": 88.17241379310344,
+          "RMSE": 114.44664469856083
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 1357,
+          "WAPE": 0.139386354503272,
+          "MAE": 13.637778683680123,
+          "RMSE": 18.77715950822434
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 1357,
+          "WAPE": 0.13878969304972535,
+          "MAE": 13.579400394919002,
+          "RMSE": 18.76475524989613
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "LightGBM_History",
+          "Samples": 1357,
+          "WAPE": 0.14261756810366585,
+          "MAE": 13.953925670369802,
+          "RMSE": 19.08228502619693
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Global_LSTM",
+          "Samples": 1357,
+          "WAPE": 0.2735146165254144,
+          "MAE": 26.7610973844479,
+          "RMSE": 35.65160722840678
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Prophet",
+          "Samples": 1357,
+          "WAPE": 0.24153703428833143,
+          "MAE": 23.632360780763484,
+          "RMSE": 31.273729454830292
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Weekday_Profile",
+          "Samples": 1357,
+          "WAPE": 0.21686901099396103,
+          "MAE": 21.218802843536626,
+          "RMSE": 30.018891092343278
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 1357,
+          "WAPE": 0.2531652243336271,
+          "MAE": 24.770081061164333,
+          "RMSE": 36.295347464999026
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 317,
+          "WAPE": 0.13267726571993163,
+          "MAE": 15.919597725310156,
+          "RMSE": 22.325227706236465
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 317,
+          "WAPE": 0.13090290555790265,
+          "MAE": 15.706696895269353,
+          "RMSE": 21.941809423013954
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "LightGBM_History",
+          "Samples": 317,
+          "WAPE": 0.13616228851208348,
+          "MAE": 16.33775648531737,
+          "RMSE": 22.89462417018668
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Global_LSTM",
+          "Samples": 317,
+          "WAPE": 0.2716434430419139,
+          "MAE": 32.59378548751494,
+          "RMSE": 42.741529446660756
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Prophet",
+          "Samples": 317,
+          "WAPE": 0.2738368338118305,
+          "MAE": 32.85696470304979,
+          "RMSE": 43.35984745671685
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Weekday_Profile",
+          "Samples": 317,
+          "WAPE": 0.24740361124324126,
+          "MAE": 29.6853115370597,
+          "RMSE": 42.46870372995713
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 317,
+          "WAPE": 0.2330686717846251,
+          "MAE": 27.965299684542586,
+          "RMSE": 38.684561108261285
+        }
+      ],
+      "regime_adaptation": [
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 349,
+          "WAPE": 0.15941865335142114,
+          "MAE": 19.501606210694046
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 349,
+          "WAPE": 0.15899731765259387,
+          "MAE": 19.45006441989166
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "LightGBM_History",
+          "Samples": 349,
+          "WAPE": 0.16125084264941586,
+          "MAE": 19.72573703504731
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Global_LSTM",
+          "Samples": 349,
+          "WAPE": 0.25636292397424454,
+          "MAE": 31.36075161384648
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Prophet",
+          "Samples": 349,
+          "WAPE": 0.2421562550212773,
+          "MAE": 29.62285672098393
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Weekday_Profile",
+          "Samples": 349,
+          "WAPE": 0.23142526619572795,
+          "MAE": 28.310140085083706
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 349,
+          "WAPE": 0.25959759211111894,
+          "MAE": 31.75644699140401
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 1325,
+          "WAPE": 0.13071887213844718,
+          "MAE": 12.63918308312832
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 1325,
+          "WAPE": 0.12971413560706307,
+          "MAE": 12.54203529748172
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "LightGBM_History",
+          "Samples": 1325,
+          "WAPE": 0.1344916536467983,
+          "MAE": 13.003972615325221
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Global_LSTM",
+          "Samples": 1325,
+          "WAPE": 0.278674749340475,
+          "MAE": 26.945008933589143
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Prophet",
+          "Samples": 1325,
+          "WAPE": 0.25092023037872085,
+          "MAE": 24.261429731878824
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Weekday_Profile",
+          "Samples": 1325,
+          "WAPE": 0.22108372485624453,
+          "MAE": 21.37654364243993
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 1325,
+          "WAPE": 0.2450551852256584,
+          "MAE": 23.69433962264151
+        }
+      ]
+    },
+    "h7": {
+      "by_event_type": [
+        {
+          "Event_Type": "Normal",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 4777,
+          "WAPE": 0.16060700713091128,
+          "MAE": 19.134020187414706,
+          "RMSE": 27.76711817261596
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 4777,
+          "WAPE": 0.14946793634639224,
+          "MAE": 17.806959749221612,
+          "RMSE": 25.294150569138072
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "LightGBM_History",
+          "Samples": 4777,
+          "WAPE": 0.1509526720282567,
+          "MAE": 17.983844699743187,
+          "RMSE": 25.525410024581703
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "Global_LSTM",
+          "Samples": 4777,
+          "WAPE": 0.22545533619184963,
+          "MAE": 26.85976802082473,
+          "RMSE": 35.74886734011897
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "Prophet",
+          "Samples": 4777,
+          "WAPE": 0.24488847570255837,
+          "MAE": 29.17494772777029,
+          "RMSE": 42.13016662255843
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "Weekday_Profile",
+          "Samples": 4777,
+          "WAPE": 0.23294984548078243,
+          "MAE": 27.752631256314334,
+          "RMSE": 41.89097595898047
+        },
+        {
+          "Event_Type": "Normal",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 4777,
+          "WAPE": 0.25415428624644404,
+          "MAE": 30.27883608959598,
+          "RMSE": 43.61586078139356
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 29,
+          "WAPE": 0.4425583494670237,
+          "MAE": 61.11883412467,
+          "RMSE": 77.85273772491746
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 29,
+          "WAPE": 0.4626926343051862,
+          "MAE": 63.89944828938865,
+          "RMSE": 79.10445510308772
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "LightGBM_History",
+          "Samples": 29,
+          "WAPE": 0.4693322842598846,
+          "MAE": 64.81640684347717,
+          "RMSE": 81.13788217769314
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Global_LSTM",
+          "Samples": 29,
+          "WAPE": 0.4635457480593716,
+          "MAE": 64.01726624061321,
+          "RMSE": 84.8614355392232
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Prophet",
+          "Samples": 29,
+          "WAPE": 0.4546291331647693,
+          "MAE": 62.785850976720724,
+          "RMSE": 88.61767994819934
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Weekday_Profile",
+          "Samples": 29,
+          "WAPE": 0.478757108671686,
+          "MAE": 66.11800759414146,
+          "RMSE": 92.61602982236774
+        },
+        {
+          "Event_Type": "shock",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 29,
+          "WAPE": 0.6384519350811486,
+          "MAE": 88.17241379310344,
+          "RMSE": 114.44664469856083
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 1357,
+          "WAPE": 0.1640243252220305,
+          "MAE": 16.048396229958886,
+          "RMSE": 21.890730591974904
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 1357,
+          "WAPE": 0.1615152752379141,
+          "MAE": 15.80290685970014,
+          "RMSE": 21.56935263587742
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "LightGBM_History",
+          "Samples": 1357,
+          "WAPE": 0.1629710223171947,
+          "MAE": 15.945339428206527,
+          "RMSE": 21.43667837769429
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Global_LSTM",
+          "Samples": 1357,
+          "WAPE": 0.24022892505486493,
+          "MAE": 23.50437332974169,
+          "RMSE": 31.267305603570037
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Prophet",
+          "Samples": 1357,
+          "WAPE": 0.24153703428833143,
+          "MAE": 23.632360780763484,
+          "RMSE": 31.273729454830292
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Weekday_Profile",
+          "Samples": 1357,
+          "WAPE": 0.21686901099396103,
+          "MAE": 21.218802843536626,
+          "RMSE": 30.018891092343278
+        },
+        {
+          "Event_Type": "regime_slump",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 1357,
+          "WAPE": 0.2531652243336271,
+          "MAE": 24.770081061164333,
+          "RMSE": 36.295347464999026
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 317,
+          "WAPE": 0.17812860440331027,
+          "MAE": 21.373184848846403,
+          "RMSE": 29.29777226420645
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 317,
+          "WAPE": 0.16189493741147518,
+          "MAE": 19.425349651050063,
+          "RMSE": 26.160232358794033
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "LightGBM_History",
+          "Samples": 317,
+          "WAPE": 0.16118095543325978,
+          "MAE": 19.339680822900533,
+          "RMSE": 26.198154236226703
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Global_LSTM",
+          "Samples": 317,
+          "WAPE": 0.2028359992733036,
+          "MAE": 24.337760468010647,
+          "RMSE": 30.573301049121177
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Prophet",
+          "Samples": 317,
+          "WAPE": 0.2738368338118305,
+          "MAE": 32.85696470304979,
+          "RMSE": 43.35984745671685
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Weekday_Profile",
+          "Samples": 317,
+          "WAPE": 0.24740361124324126,
+          "MAE": 29.6853115370597,
+          "RMSE": 42.46870372995713
+        },
+        {
+          "Event_Type": "regime_boom",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 317,
+          "WAPE": 0.2330686717846251,
+          "MAE": 27.965299684542586,
+          "RMSE": 38.684561108261285
+        }
+      ],
+      "regime_adaptation": [
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 349,
+          "WAPE": 0.18555817130015376,
+          "MAE": 22.69924070864603
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 349,
+          "WAPE": 0.18435537512645828,
+          "MAE": 22.552103238607117
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "LightGBM_History",
+          "Samples": 349,
+          "WAPE": 0.1821495851646421,
+          "MAE": 22.282270027031704
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Global_LSTM",
+          "Samples": 349,
+          "WAPE": 0.2241521820182015,
+          "MAE": 27.42042724040996
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Prophet",
+          "Samples": 349,
+          "WAPE": 0.2421562550212773,
+          "MAE": 29.62285672098393
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Weekday_Profile",
+          "Samples": 349,
+          "WAPE": 0.23142526619572795,
+          "MAE": 28.310140085083706
+        },
+        {
+          "Regime_Phase": "Onset (Days 1-3)",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 349,
+          "WAPE": 0.25959759211111894,
+          "MAE": 31.75644699140401
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Best_Per_Category_Ensemble",
+          "Samples": 1325,
+          "WAPE": 0.16103578277019728,
+          "MAE": 15.570519451940418
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "HistGradientBoosting_History",
+          "Samples": 1325,
+          "WAPE": 0.1540167071336628,
+          "MAE": 14.891846352997794
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "LightGBM_History",
+          "Samples": 1325,
+          "WAPE": 0.15604845829106623,
+          "MAE": 15.088295989057855
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Global_LSTM",
+          "Samples": 1325,
+          "WAPE": 0.23448472118516142,
+          "MAE": 22.672283448993035
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Prophet",
+          "Samples": 1325,
+          "WAPE": 0.25092023037872085,
+          "MAE": 24.261429731878824
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Weekday_Profile",
+          "Samples": 1325,
+          "WAPE": 0.22108372485624453,
+          "MAE": 21.37654364243993
+        },
+        {
+          "Regime_Phase": "Sustained (Days 4+)",
+          "Model": "Seasonal_Naive_7",
+          "Samples": 1325,
+          "WAPE": 0.2450551852256584,
+          "MAE": 23.69433962264151
+        }
+      ]
+    }
+  }
+}

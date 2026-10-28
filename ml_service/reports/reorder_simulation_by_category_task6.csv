@@ -1,0 +1,25 @@
+policy,category,total_purchase,over_purchase,stockout_rate,lost_sales,counterfactual_waste
+Actual Operator,Bakery,156130.0,34464.0,0.3241,9002.0,7134.0
+Actual Operator,Dairy,132205.0,23451.0,0.3852,10628.0,4756.0
+Actual Operator,Fruits,118187.0,24474.0,0.3481,8078.0,4984.0
+Actual Operator,Meat,147407.0,29549.0,0.3574,9722.0,6915.0
+Actual Operator,Prepared Food,159860.0,38016.0,0.2963,8584.0,10792.0
+Actual Operator,Vegetables,153291.0,30532.0,0.3898,11315.0,6674.0
+AI Reorder (80% SL),Bakery,145325.0,18810.0,0.2074,4153.0,4246.9
+AI Reorder (80% SL),Dairy,136260.0,19594.0,0.1509,2716.0,3923.6
+AI Reorder (80% SL),Fruits,121097.0,21067.0,0.1157,1761.0,4477.1
+AI Reorder (80% SL),Meat,130423.0,14356.0,0.3815,11513.0,3253.4
+AI Reorder (80% SL),Prepared Food,111256.0,6702.0,0.7241,25874.0,2209.0
+AI Reorder (80% SL),Vegetables,144698.0,17019.0,0.2741,6395.0,3548.7
+AI Reorder (90% SL),Bakery,153904.0,25893.0,0.1259,2657.0,5846.1
+AI Reorder (90% SL),Dairy,144858.0,27099.0,0.0917,1623.0,5426.4
+AI Reorder (90% SL),Fruits,129680.0,28909.0,0.0602,1020.0,6143.6
+AI Reorder (90% SL),Meat,136850.0,19761.0,0.3278,10491.0,4478.4
+AI Reorder (90% SL),Prepared Food,113860.0,8810.0,0.6963,25378.0,2903.9
+AI Reorder (90% SL),Vegetables,152578.0,23530.0,0.2074,5026.0,4906.4
+AI Reorder (95% SL),Bakery,160974.0,32196.0,0.0843,1890.0,7269.2
+AI Reorder (95% SL),Dairy,151927.0,33602.0,0.0639,1057.0,6728.6
+AI Reorder (95% SL),Fruits,136781.0,35619.0,0.0444,629.0,7569.6
+AI Reorder (95% SL),Meat,142140.0,24481.0,0.3065,9921.0,5548.0
+AI Reorder (95% SL),Prepared Food,115826.0,10521.0,0.6806,25123.0,3467.8
+AI Reorder (95% SL),Vegetables,159079.0,29229.0,0.1685,4224.0,6094.7

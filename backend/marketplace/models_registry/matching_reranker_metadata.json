@@ -1,0 +1,50 @@
+{
+  "status": "ADOPTED",
+  "model_version": "v1.0.0",
+  "model_type": "CalibratedClassifierCV(LogisticRegression)",
+  "trained_at": "2026-10-21T06:27:19.923864+00:00",
+  "feature_names": [
+    "distance_km",
+    "category_match",
+    "quantity_fit_ratio",
+    "time_feasibility_hours",
+    "listing_time_to_expiry_hours",
+    "ngo_completion_rate",
+    "ngo_no_show_rate",
+    "donor_rating"
+  ],
+  "sample_counts": {
+    "total": 356,
+    "train": 249,
+    "val": 53,
+    "test": 54
+  },
+  "split_dates": {
+    "train_start": "2026-07-22",
+    "train_end": "2026-09-27",
+    "test_start": "2026-10-08",
+    "test_end": "2026-10-19"
+  },
+  "evaluation_metrics": {
+    "baseline_formula": {
+      "roc_auc": 0.1413,
+      "log_loss": 0.5823,
+      "brier_score": 0.1864,
+      "top1_hit_rate": 0.9,
+      "top3_hit_rate": 0.9
+    },
+    "learned_model": {
+      "roc_auc": 0.2128,
+      "log_loss": 0.4056,
+      "brier_score": 0.1164,
+      "top1_hit_rate": 0.8,
+      "top3_hit_rate": 0.9
+    }
+  },
+  "blending_weights": {
+    "base_score_weight": 0.65,
+    "learned_score_weight": 0.35
+  },
+  "cold_start_threshold": 200,
+  "is_synthetic_benchmark": true
+}

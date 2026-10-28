@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from django.conf import settings
 from django.utils import timezone
@@ -341,17 +341,21 @@ class DashboardSummaryView(APIView):
             total_qty=Sum('quantity'),
             total_reserved=Sum('reserved_quantity')
         )
-        total_active_quantity = (batch_qty_agg['total_qty'] or Decimal('0.0')) - (batch_qty_agg['total_reserved'] or Decimal('0.0'))
+        total_qty_val = batch_qty_agg['total_qty'] or Decimal('0.0')
+        total_reserved_val = batch_qty_agg['total_reserved'] or Decimal('0.0')
+        total_active_quantity = total_qty_val - total_reserved_val
         if total_active_quantity < Decimal('0.0'):
             total_active_quantity = Decimal('0.0')
 
         # 3. Batches expiring within 48 hours
-        batches_expiring_48h = Batch.objects.filter(
+        expiring_48h_batches_qs = Batch.objects.filter(
             organization=org,
             status=Batch.Status.ACTIVE,
             expiry_date__gte=today,
             expiry_date__lte=in_48h
-        ).count()
+        )
+        batches_expiring_48h = expiring_48h_batches_qs.count()
+        expiring_48h_qty = expiring_48h_batches_qs.aggregate(qty=Sum('quantity'))['qty'] or Decimal('0.0')
 
         # 4. Count of unacknowledged CRITICAL alerts
         critical_alerts_unacknowledged = Alert.objects.filter(
@@ -396,6 +400,153 @@ class DashboardSummaryView(APIView):
         donated_val = txn_stats['donated_value'] or Decimal('0.0')
         missing_cost_items = txn_stats['missing_cost_items'] or 0
 
+        # --- Task 2: Inventory Health Card Aggregates ---
+        # (a) Stock by Category
+        stock_by_cat_qs = (
+            Batch.objects.filter(organization=org, status=Batch.Status.ACTIVE)
+            .values(cat_name=Coalesce(F('product__category__name'), Value('Uncategorized')))
+            .annotate(
+                total_qty=Sum('quantity'),
+                reserved_qty=Coalesce(Sum('reserved_quantity'), Value(Decimal('0.0'))),
+                batch_count=Count('id')
+            )
+            .order_by('-total_qty')
+        )
+        stock_by_category = [
+            {
+                'category': item['cat_name'],
+                'total_quantity': float(item['total_qty'] or 0),
+                'reserved_quantity': float(item['reserved_qty'] or 0),
+                'sellable_quantity': max(0.0, float((item['total_qty'] or Decimal('0.0')) - (item['reserved_qty'] or Decimal('0.0')))),
+                'batch_count': item['batch_count'],
+            }
+            for item in stock_by_cat_qs
+        ]
+
+        # (b) 7-day expiry calendar strip
+        end_7d = today + timedelta(days=6)
+        strip_qs = (
+            Batch.objects.filter(
+                organization=org,
+                status=Batch.Status.ACTIVE,
+                expiry_date__gte=today,
+                expiry_date__lte=end_7d,
+            )
+            .values('expiry_date')
+            .annotate(count=Count('id'), qty=Sum('quantity'))
+        )
+        strip_map = {item['expiry_date']: item for item in strip_qs}
+        expiry_calendar_strip = []
+        for i in range(7):
+            d = today + timedelta(days=i)
+            match = strip_map.get(d)
+            expiry_calendar_strip.append({
+                'date': d.isoformat(),
+                'day_name': d.strftime('%a'),
+                'batch_count': match['count'] if match else 0,
+                'quantity': float(match['qty'] if match and match['qty'] else 0.0),
+            })
+
+        # --- Task 2: Waste-Risk Charts & Top Risky Batches ---
+        active_batches_qs = (
+            Batch.objects.filter(organization=org, status=Batch.Status.ACTIVE)
+            .select_related('product', 'product__category')
+            .order_by('expiry_date')
+        )
+        risk_counts = {'LOW': 0, 'MEDIUM': 0, 'HIGH': 0, 'CRITICAL': 0}
+        value_at_risk = Decimal('0.0')
+        top_risky_batches = []
+        for b in active_batches_qs:
+            days_left = (b.expiry_date - today).days
+            cost = b.product.unit_cost or Decimal('0.0')
+            b_val = Decimal(str(b.quantity)) * cost
+            if days_left <= 2:
+                risk_level = 'CRITICAL'
+                value_at_risk += b_val
+            elif days_left <= 5:
+                risk_level = 'HIGH'
+                value_at_risk += b_val
+            elif days_left <= 10:
+                risk_level = 'MEDIUM'
+            else:
+                risk_level = 'LOW'
+            risk_counts[risk_level] += 1
+            if len(top_risky_batches) < 5:
+                top_risky_batches.append({
+                    'id': b.id,
+                    'batch_code': b.batch_code,
+                    'product_name': b.product.name,
+                    'category': b.product.category.name if b.product.category else 'General',
+                    'quantity': float(b.quantity),
+                    'unit': b.product.unit or 'kg',
+                    'expiry_date': b.expiry_date.isoformat(),
+                    'days_to_expiry': max(0, days_left),
+                    'risk_level': risk_level,
+                    'value': float(b_val),
+                })
+
+        waste_risk = {
+            'risk_levels': risk_counts,
+            'value_at_risk': float(value_at_risk),
+            'top_risky_batches': top_risky_batches,
+            'ai_available': False,
+            'ai_disclaimer': 'AI waste predictions service offline. Showing empirical shelf-life horizon risk calculations based on batch expiration dates.',
+        }
+
+        # --- Task 2: Donation Tracker Funnel, Monthly Kg, and Recent Donations ---
+        from marketplace.models import SurplusListing, DonationRequest
+        listed_agg = SurplusListing.objects.filter(donor=org).aggregate(count=Count('id'), qty=Sum('quantity_offered'))
+        req_agg = DonationRequest.objects.filter(listing__donor=org, status=DonationRequest.Status.REQUESTED).aggregate(count=Count('id'), qty=Sum('quantity_requested'))
+        app_agg = DonationRequest.objects.filter(
+            listing__donor=org,
+            status__in=[DonationRequest.Status.APPROVED, DonationRequest.Status.SCHEDULED, DonationRequest.Status.IN_TRANSIT]
+        ).aggregate(count=Count('id'), qty=Sum('quantity_approved'))
+        col_agg = DonationRequest.objects.filter(listing__donor=org, status=DonationRequest.Status.COLLECTED).aggregate(count=Count('id'), qty=Sum('quantity_collected'))
+        comp_agg = DonationRequest.objects.filter(listing__donor=org, status=DonationRequest.Status.COMPLETED).aggregate(count=Count('id'), qty=Sum('quantity_collected'))
+
+        donation_funnel = [
+            {'stage': 'Listed', 'key': 'listed', 'count': listed_agg['count'] or 0, 'quantity_kg': float(listed_agg['qty'] or 0)},
+            {'stage': 'Requested', 'key': 'requested', 'count': req_agg['count'] or 0, 'quantity_kg': float(req_agg['qty'] or 0)},
+            {'stage': 'Approved', 'key': 'approved', 'count': app_agg['count'] or 0, 'quantity_kg': float(app_agg['qty'] or 0)},
+            {'stage': 'Collected', 'key': 'collected', 'count': col_agg['count'] or 0, 'quantity_kg': float(col_agg['qty'] or 0)},
+            {'stage': 'Completed', 'key': 'completed', 'count': comp_agg['count'] or 0, 'quantity_kg': float(comp_agg['qty'] or 0)},
+        ]
+
+        monthly_donated = []
+        for i in range(5, -1, -1):
+            m_dt = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
+            if m_dt.month == 12:
+                next_m = m_dt.replace(year=m_dt.year+1, month=1)
+            else:
+                next_m = m_dt.replace(month=m_dt.month+1)
+            m_agg = DonationRequest.objects.filter(
+                listing__donor=org,
+                status=DonationRequest.Status.COMPLETED,
+                completed_at__gte=timezone.make_aware(datetime.combine(m_dt, datetime.min.time())),
+                completed_at__lt=timezone.make_aware(datetime.combine(next_m, datetime.min.time())),
+            ).aggregate(count=Count('id'), qty=Sum('quantity_collected'))
+            monthly_donated.append({
+                'month': m_dt.strftime('%b %Y'),
+                'quantity_kg': float(m_agg['qty'] or 0),
+                'count': m_agg['count'] or 0,
+            })
+
+        recent_reqs = DonationRequest.objects.filter(listing__donor=org).select_related('listing', 'ngo').order_by('-updated_at')[:6]
+        recent_donations = [
+            {
+                'id': r.id,
+                'code': r.code,
+                'listing_title': r.listing.title,
+                'ngo_name': r.ngo.name,
+                'quantity': float(r.quantity_collected or r.quantity_approved or r.quantity_requested),
+                'unit': r.listing.unit,
+                'status': r.status,
+                'updated_at': r.updated_at.isoformat(),
+                'deep_link': f'/marketplace?request={r.code}',
+            }
+            for r in recent_reqs
+        ]
+
         return Response({
             'total_active_batches': total_active_batches,
             'total_active_quantity': str(total_active_quantity),
@@ -404,6 +555,20 @@ class DashboardSummaryView(APIView):
             'wasted_value_30d': str(wasted_val),
             'donated_value_30d': str(donated_val),
             'missing_cost_items': missing_cost_items,
+            # Inventory Health
+            'sellable_quantity': str(total_active_quantity),
+            'reserved_quantity': str(total_reserved_val),
+            'expiring_48h_quantity': str(expiring_48h_qty),
+            'stock_by_category': stock_by_category,
+            'expiry_calendar_strip': expiry_calendar_strip,
+            # Waste Risk
+            'waste_risk': waste_risk,
+            # Donation Tracker
+            'donation_tracker': {
+                'funnel': donation_funnel,
+                'monthly_donated': monthly_donated,
+                'recent_donations': recent_donations,
+            },
         }, status=status.HTTP_200_OK)
 
 
@@ -635,3 +800,103 @@ class POSApiKeyViewSet(TenantFilteredModelViewSet):
             'raw_key': new_token,
             'key_prefix': f"sps_live_{raw_key[:2]}...{raw_key[-4:]}"
         })
+
+
+class RecentSalesView(APIView):
+    """
+    Exposes past-N-days daily sales totals for the authenticated user's organization.
+    GET /api/v1/inventory/sales/recent/?days=7&category=Dairy
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = getattr(request, 'user', None)
+        org = None
+        if user and user.is_authenticated and hasattr(user, 'organization') and user.organization:
+            org = user.organization
+        elif hasattr(request, 'auth') and hasattr(request.auth, 'org_type'):
+            org = request.auth
+
+        if not org:
+            return Response(
+                {'error': 'Organization context required.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 1. Validate 'days' parameter (default 7, min 1, max 30)
+        days_str = request.query_params.get('days', '7')
+        try:
+            days = int(days_str)
+            if days < 1 or days > 30:
+                return Response(
+                    {'error': 'Query parameter "days" must be an integer between 1 and 30.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except (ValueError, TypeError):
+            return Response(
+                {'error': 'Query parameter "days" must be an integer between 1 and 30.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 2. Parse optional 'category' parameter
+        category_param = request.query_params.get('category')
+        category_filter = None
+        if category_param and category_param.strip() and category_param.strip().lower() not in ('all', 'all categories'):
+            category_filter = category_param.strip()
+
+        # 3. Determine unbroken date window
+        end_date_param = request.query_params.get('end_date')
+        if end_date_param:
+            try:
+                end_date = datetime.strptime(end_date_param.strip(), '%Y-%m-%d').date()
+            except ValueError:
+                return Response(
+                    {'error': 'Query parameter "end_date" must be in YYYY-MM-DD format.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            end_date = timezone.localdate()
+
+        start_date = end_date - timedelta(days=days - 1)
+        date_list = [start_date + timedelta(days=i) for i in range(days)]
+
+        # 4. Query transactions strictly for this organization where txn_type == SOLD
+        txns = StockTransaction.objects.filter(
+            organization=org,
+            txn_type=StockTransaction.Type.SOLD,
+            created_at__date__gte=start_date,
+            created_at__date__lte=end_date,
+        ).select_related('batch__product__category')
+
+        if category_filter:
+            txns = txns.filter(batch__product__category__name__iexact=category_filter)
+
+        # 5. Aggregate units_sold and revenue per date
+        sales_by_date = {d: {'units_sold': Decimal('0.0'), 'revenue': Decimal('0.0')} for d in date_list}
+
+        for txn in txns:
+            t_date = txn.created_at.date()
+            if t_date in sales_by_date:
+                qty = Decimal(str(txn.quantity))
+                cost = (txn.batch.product.unit_cost if txn.batch and txn.batch.product else None) or Decimal('0.00')
+                sales_by_date[t_date]['units_sold'] += qty
+                sales_by_date[t_date]['revenue'] += qty * cost
+
+        if category_filter:
+            matched_cat = Category.objects.filter(name__iexact=category_filter).first()
+            category_label = matched_cat.name if matched_cat else category_filter
+        else:
+            category_label = 'All'
+
+        results = [
+            {
+                'date': d.strftime('%Y-%m-%d'),
+                'category': category_label,
+                'units_sold': float(round(sales_by_date[d]['units_sold'], 1)),
+                'revenue': float(round(sales_by_date[d]['revenue'], 2)),
+            }
+            for d in date_list
+        ]
+
+        return Response(results, status=status.HTTP_200_OK)
+

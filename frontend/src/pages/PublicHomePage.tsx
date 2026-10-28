@@ -80,13 +80,23 @@ const CounterCard: React.FC<CounterCardProps> = ({ label, value, unit, isDecimal
     ? animatedValue.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
     : Math.round(animatedValue).toLocaleString();
 
+  const isLong = formatted.length > 6;
+
   return (
-    <div className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-[12px] bg-[var(--surface)] border border-[var(--border)] shadow-xs transition-transform duration-200 hover:-translate-y-0.5 min-h-[108px]">
-      <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[var(--text)] tabular-nums font-tabular">
-        {formatted}
-        {unit && <span className="ml-1 text-sm sm:text-base font-medium text-[var(--muted)]">{unit}</span>}
+    <div className="flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-[12px] bg-[var(--surface)] border border-[var(--border)] shadow-xs transition-transform duration-200 hover:-translate-y-0.5 min-h-[96px] overflow-hidden">
+      <div className="flex items-baseline gap-1 justify-center max-w-full">
+        <span
+          className={`font-extrabold tracking-tight text-[var(--text)] tabular-nums leading-tight ${
+            isLong ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'
+          }`}
+        >
+          {formatted}
+        </span>
+        {unit && <span className="text-[11px] sm:text-xs font-semibold text-[var(--muted)] shrink-0">{unit}</span>}
       </div>
-      <div className="mt-1.5 text-xs sm:text-sm font-medium text-[var(--muted)] text-center">{label}</div>
+      <div className="mt-1 text-[11px] sm:text-xs font-medium text-[var(--muted)] text-center leading-tight truncate max-w-full px-1">
+        {label}
+      </div>
     </div>
   );
 };
@@ -450,15 +460,15 @@ export const PublicHomePage: React.FC<PublicHomePageProps> = ({
                   />
 
                   {/* Node 1: Business Kitchen / Donor */}
-                  <g transform="translate(40, 50)">
-                    <rect width="120" height="90" rx="12" fill="url(#nodeGrad)" stroke="var(--border)" strokeWidth="1.5" />
-                    <rect x="12" y="14" width="28" height="28" rx="6" fill="var(--primary)" fillOpacity="0.15" />
-                    <circle cx="26" cy="28" r="6" fill="var(--primary)" />
-                    <text x="48" y="27" fill="var(--text)" fontSize="11" fontWeight="700">Food Donor</text>
-                    <text x="48" y="39" fill="var(--muted)" fontSize="9">Kitchen & Bakery</text>
-                    <rect x="12" y="52" width="96" height="6" rx="3" fill="var(--surface-2)" />
-                    <rect x="12" y="64" width="70" height="6" rx="3" fill="var(--surface-2)" />
-                    <rect x="12" y="76" width="46" height="4" rx="2" fill="var(--color-success)" />
+                  <g transform="translate(35, 50)">
+                    <rect width="135" height="90" rx="12" fill="url(#nodeGrad)" stroke="var(--border)" strokeWidth="1.5" />
+                    <rect x="10" y="14" width="26" height="26" rx="6" fill="var(--primary)" fillOpacity="0.15" />
+                    <circle cx="23" cy="27" r="5" fill="var(--primary)" />
+                    <text x="42" y="25" fill="var(--text)" fontSize="10" fontWeight="700">Food Donor</text>
+                    <text x="42" y="37" fill="var(--muted)" fontSize="8.5">Kitchen &amp; Bakery</text>
+                    <rect x="10" y="52" width="115" height="6" rx="3" fill="var(--surface-2)" />
+                    <rect x="10" y="64" width="85" height="6" rx="3" fill="var(--surface-2)" />
+                    <rect x="10" y="76" width="55" height="4" rx="2" fill="var(--color-success)" />
                   </g>
 
                   {/* Central Hub: Automated Matching Engine */}
@@ -470,15 +480,15 @@ export const PublicHomePage: React.FC<PublicHomePageProps> = ({
                   </g>
 
                   {/* Node 2: Verified NGO / Community Kitchen */}
-                  <g transform="translate(240, 180)">
-                    <rect width="120" height="90" rx="12" fill="url(#nodeGrad)" stroke="var(--border)" strokeWidth="1.5" />
-                    <rect x="12" y="14" width="28" height="28" rx="6" fill="var(--accent)" fillOpacity="0.15" />
-                    <circle cx="26" cy="28" r="6" fill="var(--accent)" />
-                    <text x="48" y="27" fill="var(--text)" fontSize="11" fontWeight="700">Verified NGO</text>
-                    <text x="48" y="39" fill="var(--muted)" fontSize="9">Community Kitchen</text>
-                    <rect x="12" y="52" width="96" height="6" rx="3" fill="var(--surface-2)" />
-                    <rect x="12" y="64" width="60" height="6" rx="3" fill="var(--surface-2)" />
-                    <rect x="12" y="76" width="55" height="4" rx="2" fill="var(--accent)" />
+                  <g transform="translate(230, 180)">
+                    <rect width="135" height="90" rx="12" fill="url(#nodeGrad)" stroke="var(--border)" strokeWidth="1.5" />
+                    <rect x="10" y="14" width="26" height="26" rx="6" fill="var(--accent)" fillOpacity="0.15" />
+                    <circle cx="23" cy="27" r="5" fill="var(--accent)" />
+                    <text x="42" y="25" fill="var(--text)" fontSize="10" fontWeight="700">Verified NGO</text>
+                    <text x="42" y="37" fill="var(--muted)" fontSize="8.5">Community Kitchen</text>
+                    <rect x="10" y="52" width="115" height="6" rx="3" fill="var(--surface-2)" />
+                    <rect x="10" y="64" width="75" height="6" rx="3" fill="var(--surface-2)" />
+                    <rect x="10" y="76" width="65" height="4" rx="2" fill="var(--accent)" />
                   </g>
 
                   {/* Live Status Floating Pill */}
@@ -489,8 +499,8 @@ export const PublicHomePage: React.FC<PublicHomePageProps> = ({
                   </g>
 
                   {/* Pickup Status Floating Pill */}
-                  <g transform="translate(230, 280)">
-                    <rect width="145" height="24" rx="12" fill="var(--surface)" stroke="var(--border)" strokeWidth="1" />
+                  <g transform="translate(225, 280)">
+                    <rect width="150" height="24" rx="12" fill="var(--surface)" stroke="var(--border)" strokeWidth="1" />
                     <circle cx="12" cy="12" r="4" fill="var(--primary)" />
                     <text x="24" y="16" fill="var(--text)" fontSize="9" fontWeight="600">Direct Pickup Scheduled</text>
                   </g>
@@ -833,19 +843,20 @@ export const PublicHomePage: React.FC<PublicHomePageProps> = ({
             </p>
           </div>
 
-          {/* Feature 7: Clearly marked Coming Soon */}
-          <div className="p-6 rounded-[14px] bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-3 sm:col-span-2 lg:col-span-3">
+          {/* Feature 7: AI Waste Prediction (Powered by ML Service) */}
+          <div className="p-6 rounded-[14px] bg-[var(--surface)] border border-[var(--primary)]/30 shadow-xs space-y-3 sm:col-span-2 lg:col-span-3 transition-all hover:border-[var(--primary)]/60">
             <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-[8px] bg-[var(--surface-2)] text-[var(--muted)]">
+              <div className="p-2.5 rounded-[8px] bg-[var(--primary-subtle)] text-[var(--primary)]">
                 <Sparkles className="h-5 w-5" aria-hidden="true" />
               </div>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[var(--surface-2)] text-[var(--muted)] border border-[var(--border)]">
-                Coming soon
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live ML
               </span>
             </div>
-            <h3 className="font-bold text-base sm:text-lg text-[var(--text)]">AI Waste Prediction</h3>
+            <h3 className="font-bold text-base sm:text-lg text-[var(--text)]">AI Waste Prediction & Demand Planning</h3>
             <p className="text-sm text-[var(--muted)] leading-relaxed">
-              Predictive demand intelligence and shelf-life anomaly forecasting to alert kitchens before surplus accumulates.
+              Predictive demand intelligence, shelf-life risk scoring, and automated reorder recommendations powered by our dedicated machine learning service.
             </p>
           </div>
         </div>

@@ -88,10 +88,19 @@ def test_plan_valid_request(client, valid_headers):
     assert "Bakery" in data["explanation"]
     assert "units" in data["explanation"]
 
+    assert "model_name" in data
+    assert data["model_name"] in {"HistGradientBoosting_History", "HistGradientBoostingDemandModel", "Poisson_Regression"}
+
     assert "model_version" in data
-    assert "poisson-lightgbm" in data["model_version"]
+    assert len(data["model_version"]) > 0
 
     assert "confidence_note" in data
+
+    assert "data_origin" in data
+    assert data["data_origin"].startswith("synthetic")
+    assert "training_data_note" in data
+    assert data["training_data_note"] == "Trained on synthetic demonstration data"
+    assert "generated_at" in data
 
 
 def test_plan_excessive_order_predicts_high_waste(client, valid_headers):

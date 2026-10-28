@@ -278,6 +278,7 @@ class DonationRequestSerializer(serializers.ModelSerializer):
             "rejection_reason",
             "contact_name",
             "contact_phone",
+            "beneficiaries_served",
             "requested_at",
             "approved_at",
             "scheduled_at",
@@ -313,6 +314,7 @@ class DonationRequestSerializer(serializers.ModelSerializer):
             "no_show_at",
             "expired_at",
             "updated_at",
+            "beneficiaries_served",
         ]
 
     def get_has_rating(self, obj):
@@ -580,6 +582,11 @@ class ListingRequirementMatchSerializer(serializers.Serializer):
     is_compatible = serializers.BooleanField()
     incompatibility_reasons = serializers.ListField(child=serializers.CharField())
     score = serializers.FloatField()
+    base_score = serializers.FloatField(required=False, default=None, allow_null=True)
+    learned_probability = serializers.FloatField(required=False, default=None, allow_null=True)
+    is_fallback = serializers.BooleanField(required=False, default=True)
+    fallback_reason = serializers.CharField(required=False, allow_null=True, allow_blank=True, default=None)
+    reasons = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     breakdown = MatchBreakdownSerializer()
 
 
@@ -603,6 +610,11 @@ class RequirementListingMatchSerializer(serializers.Serializer):
     is_compatible = serializers.BooleanField()
     incompatibility_reasons = serializers.ListField(child=serializers.CharField())
     score = serializers.FloatField()
+    base_score = serializers.FloatField(required=False, default=None, allow_null=True)
+    learned_probability = serializers.FloatField(required=False, default=None, allow_null=True)
+    is_fallback = serializers.BooleanField(required=False, default=True)
+    fallback_reason = serializers.CharField(required=False, allow_null=True, allow_blank=True, default=None)
+    reasons = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     breakdown = MatchBreakdownSerializer()
 
 
@@ -631,6 +643,7 @@ class PickupScheduleItemSerializer(serializers.Serializer):
     contact_phone = serializers.CharField(allow_blank=True)
     note = serializers.CharField(allow_blank=True)
     is_overdue = serializers.BooleanField()
+    overdue_minutes = serializers.IntegerField(allow_null=True, required=False, default=None)
     is_today = serializers.BooleanField()
     time_until_pickup_minutes = serializers.IntegerField(allow_null=True)
 
@@ -649,6 +662,7 @@ class ImpactMonthlyTrendSerializer(serializers.Serializer):
 
 
 class ImpactAnalyticsSerializer(serializers.Serializer):
+    period = serializers.CharField(required=False, default="all")
     total_donations_completed = serializers.IntegerField()
     total_quantity_donated_kg = serializers.FloatField()
     meals_provided = serializers.IntegerField()
@@ -657,5 +671,8 @@ class ImpactAnalyticsSerializer(serializers.Serializer):
     financial_value_saved = serializers.FloatField()
     category_breakdown = ImpactCategoryBreakdownSerializer(many=True)
     monthly_trend = ImpactMonthlyTrendSerializer(many=True)
+    calculation_constants = serializers.DictField(required=False, default=dict)
+    activity_heatmap = serializers.ListField(child=serializers.DictField(), required=False, default=list)
+    geo_density = serializers.ListField(child=serializers.DictField(), required=False, default=list)
 
 

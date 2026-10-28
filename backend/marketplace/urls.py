@@ -28,6 +28,8 @@ from .views import (
     DonationRequestNoShowView,
     DonationRequestRejectView,
     FeedListView,
+    ImpactAnalyticsCsvExportView,
+    ImpactAnalyticsPdfExportView,
     ImpactAnalyticsView,
     ListingDetailView,
     PublicImpactAnalyticsView,
@@ -41,6 +43,8 @@ from .views import (
     NotificationMarkAllReadView,
     NotificationMarkReadView,
     PendingRatingsView,
+    PickupScheduleIcsExportView,
+    PickupScheduleSingleIcsExportView,
     PickupScheduleView,
     RateClaimView,
     RatingDetailView,
@@ -68,11 +72,15 @@ urlpatterns = [
     re_path(r"^requirements/(?P<pk>\d+)/?$", NGORequirementDetailView.as_view(), name="requirement-detail"),
     re_path(r"^requirements/?$", NGORequirementListCreateView.as_view(), name="requirement-list"),
 
-    # Pickup Schedule (Task 4)
+    # Pickup Schedule (Task 4 & Task 2)
+    re_path(r"^schedule/export-ics/?$", PickupScheduleIcsExportView.as_view(), name="pickup-schedule-export-ics"),
+    re_path(r"^schedule/(?P<code_or_id>[^/]+)/export-ics/?$", PickupScheduleSingleIcsExportView.as_view(), name="pickup-schedule-single-export-ics"),
     re_path(r"^schedule/?$", PickupScheduleView.as_view(), name="pickup-schedule"),
 
-    # Impact Analytics (Task 4)
+    # Impact Analytics (Task 3 & Task 4)
     re_path(r"^impact/public/?$", PublicImpactAnalyticsView.as_view(), name="impact-public"),
+    re_path(r"^impact/export-pdf/?$", ImpactAnalyticsPdfExportView.as_view(), name="impact-export-pdf"),
+    re_path(r"^impact/export-csv/?$", ImpactAnalyticsCsvExportView.as_view(), name="impact-export-csv"),
     re_path(r"^impact/?$", ImpactAnalyticsView.as_view(), name="impact-analytics"),
     re_path(r"^analytics/impact/?$", ImpactAnalyticsView.as_view(), name="analytics-impact"),
 
@@ -91,6 +99,7 @@ urlpatterns = [
     re_path(r"^requests/(?P<code_or_id>[^/]+)/collect/?$", DonationRequestCollectView.as_view(), name="request-collect"),
     re_path(r"^requests/(?P<code_or_id>[^/]+)/confirm-receipt/?$", DonationRequestConfirmReceiptView.as_view(), name="request-confirm-receipt"),
     re_path(r"^requests/(?P<code_or_id>[^/]+)/no-show/?$", DonationRequestNoShowView.as_view(), name="request-no-show"),
+    re_path(r"^requests/(?P<code_or_id>[^/]+)/export-ics/?$", PickupScheduleSingleIcsExportView.as_view(), name="request-export-ics"),
     re_path(r"^requests/(?P<code_or_id>[^/]+)/?$", DonationRequestDetailView.as_view(), name="request-detail"),
 ]
 

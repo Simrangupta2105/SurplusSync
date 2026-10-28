@@ -31,6 +31,7 @@ const BusinessImportPage = React.lazy(() => import('./pages/business/BusinessImp
 const BusinessSettingsPage = React.lazy(() => import('./pages/business/BusinessSettingsPage').then(m => ({ default: m.BusinessSettingsPage })));
 const BusinessPOSSimulatorPage = React.lazy(() => import('./pages/business/BusinessPOSSimulatorPage').then(m => ({ default: m.BusinessPOSSimulatorPage })));
 const BusinessPurchasePlannerPage = React.lazy(() => import('./pages/business/BusinessPurchasePlannerPage').then(m => ({ default: m.BusinessPurchasePlannerPage })));
+const BusinessForecastPage = React.lazy(() => import('./pages/business/BusinessForecastPage').then(m => ({ default: m.BusinessForecastPage })));
 const BusinessAiInsightsPage = React.lazy(() => import('./pages/business/BusinessAiInsightsPage').then(m => ({ default: m.BusinessAiInsightsPage })));
 const DonationRequestsPage = React.lazy(() => import('./pages/DonationRequestsPage').then(m => ({ default: m.DonationRequestsPage })));
 const SurplusMarketplacePage = React.lazy(() => import('./pages/SurplusMarketplacePage').then(m => ({ default: m.SurplusMarketplacePage })));
@@ -223,39 +224,28 @@ export const App: React.FC = () => {
   }, [isDemo, rawPath, queryClient, refetchUser]);
 
   // Route Authentication Derivation:
-  // - In live mode, unauthenticated access:
-  //     - '' or '/' or 'public' or 'landing' or 'public-home' -> 'public-home' (shows PublicHomePage)
-  //     - 'register' -> 'register'
-  //     - all other paths -> 'login'
-  // - In demo mode (or authenticated live mode):
-  //     - 'public' or 'landing' or 'public-home' -> 'public-home' (allows previewing landing page)
-  //     - '' or '/' or 'login' -> 'home' (redirects authenticated users to home)
-  //     - all other paths -> rawPath
+  // - Default root route '' or '/' or 'public' or 'landing' or 'public-home' -> 'public-home' (shows starting overview page)
+  // - In live mode, unauthenticated access to other paths -> 'login' (or 'register')
+  // - 'home' -> AuthenticatedHomePage cockpit
+  // - all other paths -> rawPath
   const isLiveUnauthenticated = !isDemo && (!isAuthenticated() || isUserError);
   let activePath: string;
-  if (isLiveUnauthenticated) {
-    if (
-      rawPath === '' ||
-      rawPath === '/' ||
-      rawPath === 'public' ||
-      rawPath === 'landing' ||
-      rawPath === 'public-home'
-    ) {
-      activePath = 'public-home';
-    } else if (rawPath === 'register') {
-      activePath = 'register';
-    } else {
-      activePath = 'login';
-    }
+  if (
+    rawPath === '' ||
+    rawPath === '/' ||
+    rawPath === 'public' ||
+    rawPath === 'landing' ||
+    rawPath === 'public-home'
+  ) {
+    activePath = 'public-home';
+  } else if (rawPath === 'register') {
+    activePath = 'register';
+  } else if (rawPath === 'login') {
+    activePath = isLiveUnauthenticated ? 'login' : 'home';
+  } else if (isLiveUnauthenticated) {
+    activePath = 'login';
   } else {
-    // Authenticated session (Live or Demo)
-    if (rawPath === 'public' || rawPath === 'landing' || rawPath === 'public-home') {
-      activePath = 'public-home';
-    } else if (rawPath === '' || rawPath === '/' || rawPath === 'login') {
-      activePath = 'home';
-    } else {
-      activePath = rawPath;
-    }
+    activePath = rawPath;
   }
 
   const isPlatformAdmin = Boolean(currentUser?.is_platform_admin);
@@ -291,13 +281,14 @@ export const App: React.FC = () => {
     const nextMode = isDemo ? 'live' : 'demo';
     setDataSourceMode(nextMode);
     setDataMode(nextMode);
+    queryClient.clear();
     triggerToast(
       nextMode === 'live'
         ? 'Switched to Live Backend Mode (Django DB on http://127.0.0.1:8000)'
         : 'Switched to Demo Sandbox Mode'
     );
     refreshQueries();
-  }, [isDemo, triggerToast, refreshQueries]);
+  }, [isDemo, triggerToast, refreshQueries, queryClient]);
 
   // Global Ctrl+K / Cmd+K Command Palette Listener
   useEffect(() => {
@@ -494,6 +485,9 @@ export const App: React.FC = () => {
     'business/ai/planner': 'Purchase Planner (AI)',
     'ai/planner': 'Purchase Planner (AI)',
     planner: 'Purchase Planner (AI)',
+    'business/ai/forecast': 'Sales & Demand Forecast (AI)',
+    'ai/forecast': 'Sales & Demand Forecast (AI)',
+    forecast: 'Sales & Demand Forecast (AI)',
     'business/ai/insights': 'Benchmark Waste Insights',
     'ai/insights': 'Benchmark Waste Insights',
     insights: 'Benchmark Waste Insights',
@@ -509,6 +503,9 @@ export const App: React.FC = () => {
     'business/ai/planner',
     'ai/planner',
     'planner',
+    'business/ai/forecast',
+    'ai/forecast',
+    'forecast',
     'business/ai/insights',
     'ai/insights',
     'insights',
@@ -762,6 +759,16 @@ export const App: React.FC = () => {
     if (activePath === 'business/ai/planner' || activePath === 'ai/planner' || activePath === 'planner') {
       return (
         <BusinessPurchasePlannerPage
+          onNavigate={(path: string) => setActivePath(path)}
+          onTriggerToast={triggerToast}
+        />
+      );
+    }
+
+    // Route: AI Sales & Demand Forecast (Business)
+    if (activePath === 'business/ai/forecast' || activePath === 'ai/forecast' || activePath === 'forecast') {
+      return (
+        <BusinessForecastPage
           onNavigate={(path: string) => setActivePath(path)}
           onTriggerToast={triggerToast}
         />
